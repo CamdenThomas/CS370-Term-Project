@@ -1,0 +1,16 @@
+M<n> <area>: <imperative summary, 72 chars max>
+
+WHAT:   One sentence. What changed, mechanically.
+WHY:    1-3 sentences. The reason, tied to a requirement, a decision ID, or a
+        measurement. Never "to improve things."
+REVIEW: What the reviewer should check hardest, and what I am least sure about.
+VERIFY: The exact commands run and their result.
+
+# area: can | capture | ipc | store | analysis | supervisor | interface |
+#       common | drivers | build | tests | tools | soak | docs
+#
+# Caps: one idea per commit. <= 3 files, <= 150 changed lines.
+# The one-sentence test: if the summary needs "and", it is two commits.
+# Banned: wip, fix, updates, misc, cleanup, changes, address feedback.
+#
+# Enable with:  git config commit.template .gitmessage
