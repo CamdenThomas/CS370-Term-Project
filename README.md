@@ -62,11 +62,13 @@ src/         systems core, C17, -Wall -Wextra -Werror clean
   interface/ obdctl query CLI
 drivers/     out-of-tree kernel module (stretch, mechanism A)
 tools/       PYTHON ALLOWED HERE ONLY — replay harness, training, plots,
-             bootstrap_board.sh (creates the whole GitHub board, run once)
+             board_sync.py (reconciles docs/board.toml onto the GitHub board)
 tests/       unit tests and fixtures
 fixtures/    labeled captures, including induced faults
 soak/        soak runner, heartbeat logs, fault injection
-docs/        PLAN.md (full work breakdown), DECISIONS.md (audit log),
+docs/        PROBLEM.md, DESIGN.md, EVALUATION.md (the three graded documents)
+             board.toml (every task/question/decision) + BOARD.md (how it works)
+             DECISIONS.md (audit log), PLAN.md (why the plan is shaped this way),
              milestones.md, handout/ (the rubric as markdown), hardware/
 partners/    per-partner PROMPTLOG, REFLECTION, raw .jsonl transcripts
 ```
