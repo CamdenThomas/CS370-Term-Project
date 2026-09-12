@@ -15,7 +15,7 @@ guardrail, and the handout is explicit that the enclosure can be a food containe
 
 The schematic is worth the time anyway, because three graded artifacts depend on it:
 
-- `DESIGN.md` needs an architecture diagram and a defensible wiring story
+- `docs/DESIGN.md` needs an architecture diagram and a defensible wiring story
 - `docs/hardware/wiring.md` needs pin assignments that cannot drift from reality
 - The **three-isolated-workers test** needs a parts-only buyer who can order from the BOM
   without ever seeing the design

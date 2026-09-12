@@ -58,7 +58,7 @@ Sustained rate with sequence accounting proving zero drops, under `stress-ng`.
 N power-cut trials, recovery outcome each time, bytes lost per trial.
 
 ## 7. Limitations
-> Plainly. Closes the loop on the constraints and substitutions declared in DESIGN.md §5.
+> Plainly. Closes the loop on the constraints and substitutions declared in docs/DESIGN.md §5.
 
 "An honest limitations section is worth more at the defense than a suspiciously perfect
 results section, and we notice which one we are reading."

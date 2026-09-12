@@ -29,6 +29,6 @@ Options, in order of preference:
 2. Add a physical pressure sender with a T-fitting at the sender port. Real automotive
    work on a daily driver — do not commit to this after Week 10.
 3. Replace diagnostic #1 with an oil-*temperature*-based thermal-load metric and say so
-   plainly in DESIGN.md §5 as a declared substitution.
+   plainly in docs/DESIGN.md §5 as a declared substitution.
 
 Record the outcome here and update `docs/decisions/D-003-narrow-the-claim.md`.

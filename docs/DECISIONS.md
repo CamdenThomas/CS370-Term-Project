@@ -100,7 +100,7 @@ idiot-light bit, and the bus bitrate.
 low-oil-pressure switch. If neither testbed publishes analog oil pressure, **diagnostic
 #1 is not implementable from the bus** and we must substitute a physical sender (real
 automotive work on a daily driver) or replace the diagnostic. This is the project's named
-risk in `PROBLEM.md`.
+risk in `docs/PROBLEM.md`.
 
 **Action.** Run a supported-PID scan on both vehicles with a $12 ELM327 — a $0, ten-minute
 experiment that does not need the MCP2515 to have arrived. Record in
@@ -120,7 +120,7 @@ of an M2 slip. A breadboard plus an off-the-shelf MCP2515 module clears every gu
 the handout is explicit that a food container is an acceptable enclosure.
 
 **Why the schematic is still worth the hours.** Three graded artifacts depend on it:
-`DESIGN.md` needs a defensible wiring story; `docs/hardware/wiring.md` needs pin assignments
+`docs/DESIGN.md` needs a defensible wiring story; `docs/hardware/wiring.md` needs pin assignments
 that cannot drift from the build; and the three-isolated-workers test needs a parts-only
 buyer who can order from the BOM without seeing the design. A hand-maintained pin table will
 disagree with reality by Week 9. A generated one cannot.
@@ -221,7 +221,7 @@ record. The CRC is what makes a torn record *detectable* rather than merely wron
 wrong numbers you trust are more dangerous than missing numbers you know about.
 
 **Open sub-decision (M2, Lance):** fsync batch size and interval. There is no correct
-value, only one justifiable from user requirements. Document the argument in `DESIGN.md`
+value, only one justifiable from user requirements. Document the argument in `docs/DESIGN.md`
 §4 before writing the code.
 
 ## C.2 — Every record carries a provenance tag 🔒
@@ -282,14 +282,14 @@ deliberately.
 
 **Why.** A monitor that cries wolf twice gets unplugged, and an unplugged monitor is worse
 than none because someone far away believes it is on duty. **False-positive rate is a
-first-class metric in `EVALUATION.md`, not an afterthought.**
+first-class metric in `docs/EVALUATION.md`, not an afterthought.**
 
 ## D.4 — The threshold test, as a standing rule 🔒
 Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 Every diagnostic we ship must require at least two cooperating sensors to reach its
 conclusion. If a single threshold on a single value could produce the verdict, it is not
-intelligence and it does not count. **Write the reason down in `DESIGN.md` when adding a
+intelligence and it does not count. **Write the reason down in `docs/DESIGN.md` when adding a
 diagnostic** — this is checked at the defense.
 
 ---
@@ -397,7 +397,7 @@ week. Verify against the syllabus and mark LOCKED.
 
 *(none yet — when a decision is replaced, move it here with a pointer to its replacement.
 Never delete one. The reasoning is evidence, and "what M2 got wrong" is a graded section of
-`DESIGN.md`.)*
+`docs/DESIGN.md`.)*
 
 ---
 

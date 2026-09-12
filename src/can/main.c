@@ -2,9 +2,9 @@
  *
  * OWNER: Camden.  M3 target: real frames from a real car into the ring.
  *
- * Design intent (see DESIGN.md §2): the MCP2515's INT line is wired to a GPIO and
+ * Design intent (see docs/DESIGN.md §2): the MCP2515's INT line is wired to a GPIO and
  * watched with epoll on the gpio chardev / SocketCAN fd. The polling variant is kept
- * behind --poll so the head-to-head comparison EVALUATION.md §6.1 requires is a flag,
+ * behind --poll so the head-to-head comparison docs/EVALUATION.md §6.1 requires is a flag,
  * not a rewrite.
  */
 #include "common/log.h"

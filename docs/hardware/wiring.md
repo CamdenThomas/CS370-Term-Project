@@ -38,7 +38,7 @@ dtoverlay=spi0-hw-cs
 
 **Pin 16 is live with the key off.** That is what makes the unattended soak possible and
 what makes a dead battery possible. Fuse it, and measure the device's key-off draw
-before leaving it in a car overnight — record the number in `EVALUATION.md`.
+before leaving it in a car overnight — record the number in `docs/EVALUATION.md`.
 
 ## Bring-up order
 

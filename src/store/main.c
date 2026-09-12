@@ -13,7 +13,7 @@ int main(void)
     log_init("storaged", LOG_INFO);
     LOG_I("start rec_version=%u", REC_VERSION);
 
-    /* TODO(M2): decide and document the fsync discipline in DESIGN.md §4 before
+    /* TODO(M2): decide and document the fsync discipline in docs/DESIGN.md §4 before
      *           writing it. Batch size and interval are a user-requirements argument,
      *           not a default to inherit.
      * TODO(M3): open-or-recover: scan from the last known-good offset, verify CRCs,

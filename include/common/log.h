@@ -21,7 +21,7 @@ void log_emit(log_level_t lvl, const char *fmt, ...)
     __attribute__((format(printf, 2, 3)));
 
 /* Hourly heartbeat: process liveness, RSS, cumulative event counts. Required by the
- * soak (handout §3.4) and the source of the RSS-vs-time plot in EVALUATION.md §3. */
+ * soak (handout §3.4) and the source of the RSS-vs-time plot in docs/EVALUATION.md §3. */
 void log_heartbeat(uint64_t events, uint64_t drops);
 
 #define LOG_D(...) log_emit(LOG_DEBUG, __VA_ARGS__)
