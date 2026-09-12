@@ -2,6 +2,7 @@
 # Systems core is C17 and must stay -Wall -Wextra -Werror clean (CLAUDE.md §2.4).
 
 CC       ?= gcc
+PY       ?= python3
 CSTD      = -std=c17
 WARN      = -Wall -Wextra -Werror -Wshadow -Wconversion -Wvla
 OPT      ?= -O2 -g
@@ -23,7 +24,7 @@ DAEMON_BIN = $(addprefix $(BIN)/,$(DAEMONS))
 TEST_SRC   = $(wildcard tests/test_*.c)
 TEST_BIN   = $(TEST_SRC:tests/%.c=$(BIN)/%)
 
-.PHONY: all test asan memcheck soakcheck replay deploy clean boundary \
+.PHONY: all test asan memcheck soakcheck replay deploy clean boundary boardcheck \
         hwcheck hwdocs hwclean
 
 all: $(DAEMON_BIN)
@@ -46,7 +47,7 @@ $(BIN)/test_%: tests/test_%.c $(COMMON_OBJ)
 	@mkdir -p $(BIN)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-test: $(TEST_BIN) boundary
+test: $(TEST_BIN) boundary boardcheck
 	@fail=0; for t in $(TEST_BIN); do \
 		printf '%-28s ' "$$(basename $$t)"; \
 		if $$t; then echo PASS; else echo FAIL; fail=1; fi; done; \
@@ -59,6 +60,11 @@ boundary:
 	     --include='*.c' --include='*.h' | grep -v '^src/interface/'; then \
 		echo "BOUNDARY VIOLATION: network symbol outside src/interface/"; exit 1; \
 	else echo "boundary                     PASS"; fi
+
+# docs/board.toml is a graded artifact too - every task, question and decision
+# in the project is written there. Validate it in the same gate as the C.
+boardcheck:
+	@$(PY) tools/test_board.py
 
 asan:
 	$(MAKE) clean
