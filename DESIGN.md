@@ -1,0 +1,136 @@
+# Design document — carwatch
+
+> **STATUS: M2 SKELETON.** 3–5 pages when complete. The handout calls these "the most
+> leveraged hours of the whole project" — every hour of arguing here saves five of
+> rewriting later.
+>
+> **Before submitting, run the three-isolated-workers check:** a design-only reviewer,
+> a parts-only buyer who never sees the design, and a builder who only follows
+> instructions must each succeed from their own section alone.
+
+## 1. Architecture
+> A diagram in the spirit of the handout's Figure 1: processes, threads, kernel
+> components, data flows, **and rates on every arrow**. The rates are not decoration —
+> they are what makes the mechanism justifications checkable.
+
+```
+  OBD2 connector
+  pin 6 / pin 14
+        │ CAN 500 kbit/s
+        ▼
+  ┌──────────────┐  SPI0 @ [N] MHz     ┌────────────────┐
+  │ MCP2515 +    │────────────────────▶│   candaemon    │  [mech B]
+  │ TJA1050      │  INT ──▶ GPIO[N]    │  IRQ RX path   │
+  └──────────────┘  edge-triggered     └───────┬────────┘
+                                               │ SPSC ring, [N] frames/s  [mech F]
+                                               │ shm, sequence-accounted
+                    ┌──────────────────────────┼──────────────────────┐
+                    ▼                          ▼                      ▼
+            ┌───────────────┐         ┌────────────────┐     ┌────────────────┐
+            │   storaged    │         │   analyzed     │     │   obdctl       │
+            │ append-only   │◀────────│ features →     │────▶│ query CLI      │
+            │ CRC, fsync    │  read   │ baseline →     │ UDS │ 5 verbs        │
+            │   [mech D]    │         │ model → FSM    │     └────────────────┘
+            └───────────────┘         └────────────────┘
+                    ▲                          ▲
+                    └──────────┬───────────────┘
+                               │ spawn / heartbeat / restart-with-backoff
+                        ┌──────────────┐
+                        │  supervisor  │  [mech E]
+                        └──────────────┘
+```
+
+**TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
+
+## 2. Mechanism mapping
+> For each chosen menu item: which component implements it, and a justification **from
+> the user's requirements**. The defense will test the justification, not the choice.
+> Model the form on the handout's example: "the vibration analysis is meaningless above
+> 2 ms of sampling jitter, hence SCHED_FIFO."
+
+See `docs/decisions/D-002-mechanism-commitments.md` for the committed rationale; expand
+each here with the measured numbers that justify it.
+
+| Menu item | Component | Justification from requirements | How measured |
+|---|---|---|---|
+| B | `src/can/` | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
+| D | `src/store/` | | recovery after mid-write power cut, N trials |
+| E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
+| F | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
+
+## 3. Failure-mode table
+> For each component: how it can fail, how the failure is **detected**, what the system
+> **does**, and what the **log will show**. The soak test grades this table's honesty —
+> so write the modes you are afraid of, not the ones you have already handled.
+
+| Component | Failure | Detection | Response | Log line |
+|---|---|---|---|---|
+| MCP2515 | physically unplugged mid-drive | | degrade, do not restart-storm | |
+| MCP2515 | SPI transaction timeout | | | |
+| candaemon | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
+| ring | consumer stalls, producer would overwrite | sequence gap accounting | | |
+| storaged | disk full | | | |
+| storaged | power cut mid-write | CRC mismatch on recovery scan | truncate torn tail | |
+| analyzed | model file missing or corrupt | | fall back to residuals only | |
+| supervisor | itself dies | systemd `Restart=always` | | |
+| clock | no RTC, time jumps at boot | | | |
+
+## 4. Storage and data
+> What is stored, at what rate, in what format, with what retention, and what happens to
+> it when the power dies mid-write.
+
+- **Record format:** [magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]
+- **Rates:** [fill]
+- **Retention and rollup:** [fill — raw window, then binned aggregates?]
+- **fsync discipline:** [fill — batch size, interval, and the argument for it]
+- **Crash story:** [fill — recovery scan, torn-tail truncation, what is lost and why
+  losing it is acceptable]
+- **Baseline persistence:** learned per-bin statistics must survive a power cut. This is
+  the requirement that made mechanism D non-optional.
+
+## 5. Constraints and substitutions
+> What the ideal build would use, what we are actually using, and what the gap costs.
+> "A design document with nothing to report here has usually not met its hardware yet."
+
+| Wanted | Using | What the substitution costs |
+|---|---|---|
+| Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
+| A year of failing engines | Induced faults on two healthy cars | Only three fault classes, and none of them is a real bearing failure |
+| 48h of live driving | [pending D-006] | |
+
+## 6. Evaluation plan
+> The measurements we will take, each with **method and committed target**. Numbers
+> committed now are twice as credible when hit later, and instructive either way.
+
+| Measurement | Method | Target |
+|---|---|---|
+| CAN frame → stored, p50/p99 | timestamp at IRQ and at fsync | |
+| IRQ vs polling: latency + CPU | both paths, idle and `stress-ng` loaded | |
+| Drop rate under contention | sequence accounting | zero |
+| RSS per process over 48h | hourly heartbeat, plotted | flat |
+| Detection: TPR / FPR per diagnostic | induced-fault fixtures | |
+| Recovery after mid-write power cut | N pull-the-plug trials | 100% |
+
+## 7. Ownership map
+| Owner | Subsystems |
+|---|---|
+| Camden | `src/can/`, `src/capture/`, `src/ipc/`, `drivers/` |
+| Lance | `src/store/`, `src/analysis/`, `tools/train/` |
+| Shared | `src/supervisor/`, `src/interface/`, `src/common/`, docs |
+
+Ownership means first authorship and answerability at the defense, not exclusivity.
+
+## 8. AI-use plan
+> What we use Claude Code for, what we don't, and how the §3.3 boundary stays visible
+> in the repository.
+
+Used for: planning, explaining kernel and SPI mechanics, drafting test fixtures,
+adversarial review of diffs, documentation. Not used for: the analysis pipeline's
+design decisions, and never at runtime.
+
+The boundary is legible by inspection: `src/` contains no HTTP client and no network
+code except the LAN interface in `src/interface/`. `grep -r` for any network symbol
+outside that directory returns nothing, and that check is in `make test`.
+
+## 9. Changelog (added at M5)
+> What M2's version got wrong. This section is graded and an empty one is not credible.
