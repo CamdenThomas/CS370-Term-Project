@@ -1,0 +1,1229 @@
+# docs/board.toml — the single source of truth for the carwatch GitHub board.
+#
+# CONTRACT
+#   This file describes what SHOULD exist on GitHub. `tools/board_sync.py` makes
+#   GitHub match it. The sync is a reconciler, not a generator:
+#
+#     * running it twice changes nothing the second time
+#     * items absent from this file are left completely alone (never closed,
+#       never edited, never removed from the board) — they are reported as
+#       unmanaged and ignored
+#     * adding one task means adding one [[item]] block and re-running sync
+#     * `slug` is the permanent identity of an item. Issue numbers live in
+#       docs/board.lock.json and are derived, never typed here.
+#
+#   Inside an issue body the sync owns ONLY the region between the
+#   <!-- board-sync:deps --> markers. Everything else in a body on GitHub is
+#   overwritten from this file, so edit prose HERE, not in the web UI.
+#
+# EDITING
+#   status = backlog | blocked | ready | in-progress | in-review | done
+#     Omit it and sync picks the column for you: "backlog" while any blocker is
+#     still open, "ready" once nothing blocks it, "done" once the issue closes.
+#     Set it explicitly to drive the column by hand — "blocked" is reserved for
+#     waiting on something that is not another item (a shipment, a reply).
+#   done      closes the issue. Items labeled question/decision additionally
+#             require --close-questions, because CLAUDE.md forbids Claude from
+#             closing those on its own judgement.
+#   blocked_by takes slugs, never issue numbers.
+#   decision  optional "D-###". Must exist in docs/DECISIONS.md; sync renders a
+#             link line into the managed region and warns about unknown IDs.
+#
+# Run:  python tools/board_sync.py --check     (report drift, change nothing)
+#       python tools/board_sync.py             (reconcile)
+
+[board]
+# Identified by NUMBER, not title: matching on a name is how you end up writing to
+# one project while reading another in the browser. This is the project linked to
+# the repository — the one the repo's Projects tab opens.
+number = 1
+title = "carwatch"
+columns = ["Backlog", "Ready", "In progress", "In review", "Done"]
+# Sync maps board.toml statuses onto whatever Status options the project has
+# (COLUMN_PREFERENCE in board_sync.py) rather than rewriting the field, because
+# rewriting it discards every card's current value. `blocked` therefore lands in
+# Backlog here, which is what we want anyway. Set reshape_status = true only to
+# deliberately rebuild the Status field from `columns`.
+# reshape_status = false
+
+[people]
+camden = "CamdenThomas"
+lance = "Lance-Baron"
+
+# ------------------------------------------------------------------ labels
+
+[[label]]
+name = "question"
+color = "d876e3"
+description = "Needs a human answer. Claude may never close this."
+
+[[label]]
+name = "decision"
+color = "8250df"
+description = "A design choice that must be made. Claude may never close this."
+
+[[label]]
+name = "task"
+color = "0e8a16"
+description = "Work to be done."
+
+[[label]]
+name = "bug"
+color = "d73a4a"
+description = "Something is wrong."
+
+[[label]]
+name = "hardware"
+color = "e99695"
+description = "Physical world: order it, wire it, measure it, drive it."
+
+[[label]]
+name = "blocked"
+color = "000000"
+description = "Waiting on a dependency. Applied and removed by board_sync."
+
+[[label]]
+name = "critical-path"
+color = "b60205"
+description = "Slipping this slips the project."
+
+# -------------------------------------------------------------- milestones
+# Dates assume an Aug 24 2026 semester start — see PLAN.md / decision D-008.
+# Issue `dates` exists to verify this.
+#
+# THIS IS THE ONLY PLACE MILESTONE DATES ARE WRITTEN. The table in
+# docs/milestones.md is regenerated from these blocks between its
+# <!-- board-sync:milestones --> markers, and the GitHub milestone due dates are
+# patched in place. Correct a date here, re-run sync, and all three agree.
+# `deliverable` is used for both the GitHub milestone description and the table.
+
+[[milestone]]
+name = "M0"
+due = "2026-09-20"
+week = "4"
+hours = "2–3"
+deliverable = "Team formed; hardware ordered; repo + CLAUDE.md initialized"
+
+[[milestone]]
+name = "M1"
+due = "2026-09-27"
+week = "5"
+hours = "3–4"
+deliverable = "Problem memo; each partner's `.jsonl` transcripts copied out"
+
+[[milestone]]
+name = "M2"
+due = "2026-10-11"
+week = "6–7"
+hours = "8–10"
+deliverable = "Design document; both sensors electrically alive; **baseline collection starts**"
+
+[[milestone]]
+name = "M3"
+due = "2026-11-01"
+week = "8–10"
+hours = "25–30"
+deliverable = "Checkpoint demo: both sensors through the real pipeline into real storage; ≥1 menu mechanism working"
+
+[[milestone]]
+name = "M4"
+due = "2026-11-29"
+week = "11–14"
+hours = "30–40"
+deliverable = "Feature freeze; 48-hour soak begins"
+
+[[milestone]]
+name = "M5"
+due = "2026-12-06"
+week = "15"
+hours = "10–14"
+deliverable = "Final submission: system, soak logs, evaluation report, process artifacts, complete transcripts"
+
+[[milestone]]
+name = "M6"
+due = "2026-12-18"
+week = "15–16"
+hours = "—"
+deliverable = "Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`)"
+
+# =============================================================== M0 items
+
+[[item]]
+slug = "team"
+milestone = "M0"
+labels = ["task"]
+owner = "camden"
+status = "done"
+title = "M0 admin: register the team as Camden Thomas + Lance Baron"
+body = '''
+Formal team registration for the CS370 term project.
+
+Done when: both names are on record with the course.
+'''
+
+[[item]]
+slug = "order"
+milestone = "M0"
+labels = ["hardware", "critical-path"]
+owner = "camden"
+title = "M0 hardware: order the core BOM (and the ELM327 in the same cart)"
+body = '''
+See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, MCP2515+TJA1050, OBD2 pigtail,
+12V->5V automotive buck converter, jumpers. ~$90.
+
+**Also order the $12 ELM327 now.** It unblocks the PID survey weeks before the
+MCP2515 matters, and the PID survey answers the project's named risk.
+
+Critical path B. The handout names shipping time as the most common silent
+schedule-killer, twice. Blocks every piece of physical work in the project.
+
+Done when: order confirmations are in the thread and ETAs are noted here.
+'''
+
+[[item]]
+slug = "honda"
+milestone = "M0"
+labels = ["question", "critical-path"]
+owner = "lance"
+decision = "D-007"
+title = "M0 question: confirm the Honda's year, model, engine and transmission"
+body = '''
+Blocks the PID survey (and therefore diagnostic #1) and the CAN bitrate choice.
+
+Need: year, model, engine, transmission.
+
+Answer here in one line and this closes. Decision D-007 in docs/DECISIONS.md.
+'''
+
+[[item]]
+slug = "dates"
+milestone = "M0"
+labels = ["question"]
+owner = "camden"
+decision = "D-008"
+title = "M0 question: verify M0-M6 dates against the syllabus"
+body = '''
+docs/milestones.md assumes an Aug 24 2026 semester start, which puts M0 due
+2026-09-20. The handout gives week numbers, not dates.
+
+If the assumption is off by even one week, the M4 soak start moves — and M4
+already lands on Thanksgiving week.
+
+Answer: paste the real milestone dates. Then correct docs/milestones.md and the
+[[milestone]] due dates in docs/board.toml, and re-run board_sync. Decision D-008.
+'''
+
+[[item]]
+slug = "soakq"
+milestone = "M0"
+labels = ["decision", "critical-path"]
+owner = "camden"
+decision = "D-006"
+title = "M0 decision: 48-hour soak on a synthesized CAN source — ask Pallickara"
+body = '''
+Handout §5: 'The 48-hour soak and the live demonstration run on live sensors.'
+Our PC-side CAN generator is synthesized data by that definition.
+
+Draft email ready at docs/professor-email-draft.md with all three options.
+
+**Build as if the answer is no.** Fallback is adding an MPU-6050 + DS18B20 (~$8)
+so the soak runs on live sensors while CAN is replayed and labeled.
+
+Decision D-006. Must close before M4.
+'''
+
+[[item]]
+slug = "ghsetup"
+milestone = "M0"
+labels = ["task"]
+owner = "camden"
+status = "done"
+decision = "D-010"
+title = "M0 admin: configure the branch ruleset, labels, milestones and the board"
+body = '''
+**Done.** Verified 2026-09-12.
+
+Labels, milestones, issues and the project board are generated by
+`python tools/board_sync.py` from docs/board.toml — see docs/BOARD.md.
+
+The `Main` ruleset is active on the default branch with no bypass actors, and now
+matches CLAUDE.md 7.10 exactly:
+
+| Setting | State |
+|---|---|
+| Require a pull request before merging | on |
+| Required approving reviews | 1 |
+| Dismiss stale approvals on push | on |
+| Require conversation resolution | on |
+| Block force pushes (non-fast-forward) | on |
+| Block deletions | on |
+| Allowed merge methods | **merge only** |
+
+Merge-only is the one worth restating: our granular history IS the graded deliverable
+(7.9), and one squash-merge of a ten-commit PR would delete ten commits of evidence
+permanently.
+
+CI added alongside this: `.github/workflows/board.yml` fails a build when GitHub has
+drifted from docs/board.toml, and `make test` validates the manifest itself.
+'''
+
+[[item]]
+slug = "cleanup"
+milestone = "M0"
+labels = ["task"]
+owner = "camden"
+title = "M0 admin: raise cleanupPeriodDays on both machines"
+body = '''
+Transcripts purge after 30 days by default; this project runs 15 weeks.
+Losing Week-5 transcripts in Week 15 is a foreseeable loss and is not excused.
+
+Add to .claude/settings.json on BOTH machines:
+
+    {"cleanupPeriodDays": 180}
+
+Then verify ~/.claude/projects/ path and that the copy-out command works.
+'''
+
+[[item]]
+slug = "lancesign"
+milestone = "M0"
+labels = ["task"]
+owner = "lance"
+title = "M0 review: Lance reads and signs the decision log"
+body = '''
+docs/DECISIONS.md — at minimum §A.1 (MCP2515 over Bluetooth), §B.1 (mechanism
+commitments), §C.1 (append-only storage) and §D.1 (self-trained model).
+Those four bind your subsystems.
+
+Sign by changing 'Lance ⬜' to 'Lance ✅' on entries you agree with, in a commit
+you author. Open an issue for anything you want to contest.
+'''
+
+# =============================================================== M1 items
+
+[[item]]
+slug = "pidsub"
+milestone = "M1"
+labels = ["hardware", "critical-path"]
+owner = "camden"
+blocked_by = ["order"]
+title = "M1 hardware: supported-PID survey on the Outback"
+body = '''
+Mode 01 PIDs 0x00 / 0x20 / 0x40 / 0x60 return bitmaps of supported PIDs.
+Ten minutes with the ELM327. No custom hardware needed.
+
+**Most important question: is oil pressure published as an analog value, or only
+as a binary low-pressure switch?**
+
+Record results in docs/hardware/pid-survey.md.
+'''
+
+[[item]]
+slug = "pidhonda"
+milestone = "M1"
+labels = ["hardware", "critical-path"]
+owner = "lance"
+blocked_by = ["order", "honda"]
+title = "M1 hardware: supported-PID survey on the Honda"
+body = '''
+Same procedure as the Outback survey. Record in docs/hardware/pid-survey.md.
+'''
+
+[[item]]
+slug = "oilq"
+milestone = "M1"
+labels = ["decision", "critical-path"]
+blocked_by = ["pidsub", "pidhonda"]
+title = "M1 decision: is analog oil pressure available? If not, what replaces diagnostic #1?"
+body = '''
+This is the project's named risk (docs/PROBLEM.md).
+
+If neither vehicle publishes analog oil pressure, options in preference order:
+  1. Sniff manufacturer-specific frames for a pressure value
+  2. Add a physical sender at the sender port (real work on a daily driver —
+     do not commit to this after Week 10)
+  3. Replace diagnostic #1 with an oil-temperature thermal-load metric, and
+     declare the substitution in docs/DESIGN.md §5
+
+Record the outcome in docs/DECISIONS.md §E.1.
+'''
+
+[[item]]
+slug = "nameuser"
+milestone = "M1"
+labels = ["question"]
+owner = "camden"
+title = "M1 question: name the real user and vehicle for docs/PROBLEM.md"
+body = '''
+The handout rejects personas: 'people who might want to monitor things' is not a
+user, and neither is 'a cautious driver'.
+
+Need a real person and a real car — ideally two, one work truck and one commuter,
+since that contrast IS the thesis: the same sticker says 5,000 miles to both cars
+and the cars disagree.
+
+Memos that fail this are returned for revision, costing a week.
+'''
+
+[[item]]
+slug = "memo"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+blocked_by = ["nameuser", "oilq"]
+title = "M1 docs: draft docs/PROBLEM.md, all six required headings"
+body = '''
+user / problem / why a device / sensors / mechanisms / risk.
+One page. Must survive a skeptical stranger. Template already in docs/PROBLEM.md.
+'''
+
+[[item]]
+slug = "memorev"
+milestone = "M1"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["memo"]
+title = "M1 review: Lance reviews docs/PROBLEM.md against the phone-app test"
+body = '''
+Two questions to answer honestly:
+  1. Why must this be physically present and always awake?
+  2. Why doesn't a phone app already solve it?
+
+If either answer is weak, say so now — a returned memo costs a week.
+'''
+
+[[item]]
+slug = "tx1"
+milestone = "M1"
+labels = ["task"]
+title = "M1 process: transcript copy-out, both partners"
+body = '''
+    cp ~/.claude/projects/*CS370*/*.jsonl partners/<name>/transcripts/
+
+Raw. Not summarized, not exported, not retyped. Both partners, separately.
+'''
+
+# =============================================================== M2 items
+
+[[item]]
+slug = "bench"
+milestone = "M2"
+labels = ["hardware", "critical-path"]
+owner = "camden"
+blocked_by = ["order"]
+title = "M2 hardware: MCP2515 bench bring-up on the Pi, no car"
+body = '''
+1. Meter the module VCC and MISO with the Pi DISCONNECTED — many cheap boards
+   drive 5V onto MISO and will silently kill the Pi.
+2. Note the crystal: 8 MHz vs 16 MHz changes the overlay and a wrong value
+   produces a silently dead bus.
+3. dtoverlay + dtparam in config.txt, reboot, 'ip link show can0'.
+
+See docs/hardware/wiring.md. Wire with the board powered off.
+'''
+
+[[item]]
+slug = "twonode"
+milestone = "M2"
+labels = ["hardware"]
+owner = "camden"
+blocked_by = ["bench"]
+title = "M2 hardware: two-node bench CAN bus — prove frames move before a car is attached"
+body = '''
+MCP2515 module + USB-to-CAN adapter on the same bench bus.
+
+Do not skip this. Debugging a silent bus with a car attached is debugging two
+unknowns at once.
+'''
+
+[[item]]
+slug = "firstcap"
+milestone = "M2"
+labels = ["hardware", "critical-path"]
+owner = "camden"
+blocked_by = ["twonode"]
+title = "M2 hardware: first live capture from a real car"
+body = '''
+Key to accessory first, then running. 'candump can0 > capture.log'.
+
+This is the M2 exit criterion: both sensors electrically alive.
+'''
+
+[[item]]
+slug = "baseline"
+milestone = "M2"
+labels = ["task", "critical-path"]
+blocked_by = ["firstcap"]
+title = "M2 CRITICAL PATH: start baseline collection on BOTH vehicles"
+body = '''
+**This is the single most schedule-critical task in the project.**
+
+Diagnostic #1 claims oil pressure degrades measurably across an oil-change
+interval. That needs a real interval to develop — 5-7 weeks of driving — and
+calendar time cannot be bought back by working harder in Week 14.
+
+Crude is fine. 'candump' to a file on a timer is fine. **On time is not optional.**
+A crude capture that starts now beats an elegant one that starts three weeks late.
+
+If this has not started by the M2 deadline, diagnostic #1 is dead — decide that
+consciously, record it in DECISIONS.md, and narrow the claim in writing.
+'''
+
+[[item]]
+slug = "recfmt"
+milestone = "M2"
+labels = ["decision"]
+owner = "lance"
+title = "M2 decision: finalize the on-disk record format"
+body = '''
+Fields, framing, CRC placement, and the src=live|replay|synth provenance tag.
+Draft already in include/store/record.h.
+
+Changing this after M3 means migrating captured baseline data. Decide carefully.
+'''
+
+[[item]]
+slug = "fsync"
+milestone = "M2"
+labels = ["decision"]
+owner = "lance"
+blocked_by = ["recfmt"]
+title = "M2 decision: fsync discipline — batch size and interval"
+body = '''
+There is no correct value, only one you can justify from user requirements.
+
+The trade: larger batches are faster and easier on the SD card, but lose more
+when the key turns off mid-write — which happens several times a day, by design.
+
+Write the argument in docs/DESIGN.md §4 BEFORE writing the code. The defense will ask.
+'''
+
+[[item]]
+slug = "archdiag"
+milestone = "M2"
+labels = ["task"]
+owner = "camden"
+title = "M2 docs: architecture diagram with a rate on every arrow"
+body = '''
+In the spirit of the handout's Figure 1. The rates are not decoration — they are
+what makes the mechanism justifications checkable.
+
+Skeleton already in docs/DESIGN.md §1; fill every [N].
+'''
+
+[[item]]
+slug = "failtable"
+milestone = "M2"
+labels = ["task"]
+blocked_by = ["archdiag"]
+title = "M2 docs: failure-mode table"
+body = '''
+Per component: how it fails, how it is detected, what the system does, what the
+log shows.
+
+**The soak grades this table's honesty.** Write the modes you are afraid of, not
+the ones you have already handled.
+'''
+
+[[item]]
+slug = "evalplan"
+milestone = "M2"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["archdiag"]
+title = "M2 docs: evaluation plan with committed target numbers"
+body = '''
+Each measurement with its method and its target. Numbers committed now are twice
+as credible when hit later — and instructive either way.
+'''
+
+[[item]]
+slug = "substit"
+milestone = "M2"
+labels = ["task"]
+owner = "camden"
+blocked_by = ["oilq", "hwgate"]
+title = "M2 docs: constraints and substitutions section"
+body = '''
+What the ideal build would use, what we are actually using, what the gap costs.
+
+'A design document with nothing to report here has usually not met its hardware
+yet.' This section is where the limitations section pays off in M5.
+'''
+
+[[item]]
+slug = "designdoc"
+milestone = "M2"
+labels = ["task"]
+blocked_by = ["archdiag", "failtable", "evalplan", "substit", "fsync"]
+title = "M2 docs: assemble docs/DESIGN.md and run the three-isolated-workers check"
+body = '''
+A design-only reviewer, a parts-only buyer who never sees the design, and a
+builder who only follows instructions must each succeed from their section alone.
+
+3-5 pages. The most leveraged hours of the whole project.
+'''
+
+[[item]]
+slug = "symlib"
+milestone = "M2"
+labels = ["task"]
+owner = "lance"
+title = "M2 hw: populate CS370_Project_Library.kicad_sym"
+body = '''
+sym-lib-table referenced this file and it did not exist — KiCad errors on project
+open. An empty library is committed to resolve that; populate it as parts are drawn.
+
+Verify pin numbering against the datasheet with your own eyes. A wrong pin number in
+a symbol is the class of error that survives every review and kills a board.
+'''
+
+[[item]]
+slug = "schpower"
+milestone = "M2"
+labels = ["task"]
+owner = "lance"
+title = "M2 hw: draw the Power block"
+body = '''
+OBD2 pin 16 (+12V, LIVE WITH THE KEY OFF), fuse, 12V->5V automotive buck, bulk and
+bypass caps, the Pi 5V rail.
+
+Annotate every power net with its voltage domain. See
+docs/hardware/schematic-conventions.md.
+'''
+
+[[item]]
+slug = "schcan"
+milestone = "M2"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["bench"]
+title = "M2 hw: draw the CAN block"
+body = '''
+OBD2 pin 6 / pin 14, TJA1050, MCP2515, crystal + load caps, termination decision,
+INT to GPIO.
+
+**Put the crystal frequency in a value field, not a comment.** 8 MHz vs 16 MHz
+changes the device-tree overlay and a wrong value produces a silently dead bus.
+'''
+
+[[item]]
+slug = "schpi"
+milestone = "M2"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["bench"]
+title = "M2 hw: draw the Pi interface block"
+body = '''
+40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, grounds.
+
+The Pi has no 5V-tolerant inputs and no over-voltage protection.
+'''
+
+[[item]]
+slug = "meterv"
+milestone = "M2"
+labels = ["hardware", "critical-path"]
+owner = "camden"
+blocked_by = ["order"]
+title = "M2 hw: measure MCP2515 module VCC and MISO with the Pi DISCONNECTED"
+body = '''
+Cheap MCP2515 breakouts vary. Some run the TJA1050 at 5V and level-shift the
+controller side; some do not, and those drive **5V onto MISO**, which kills a Pi
+silently — sometimes taking the whole SoC with it.
+
+This cannot be answered from a datasheet, a product page, or by Claude. Meter it.
+Record the measured voltages and the date in docs/hardware/wiring.md.
+'''
+
+[[item]]
+slug = "hwgate"
+milestone = "M2"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["schpower", "schcan", "schpi", "symlib", "meterv"]
+decision = "D-010"
+title = "M2 hw: make hwcheck green; regenerate wiring.md and BOM.md from the schematic"
+body = '''
+ERC violations are build failures (decision D-010). Once green, 'make hwdocs'
+regenerates the schematic SVG, bom.csv and the netlist.
+
+wiring.md pin tables and BOM.md become DERIVED from the schematic — a hand-kept pin
+table disagrees with reality by Week 9; a generated one cannot.
+'''
+
+[[item]]
+slug = "tx2"
+milestone = "M2"
+labels = ["task"]
+title = "M2 process: transcript copy-out"
+body = '''
+Both partners. Raw .jsonl.
+'''
+
+# =============================================================== M3 items
+
+[[item]]
+slug = "canirq"
+milestone = "M3"
+labels = ["task"]
+owner = "camden"
+blocked_by = ["firstcap", "designdoc"]
+title = "M3 can: SocketCAN open + epoll on the interrupt-driven RX path"
+body = '''
+Mechanism B. Instrument arrival->push latency into a histogram from the start —
+retrofitting measurement is how evaluations end up with means and no distributions.
+'''
+
+[[item]]
+slug = "canpoll"
+milestone = "M3"
+labels = ["task"]
+owner = "camden"
+blocked_by = ["canirq"]
+title = "M3 can: --poll variant behind a flag for the mechanism-B comparison"
+body = '''
+A flag, not a rewrite. The head-to-head comparison is a graded deliverable, so the
+two paths must be switchable at runtime on identical hardware.
+'''
+
+[[item]]
+slug = "ringshm"
+milestone = "M3"
+labels = ["task"]
+owner = "camden"
+blocked_by = ["designdoc"]
+title = "M3 ipc: move the ring into shared memory, prove cross-process"
+body = '''
+src/ipc/ring.c is implemented and unit-tested single-process. This wires it into
+shm so the producer and consumer are genuinely separate processes (mechanism E).
+'''
+
+[[item]]
+slug = "storewrite"
+milestone = "M3"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["recfmt", "fsync"]
+title = "M3 store: record write path with the chosen fsync policy"
+body = '''
+Drain the ring, sequence-account every slot, write CRC'd self-framing records.
+'''
+
+[[item]]
+slug = "storerecover"
+milestone = "M3"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["storewrite"]
+title = "M3 store: recovery scan, CRC verify, torn-tail truncation"
+body = '''
+Mechanism D, the part that is actually graded. On open: scan from the last
+known-good offset, verify CRCs, truncate the torn tail, and **log exactly what was
+lost**. Silent recovery is as bad as no recovery.
+'''
+
+[[item]]
+slug = "supfork"
+milestone = "M3"
+labels = ["task"]
+blocked_by = ["designdoc"]
+title = "M3 supervisor: fork/exec, waitpid, fd hygiene across restart"
+body = '''
+No orphaned fds across restart. 'What happens to this fd when the child dies?' is
+a demo-day question, verbatim.
+'''
+
+[[item]]
+slug = "supbackoff"
+milestone = "M3"
+labels = ["task"]
+blocked_by = ["supfork"]
+title = "M3 supervisor: backoff and restart-storm guard"
+body = '''
+**The subtle part.** A physically unplugged sensor is NOT a crash. Restarting a
+child in a tight loop because its hardware is gone is a restart storm, and it is
+the failure most likely to appear at hour 31 of the soak.
+
+Distinguish 'crashed' from 'absent' and log the distinction.
+'''
+
+[[item]]
+slug = "heartbeat"
+milestone = "M3"
+labels = ["task"]
+blocked_by = ["supfork"]
+title = "M3 common: wire hourly heartbeats through every daemon"
+body = '''
+Liveness, RSS, cumulative event counts. Required by the soak, and the source of
+the RSS-vs-time plot in docs/EVALUATION.md §3. log_heartbeat() already exists.
+'''
+
+[[item]]
+slug = "obdstatus"
+milestone = "M3"
+labels = ["task"]
+blocked_by = ["supfork"]
+title = "M3 interface: obdctl UDS transport + status verb"
+body = '''
+First of five verbs. Resist the web app — a crisp CLI is more defensible and far
+more extensible at the live-modification station on demo day.
+'''
+
+[[item]]
+slug = "replay"
+milestone = "M3"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["storewrite"]
+title = "M3 tools: replay harness preserving inter-sample timing"
+body = '''
+Feeds a recorded capture through the REAL pipeline. A replay that collapses the
+gaps is not testing the system that will run in the car.
+
+Everything it emits is labeled src=replay. Not optional.
+'''
+
+[[item]]
+slug = "nightly"
+milestone = "M3"
+labels = ["task", "critical-path"]
+blocked_by = ["heartbeat"]
+title = "M3 soak: begin overnight small-scale runs NOW"
+body = '''
+The handout is explicit: 'start soak-style overnight runs now, at small scale;
+every leak found in Week 9 is a crisis avoided in Week 14.'
+
+'make soakcheck' runs a one-hour miniature. Do not wait for M4 to discover the
+system cannot survive an hour.
+'''
+
+[[item]]
+slug = "m3demo"
+milestone = "M3"
+labels = ["task"]
+blocked_by = ["canirq", "storewrite", "heartbeat"]
+title = "M3 demo: checkpoint demonstration rehearsal (graded live, 10 points)"
+body = '''
+Both sensors through the real pipeline into real storage, with at least one menu
+mechanism working and instrumented.
+'''
+
+[[item]]
+slug = "tx3"
+milestone = "M3"
+labels = ["task"]
+title = "M3 process: transcript copy-out"
+body = '''
+Both partners. Raw .jsonl.
+'''
+
+# =============================================================== M4 items
+
+[[item]]
+slug = "bin"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["storewrite"]
+title = "M4 analysis: operating-point binning (RPM x load x coolant temp)"
+body = '''
+Comparing a cold idle to a warm cruise is a false-alarm generator. This one step
+removes more false positives than anything downstream. See DECISIONS.md §D.2.
+'''
+
+[[item]]
+slug = "welford"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["bin"]
+title = "M4 analysis: per-bin running mean and variance (Welford)"
+body = '''
+Numerically stable online statistics. Per bin, per PID.
+'''
+
+[[item]]
+slug = "persist"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["welford", "storerecover"]
+title = "M4 analysis: persist learned baselines through a power cut"
+body = '''
+Weeks of learned baseline must survive the key turning off. This requirement is
+why mechanism D is non-optional.
+'''
+
+[[item]]
+slug = "mahal"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["welford"]
+title = "M4 analysis: multivariate residual (Mahalanobis distance)"
+body = '''
+The signal is correlation between sensors, not any single value. Oil pressure is
+SUPPOSED to rise with RPM. This is the 'an if-statement could not do this' proof.
+'''
+
+[[item]]
+slug = "trend"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["welford"]
+title = "M4 analysis: robust trend estimation (Theil-Sen)"
+body = '''
+Honest slope through noisy data, resistant to the glitches every car log contains.
+'''
+
+[[item]]
+slug = "fsm"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["mahal", "trend"]
+title = "M4 analysis: state machine with hysteresis and dwell"
+body = '''
+A monitor that cries wolf twice gets unplugged, and an unplugged monitor is worse
+than none. False-positive rate is a first-class metric.
+'''
+
+[[item]]
+slug = "train"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["mahal"]
+title = "M4 tools: training pipeline and weights format with provenance header"
+body = '''
+Our architecture, our training loop, our data, our weights. Header records the
+training commit and the fixture set. No third-party pretrained weights.
+'''
+
+[[item]]
+slug = "infer"
+milestone = "M4"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["train", "fsm"]
+title = "M4 analysis: C inference over our own weights"
+body = '''
+No interpreter in the runtime path — boundary legibility, and 30 MB of RSS we
+cannot afford in a memory-stability test we are graded on.
+'''
+
+[[item]]
+slug = "obdrest"
+milestone = "M4"
+labels = ["task"]
+blocked_by = ["obdstatus", "fsm"]
+title = "M4 interface: remaining four obdctl verbs"
+body = '''
+verdicts, series, baseline, faults — each with exact, documented semantics.
+'''
+
+[[item]]
+slug = "expirq"
+milestone = "M4"
+labels = ["task", "critical-path"]
+owner = "camden"
+blocked_by = ["canpoll"]
+title = "M4 experiment: interrupt vs polling — latency distribution and CPU, idle and loaded"
+body = '''
+**Required by mechanism B. Cannot be cut.** Present as an experiment: method,
+data, conclusion. Include the CPU cost of the polling design at the rate needed to
+match the interrupt design's drop rate — that comparison is the point.
+'''
+
+[[item]]
+slug = "expdrop"
+milestone = "M4"
+labels = ["task", "critical-path"]
+owner = "camden"
+blocked_by = ["ringshm"]
+title = "M4 experiment: no-drop under CPU contention, proven by sequence accounting"
+body = '''
+**Required by mechanism F.** Sustained rate, zero drops, under stress-ng.
+'''
+
+[[item]]
+slug = "expcrash"
+milestone = "M4"
+labels = ["task", "critical-path"]
+owner = "lance"
+blocked_by = ["storerecover"]
+title = "M4 experiment: crash consistency — N power-cut trials"
+body = '''
+**Required by mechanism D.** Pull power mid-write, repeatedly. Record recovery
+outcome and bytes lost per trial.
+'''
+
+[[item]]
+slug = "keyoff"
+milestone = "M4"
+labels = ["hardware"]
+owner = "camden"
+blocked_by = ["firstcap"]
+title = "M4 hardware: measure key-off current draw"
+body = '''
+OBD2 pin 16 is live with the key off — that is what makes the unattended soak
+possible and a dead battery possible. Fuse it. Measure before leaving it overnight.
+Record the number in docs/EVALUATION.md.
+'''
+
+[[item]]
+slug = "fvac"
+milestone = "M4"
+labels = ["hardware"]
+blocked_by = ["bin"]
+title = "M4 ground truth: induce and label a vacuum leak, both vehicles"
+body = '''
+Briefly disconnect a small vacuum line. Reversible, safe, moves LTFT within a
+minute. Label the recording with exactly what was done and when.
+'''
+
+[[item]]
+slug = "fcool"
+milestone = "M4"
+labels = ["hardware"]
+blocked_by = ["bin"]
+title = "M4 ground truth: induce and label a cooling anomaly"
+body = '''
+Partially block radiator airflow with cardboard to force an abnormal thermal
+profile.
+'''
+
+[[item]]
+slug = "funplug"
+milestone = "M4"
+labels = ["hardware"]
+owner = "camden"
+blocked_by = ["supbackoff"]
+title = "M4 ground truth: sensor unplug — and demo-day rehearsal"
+body = '''
+They WILL unplug a sensor mid-demo, at a moment of their choosing. Announced in
+the handout so nobody can call it unfair. Rehearse it until it is boring.
+'''
+
+[[item]]
+slug = "foil"
+milestone = "M4"
+labels = ["hardware", "critical-path"]
+blocked_by = ["baseline"]
+title = "M4 CRITICAL PATH: capture across a real oil change on both vehicles"
+body = '''
+Critical path A. This is the one that cannot be faked and cannot be rushed.
+Depends entirely on baseline collection having started at M2.
+'''
+
+[[item]]
+slug = "encl"
+milestone = "M4"
+labels = ["hardware"]
+owner = "camden"
+blocked_by = ["keyoff"]
+title = "M4 hardware: enclosure and in-vehicle mounting"
+body = '''
+The handout is explicit that a food container is an acceptable enclosure.
+'''
+
+[[item]]
+slug = "freeze"
+milestone = "M4"
+labels = ["task", "critical-path"]
+blocked_by = ["infer", "obdrest", "expirq", "expdrop", "expcrash"]
+title = "M4 process: FEATURE FREEZE — no new features after this line"
+body = '''
+No new features after this line. Bugs only.
+
+Everything downstream — the soak, the evaluation, the demo — runs on what exists
+at this moment.
+'''
+
+[[item]]
+slug = "soak1"
+milestone = "M4"
+labels = ["task", "critical-path"]
+blocked_by = ["freeze", "funplug"]
+title = "M4 soak: 48-hour run #1, with a scheduled injected fault"
+body = '''
+Must show: timestamped startup, hourly heartbeats with RSS and event counts, at
+least one injected fault with detection/degradation/recovery visible, and an
+orderly end state.
+
+**Raw, unedited logs are the deliverable. Do not tidy them.**
+'''
+
+[[item]]
+slug = "soak2"
+milestone = "M4"
+labels = ["task"]
+blocked_by = ["soak1"]
+title = "M4 soak: 48-hour run #2 (the margin)"
+body = '''
+'Begin the graded 48-hour soak with margin to run it twice. You will want to run
+it twice.' — handout §16.
+'''
+
+[[item]]
+slug = "sanitize"
+milestone = "M4"
+labels = ["task", "critical-path"]
+blocked_by = ["freeze"]
+title = "M4 quality: make asan and make memcheck clean everywhere"
+body = '''
+ASan/valgrind findings cap that component's final-system contribution at 50%.
+
+'A device that leaks for 48 hours and happens not to die has not passed the soak.
+It has outrun it.'
+'''
+
+[[item]]
+slug = "tx4"
+milestone = "M4"
+labels = ["task"]
+title = "M4 process: transcript copy-out"
+body = '''
+Both partners. Raw .jsonl.
+'''
+
+# =============================================================== M5 items
+
+[[item]]
+slug = "plots"
+milestone = "M5"
+labels = ["task"]
+owner = "lance"
+blocked_by = ["soak2"]
+title = "M5 tools: soak figures — RSS, CPU, event counts over 48h"
+body = '''
+The heartbeats give you this series for free. Plot it. A flat RSS line is the
+whole point.
+'''
+
+[[item]]
+slug = "evalreport"
+milestone = "M5"
+labels = ["task", "critical-path"]
+blocked_by = ["plots", "expirq", "expdrop", "expcrash", "fvac", "fcool"]
+title = "M5 docs: write docs/EVALUATION.md"
+body = '''
+Latency distributions (idle + loaded), per-process CPU/RSS over the full soak, one
+domain metric, fault-injection results with log excerpts, the required mechanism
+comparisons, and an honest limitations section.
+
+'An honest limitations section is worth more at the defense than a suspiciously
+perfect results section, and we notice which one we are reading.'
+'''
+
+[[item]]
+slug = "designfinal"
+milestone = "M5"
+labels = ["task"]
+blocked_by = ["freeze"]
+title = "M5 docs: docs/DESIGN.md as-built, with a changelog of what M2 got wrong"
+body = '''
+Graded. An empty changelog is not credible.
+'''
+
+[[item]]
+slug = "readmecheck"
+milestone = "M5"
+labels = ["task", "critical-path"]
+blocked_by = ["freeze"]
+title = "M5 docs: verify README on a clean Pi, by someone who has never built it"
+body = '''
+'If the TA can't boot it, the TA can't grade it.' Find a third party.
+'''
+
+[[item]]
+slug = "promptlog"
+milestone = "M5"
+labels = ["task", "critical-path"]
+title = "M5 process: PROMPTLOG.md complete, both partners"
+body = '''
+6-10 annotated episodes each, including: one revised plan, one rejected diff, one
+tool-output debugging loop with real hardware evidence, and one review of the
+partner's work.
+
+One of these is defended out loud on demo day.
+'''
+
+[[item]]
+slug = "reflection"
+milestone = "M5"
+labels = ["task"]
+blocked_by = ["evalreport"]
+title = "M5 process: REFLECTION.md, both partners"
+body = '''
+One page each: where the agent was most and least reliable against real hardware,
+one bug it introduced that you caught, and the distance between what you wanted to
+build and what you built.
+'''
+
+[[item]]
+slug = "commitaudit"
+milestone = "M5"
+labels = ["task", "critical-path"]
+owner = "camden"
+title = "M5 process: commit audit"
+body = '''
+git shortlog -sn --all
+
+>= 40 meaningful commits, both partners well represented. A partner under a
+quarter of substantive commits is probed hard at the individual defense.
+'''
+
+[[item]]
+slug = "tarball"
+milestone = "M5"
+labels = ["task"]
+blocked_by = ["evalreport", "designfinal", "promptlog", "reflection"]
+title = "M5 submit: assemble the tarball and M5 transcript copy-out"
+body = '''
+Source + Makefile + README, PROBLEM/DESIGN/EVALUATION, raw soak logs, CLAUDE.md,
+per-partner PROMPTLOG + REFLECTION + raw .jsonl, full git history.
+'''
+
+# =============================================================== M6 items
+
+[[item]]
+slug = "demorehearse"
+milestone = "M6"
+labels = ["task"]
+blocked_by = ["soak2"]
+title = "M6 demo: full rehearsal with surprise fault injection"
+body = '''
+Each partner injects a fault the other did not schedule. Graded behaviors:
+graceful degradation, honest reporting through our own interface, and the log line
+proving the system noticed.
+'''
+
+[[item]]
+slug = "livemod"
+milestone = "M6"
+labels = ["task", "critical-path"]
+blocked_by = ["readmecheck"]
+title = "M6 demo: live-modification practice"
+body = '''
+Each partner, alone at the keyboard, makes one small previously-unseen change to
+their OWN subsystem from the submitted source: a new heartbeat field, a changed
+threshold semantic, a new CLI flag.
+
+Small for an author. Revealing for anyone else. Practice on each other.
+'''
+
+[[item]]
+slug = "crossquiz"
+milestone = "M6"
+labels = ["task", "critical-path"]
+blocked_by = ["readmecheck"]
+title = "M6 demo: cross-boundary quiz"
+body = '''
+Demo day guarantees each partner one question from across the ownership boundary.
+Camden must be able to explain the logbook; Lance must be able to explain the ring.
+
+Quiz each other until neither hesitates.
+'''
