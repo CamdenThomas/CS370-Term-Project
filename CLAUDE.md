@@ -21,8 +21,10 @@ You (Claude) are required in our **workflow** and forbidden in our **product**
 1. Read this file.
 2. Read `docs/milestones.md` — where we are and what the exit criteria are.
 3. Read `docs/DECISIONS.md` — what is already settled, and what is awaiting review.
-4. State whose session this is. Do not edit outside that owner's area without being told.
-5. `git status` must be clean. Create the branch **before** the first edit.
+4. Read `docs/BOARD.md`, then run `python tools/board_sync.py --status` — what is Ready,
+   what is holding up the critical path, and how long each open question has been open.
+5. State whose session this is. Do not edit outside that owner's area without being told.
+6. `git status` must be clean. Create the branch **before** the first edit.
 
 Do not reopen a decision marked 🔒 LOCKED without saying so explicitly and getting a
 human yes.
@@ -42,6 +44,10 @@ make hwdocs       # regenerate schematic SVG, BOM and netlist from the schematic
 make replay FIX=fixtures/<name>   # run a labeled capture through the real pipeline
 make deploy PI=pi@<host>          # rsync + remote build
 make clean
+
+python tools/board_sync.py --status    # what is Ready, what is stuck, who owns it
+python tools/board_sync.py --check     # has the board drifted? (exit 1 if yes)
+python tools/board_sync.py             # reconcile docs/board.toml onto GitHub
 ```
 
 **A change is DONE only when `make`, `make test`, and `make asan` all pass, and you have
@@ -292,8 +298,9 @@ workflow** — it is 20 individual points, and the defense will find it.
 
 **Start of session:**
 1. Read `CLAUDE.md`, `docs/milestones.md`, `docs/DECISIONS.md`.
-2. State whose session this is.
-3. `git status` clean, `git pull` on `main`, create the branch.
+2. `python tools/board_sync.py --status` — pick work from **Ready**, nowhere else.
+3. State whose session this is.
+4. `git status` clean, `git pull` on `main`, create the branch.
 
 **End of session — mandatory, every time:**
 1. Nothing uncommitted. No stray files.
@@ -347,6 +354,21 @@ decision, a measurement only one of us can take, a part that must be ordered —
 Everything still open lives on the board, where it has an owner, a milestone, and a
 visible position in the queue.
 
+### The board is generated, not hand-maintained
+
+**`docs/board.toml` is the source of truth. GitHub is derived from it.**
+`tools/board_sync.py` reconciles the two. Full contract in `docs/BOARD.md`; the part that
+binds this section:
+
+> **Never create, retitle, relabel, re-milestone or re-assign an issue with `gh` or in
+> the web UI.** Edit the `[[item]]` and re-run sync. An issue created by hand is invisible
+> to the manifest, drifts immediately, and is reported forever as unmanaged.
+
+What you *may* do directly on GitHub: **comment**, **answer**, and **close**. Those are the
+human parts, and sync respects all three — it never reopens what a human closed, and it
+reports any issue closed on GitHub that `board.toml` still thinks is open, so the manifest
+gets caught up in the next commit.
+
 ### Issue types
 
 | Label | Meaning | Who closes it |
@@ -356,34 +378,49 @@ visible position in the queue.
 | `task` | Work to be done; may be Claude's or a human's | PR merge, or owner |
 | `bug` | Something is wrong | PR merge |
 | `hardware` | Physical world: order it, wire it, measure it, drive it | **Human only** |
-| `blocked` | Waiting on a dependency (applied automatically, see below) | n/a |
+| `blocked` | Waiting on a dependency (applied and removed by sync) | n/a |
+
+`board_sync.py` refuses to close a `question`, `decision` or `hardware` issue without the
+explicit `--close-questions` flag, which is a human typing it. That is the enforcement, not
+an honour system.
 
 ### Claude's standing instructions
 
-- **When you would stop and emit a blocker (§7.8), open an issue instead**, then continue
-  with whatever else is unblocked. Link the issue number in the session summary.
+- **When you would stop and emit a blocker (§7.8), add an `[[item]]` to `docs/board.toml`
+  instead**, run sync, and continue with whatever else is unblocked. Link the issue number
+  in the session summary.
 - Title: `M<n> <area>: <what>` — same convention as commits.
 - Body must state: what is blocked, what you already tried or know, the options with their
   costs, your recommendation, and **exactly what answer would unblock it**. A question a
   human can answer in one line beats a question that needs a meeting.
-- Assign an owner. Unassigned issues are nobody's.
-- Set the GitHub milestone (`M0`–`M6`) so the board sorts by deadline.
-- **Claude may open, comment on, update, and move issues. Claude may never close a
-  `question`, `decision`, or `hardware` issue** — those close when a human answers.
+- Set `owner`. Unassigned issues are nobody's.
+- Set `milestone` (`M0`–`M6`) so the board sorts by deadline.
+- Give it a `slug` that will still make sense in Week 14. Slugs are permanent identity —
+  **never rename or reuse one**; the slug→issue mapping in `docs/board.lock.json` is what
+  survives between sessions.
+- If the item exists because of a decision, set `decision = "D-###"`. Sync renders the link
+  into the issue and warns if that ID is not in `docs/DECISIONS.md`.
 
 ### Dependencies — the gate
 
-GitHub supports native issue dependencies (blocked-by / blocking), manageable from the
-CLI. Use them instead of prose like "do this first":
+`blocked_by` in `board.toml` takes **slugs, never issue numbers**. Sync resolves them,
+writes the `Blocked by: #12, #15` block into the body, and applies or removes the `blocked`
+label as blockers open and close. It refuses to run on a dependency cycle or a dangling
+slug, so a bad edit fails before it reaches GitHub.
 
-```sh
-gh issue create --title "M2 can: confirm MCP2515 crystal frequency" \
-                --label question,hardware --assignee crash8750 --milestone M2
-gh issue dependency add <blocked#> --blocked-by <blocker#>
-```
+The board column follows from that, automatically:
 
-The board then shows what is genuinely actionable rather than a flat pile. **Do not start
-work on an issue that is blocked** — say so and pick up something that is ready.
+| Column | Means |
+|---|---|
+| **Backlog** | something it depends on is still open |
+| **Ready** | nothing blocks it — this is the actionable list |
+| **Blocked** | waiting on something that is *not* another item (a shipment, a reply) — set by hand |
+| **In progress** / **In review** | set by hand while work is live |
+| **Done** | the issue is closed |
+
+**Do not start work on an issue that is not in Ready** — say so and pick up something that
+is. Answering one question can move several cards into Ready on the next sync; that is the
+board telling you what just became workable.
 
 ### Issue → branch → PR, as one chain
 
@@ -393,17 +430,19 @@ gh issue develop <n> --name camden/m3/can-irq-rx --checkout   # branch linked to
 gh pr create --draft --title "M3 can: interrupt-driven RX path" --body-file <filled template>
 ```
 
-The PR body must contain `Closes #<n>`. Merging then closes the issue and moves the card,
-so the board stays true without anyone maintaining it by hand. **Every PR traces back to
-an issue**; if there is no issue, open one first — that is the record of *why* the work
-existed.
+The PR body must contain `Closes #<n>`. Merging then closes the issue; the next sync moves
+the card to Done. **Every PR traces back to an issue**; if there is no issue, add the
+`[[item]]` first — that is the record of *why* the work existed.
 
-### Board columns
+### Session end
 
-`Backlog` → `Blocked` → `Ready` → `In progress` → `In review` → `Done`
+Run `python tools/board_sync.py`. It is the only thing that moves cards, and it is cheap:
+a run with nothing to do makes zero writes. **A board that lies is worse than no board**,
+and the only way it can lie now is if you skipped this step.
 
-Claude moves cards to match reality at the end of every session. A board that lies is
-worse than no board.
+CI enforces it: `.github/workflows/board.yml` runs `--check --no-board` on every push and
+pull request and fails on drift, and `make test` validates `docs/board.toml` itself through
+`tools/test_board.py`. So a forgotten sync is a red build, not a quiet lie.
 
 ### What this is worth at the defense
 
@@ -495,8 +534,8 @@ hardware evidence, and one review of the partner's work. **Write these as they h
 ## 10. Deliverables checklist (handout §12)
 
 - [ ] Source + `Makefile` + `README.md` that takes a TA from a clean Pi to running
-- [ ] `PROBLEM.md` (as revised), `DESIGN.md` (as it ended + changelog of what M2 got
-      wrong), `EVALUATION.md`
+- [ ] `docs/PROBLEM.md` (as revised), `docs/DESIGN.md` (as it ended + changelog of what M2 got
+      wrong), `docs/EVALUATION.md`
 - [ ] Raw unedited 48-hour soak logs including the injected fault
 - [ ] `CLAUDE.md`, checked in, visibly evolving across milestones
 - [ ] Per partner: `PROMPTLOG.md`, `REFLECTION.md`, raw `.jsonl` transcripts
@@ -506,9 +545,13 @@ hardware evidence, and one review of the partner's work. **Write these as they h
 
 ## 11. Open blockers
 
-Tracked in `docs/DECISIONS.md` with status ❓ OPEN. As of M0: the soak-on-live-sensors
-question (§E.3), Lance's Honda year/model (§A.3), and milestone-date verification (§F.3).
+**On the board, not in this file.** Open `question` and `decision` issues, in the Backlog
+column of the `carwatch` project. `python tools/board_sync.py --status` lists them with
+how long each has been open.
+`docs/DECISIONS.md` records only what has been *decided*, plus the review queue. Nothing
+open is tracked in two places, so nothing open can go stale in one of them.
 
 ---
 
-*Last updated: M0. Both partners maintain this file.*
+*Last updated: M0 — §0, §7.11 and §11 rewritten when the board moved to
+`docs/board.toml` + `tools/board_sync.py`. Both partners maintain this file.*
