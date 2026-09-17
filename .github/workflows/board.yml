@@ -1,0 +1,66 @@
+####
+# CI for the project board (CLAUDE.md 7.11, docs/BOARD.md).
+#
+# Two guarantees, one workflow:
+#   manifest - docs/board.toml is well-formed (offline, always fast)
+#   drift    - GitHub actually matches it, i.e. nobody forgot to run sync
+#
+# plus a third, soft for now: every PR traces back to an issue.
+####
+name: board
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  manifest:
+    name: board.toml is well-formed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/test_board.py
+
+  drift:
+    name: GitHub matches board.toml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # --no-board keeps this inside GITHUB_TOKEN's reach: user-level Projects
+      # need a PAT, issues do not. The board follows from the issues anyway.
+      # --check exits 1 when anything would change.
+      - name: board_sync --check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python tools/board_sync.py --check --no-board
+
+  pr-closes-issue:
+    name: PR traces back to an issue
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    # SOFT LAUNCH. Failing red on your own PRs while you are still learning the
+    # flow teaches you to bypass the check, which is the opposite of the point.
+    # Delete this line once the habit is set - target 2026-09-26.
+    continue-on-error: true
+    steps:
+      - name: body must contain "Closes #<n>"
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if printf '%s' "$BODY" | grep -Eiq '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'; then
+            echo "ok - PR closes an issue"
+          else
+            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.11: every PR traces back to an issue; if there is no issue, add the [[item]] to docs/board.toml first."
+            exit 1
+          fi
