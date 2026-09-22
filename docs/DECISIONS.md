@@ -45,6 +45,7 @@ Decisions currently awaiting a human signature:
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
 | D-015 | The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal (§A.1, supersedes D-001) | Camden + Claude | 2026-09-21 | Lance — reopens a LOCKED decision; changes every data rate you design against |
 | D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
+| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -253,31 +254,44 @@ still E.1: three faults, one car, measured error rates.
 
 # B. Systems architecture and mechanisms
 
-## B.1 — Mechanism commitments: B, D, E, F 🔒
-`D-002` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+## B.1 — Mechanism commitments: D and E; B and F only with a Pi-side sensor ⚠️ UNREVIEWED
+`D-017` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-002 (§G.3)
 
-The handout requires two. We commit four and will measure all of them.
+The handout requires two, implemented by us and measured.
 
-**B — interrupt-driven input with a polling comparison.** `src/can/`. At 500 kbit/s a busy
-bus delivers a frame roughly every 230 µs; the MCP2515's two receive buffers overflow in
-milliseconds. A poll loop either burns a core or drops frames. Measured as event-latency
-distribution and CPU, both ways, idle and loaded.
+| Mechanism | Status | Where |
+|---|---|---|
+| **D** — custom append-only storage, crash-consistent | **committed** | `src/store/` |
+| **E** — multi-process with a supervisor | **committed** | `src/supervisor/`, `src/ipc/` |
+| **B** — interrupt-driven input with a polling comparison | only if `pisensor` adds an MPU-6050 | capture path for that sensor |
+| **F** — high-rate no-drop SPSC ring | only if `pisensor` adds an MPU-6050 | `src/ipc/ring.c` |
+| **A**, **C**, raw CAN | stretch, after D and E are measured | — |
 
-**D — custom append-only storage, crash-consistent.** `src/store/`. *The defining
-constraint: power is cut mid-write every time the key turns off.* We never get a clean
-shutdown. Measured by pulling power mid-write, repeatedly, and proving recovery.
+**D.** *The defining constraint: power is cut mid-write every time the key turns off*
+(D-011). We never get a clean shutdown. Measured by pulling power mid-write, repeatedly,
+and proving recovery (`expcrash`).
 
-**E — multi-process with a supervisor.** `src/supervisor/`, `src/ipc/`. A recorder that
-dies silently has actively harmed its user, who believes it is on duty. Any child may be
-`kill -9`'d; the system degrades, logs, recovers.
+**E.** A recorder that dies silently has actively harmed its user, who believes it is on
+duty. Any child may be `kill -9`'d; the system degrades, logs, recovers. Measured by killing
+each child repeatedly and timing detection and recovery (`expkill`).
 
-**F — no-drop SPSC ring, sequence-accounted.** `src/ipc/ring.c`. Key-on produces a burst;
-a gap in the record is a gap in the diagnosis. Measured as sustained rate with zero drops
-under contention.
+**Why B and F left the OBD data path (D-015).** B needs an interrupt that *our* design
+services. The USB adapter's interrupts belong to the kernel's USB-serial driver; our process
+only blocks on a tty, and at ~10–20 replies/s a poll loop keeps up trivially — the
+comparison would measure the tty layer, not a design of ours. F needs a *high-rate* stream;
+~10–20 samples/s never stresses a ring, so "zero drops under contention" would be true and
+meaningless.
 
-**Stretch, M4+ only:** **A** (character driver for the MCP2515) and **C** (`SCHED_FIFO` on
-the capture path). Do not start either until B, D, E and F are implemented *and measured*.
-A half-finished kernel module is worth zero points and costs two weeks.
+**What brings them back.** An MPU-6050 on the Pi's I2C, its `INT` pin on a GPIO: kHz
+samples from a hardware FIFO give a real interrupt-vs-polling comparison (B) and a rate
+that stresses the ring (F). That is board item `pisensor`, due at M2.
+
+**The ring stays regardless.** It is how capture hands samples to storage across the
+process boundary E requires, and B.3 still binds it.
+
+**Risk.** D and E alone meet the floor exactly. If either measurement fails, nothing is in
+reserve — which is why `pisensor` is on the critical path.
 
 ## B.2 — Four processes, not one 🔒
 `D-002` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
@@ -356,7 +370,7 @@ visible from across the room when a sensor is unplugged.
 **Why every live state blinks.** A GPIO keeps its last level after the process driving it
 dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
 alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
-either kind can only mean *not running*. This is D-002's principle — a recorder that dies
+either kind can only mean *not running*. This is mechanism E's principle — a recorder that dies
 silently has harmed its user — applied to the one output a driver actually sees.
 
 **Why the supervisor, not `analyzed`.** The supervisor already knows every child's
@@ -605,6 +619,34 @@ on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
 
 **Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
 mechanism, and not the evaluation. Record it here if it happens.
+
+## G.3 — (was B.1) Mechanism commitments: B, D, E, F 🗑
+`D-002` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-21 by D-017 (§B.1)** — with raw CAN a stretch goal (D-015), B and F
+lost their data source.
+
+The handout requires two. We commit four and will measure all of them.
+
+**B — interrupt-driven input with a polling comparison.** `src/can/`. At 500 kbit/s a busy
+bus delivers a frame roughly every 230 µs; the MCP2515's two receive buffers overflow in
+milliseconds. A poll loop either burns a core or drops frames. Measured as event-latency
+distribution and CPU, both ways, idle and loaded.
+
+**D — custom append-only storage, crash-consistent.** `src/store/`. *The defining
+constraint: power is cut mid-write every time the key turns off.* We never get a clean
+shutdown. Measured by pulling power mid-write, repeatedly, and proving recovery.
+
+**E — multi-process with a supervisor.** `src/supervisor/`, `src/ipc/`. A recorder that
+dies silently has actively harmed its user, who believes it is on duty. Any child may be
+`kill -9`'d; the system degrades, logs, recovers.
+
+**F — no-drop SPSC ring, sequence-accounted.** `src/ipc/ring.c`. Key-on produces a burst;
+a gap in the record is a gap in the diagnosis. Measured as sustained rate with zero drops
+under contention.
+
+**Stretch, M4+ only:** **A** (character driver for the MCP2515) and **C** (`SCHED_FIFO` on
+the capture path). Do not start either until B, D, E and F are implemented *and measured*.
+A half-finished kernel module is worth zero points and costs two weeks.
 
 ---
 

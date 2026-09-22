@@ -76,7 +76,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 ## M3 — exit criteria
 
 - [ ] `candaemon` → ring → `storaged` → disk, end to end, on a real car
-- [ ] Mechanism **B** or **D** demonstrably working and instrumented
+- [ ] Mechanism **D** or **E** demonstrably working and instrumented
 - [ ] Overnight soak-style runs already happening at small scale. Every leak found in
       Week 9 is a crisis avoided in Week 14.
 - [ ] Replay harness runs a recorded capture through the real pipeline
@@ -84,7 +84,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 ## M4 — exit criteria
 
 - [ ] Feature freeze. No new features after this line; bugs only.
-- [ ] All four committed mechanisms (B, D, E, F) implemented and measured
+- [ ] Mechanisms D and E implemented and measured — plus B and F if `pisensor` added them
 - [ ] Induced-fault captures recorded and labeled for all three diagnostics
 - [ ] `make asan` and `make memcheck` clean — ASan findings cap that component at 50%
 - [ ] 48-hour soak begins, with the injected fault planned and scripted
@@ -93,7 +93,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 - [ ] `docs/EVALUATION.md`: latency distributions idle + loaded, per-process CPU/RSS over
       the full soak (plotted from heartbeats), one domain metric, fault-injection
-      results with log excerpts, the B-mechanism interrupt-vs-polling experiment, and
+      results with log excerpts, the D and E mechanism experiments, and
       an honest limitations section
 - [ ] Raw unedited soak logs committed
 - [ ] `docs/DESIGN.md` updated to as-built with a changelog of what M2 got wrong

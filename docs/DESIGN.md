@@ -21,7 +21,7 @@
   │ adapter      │◀───────────────────▶│   candaemon    │  Mode 01 requests,
   │ (D-015)      │  [N] baud           │  tty reader    │  [N] req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
-                                               │ SPSC ring, [N] samples/s  [mech F]
+                                               │ SPSC ring, [N] samples/s  (mech F only with pisensor)
                                                │ shm, sequence-accounted
                     ┌──────────────────────────┼──────────────────────┐
                     ▼                          ▼                      ▼
@@ -51,15 +51,15 @@
 > Model the form on the handout's example: "the vibration analysis is meaningless above
 > 2 ms of sampling jitter, hence SCHED_FIFO."
 
-See `docs/decisions/D-002-mechanism-commitments.md` for the committed rationale; expand
-each here with the measured numbers that justify it.
+The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); expand each row here with
+the measured numbers that justify it.
 
 | Menu item | Component | Justification from requirements | How measured |
 |---|---|---|---|
-| B | `src/can/` | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
 | D | `src/store/` | | recovery after mid-write power cut, N trials |
 | E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
-| F | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
+| B *(only with `pisensor`)* | Pi-side sensor capture path | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
+| F *(only with `pisensor`)* | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
 
 ## 3. Failure-mode table
 > For each component: how it can fail, how the failure is **detected**, what the system
@@ -114,7 +114,8 @@ each here with the measured numbers that justify it.
 | Measurement | Method | Target |
 |---|---|---|
 | OBD reply → stored, p50/p99 | timestamp at tty read and at fsync | |
-| IRQ vs polling: latency + CPU | both paths, idle and `stress-ng` loaded | |
+| `kill -9` each child: detection + recovery time | N trials per child, from the log | |
+| IRQ vs polling: latency + CPU *(only with `pisensor`)* | both paths, idle and `stress-ng` loaded | |
 | Drop rate under contention | sequence accounting | zero |
 | RSS per process over 48h | hourly heartbeat, plotted | flat |
 | Detection: TPR / FPR per diagnostic | induced-fault fixtures | |

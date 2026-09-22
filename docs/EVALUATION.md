@@ -48,15 +48,19 @@ separately because a monitor that cries wolf twice gets unplugged.
 ## 6. Mechanism comparisons
 > Required by our menu choices. Present as experiments: method, data, conclusion.
 
-### 6.1 Interrupt-driven vs. polling (mechanism B)
+### 6.1 Crash consistency (mechanism D)
+N power-cut trials, recovery outcome each time, bytes lost per trial.
+
+### 6.2 Supervision (mechanism E)
+`kill -9` each child N times: time to detection, time to recovery, what degraded in the
+meantime, and proof that no file descriptor leaked across the restart.
+
+### 6.3 Interrupt-driven vs. polling (mechanism B — only with `pisensor`)
 Method · data · conclusion. Include the CPU cost of the polling design at the rate
 needed to match the interrupt design's drop rate — that comparison is the point.
 
-### 6.2 No-drop ring under contention (mechanism F)
+### 6.4 No-drop ring under contention (mechanism F — only with `pisensor`)
 Sustained rate with sequence accounting proving zero drops, under `stress-ng`.
-
-### 6.3 Crash consistency (mechanism D)
-N power-cut trials, recovery outcome each time, bytes lost per trial.
 
 ## 7. Limitations
 > Plainly. Closes the loop on the constraints and substitutions declared in docs/DESIGN.md §5.

@@ -101,10 +101,12 @@ these measured error rates."* Not "predicts failure." (handout §5)
 
 ## 4. Mechanism commitments
 
-We need two. We are building four, and will measure all of them: **B** (interrupt-driven
-CAN RX with a polling comparison), **D** (append-only crash-consistent storage), **E**
-(multi-process with a supervisor), **F** (no-drop SPSC ring). **A** and **C** are M4+
-stretch only. Full rationale: `docs/DECISIONS.md` §B.1.
+We need two. We commit to **D** (append-only crash-consistent storage — power is cut at
+every key-off) and **E** (multi-process with a supervisor), and measure both. **B**
+(interrupt-driven input vs polling) and **F** (high-rate no-drop ring) come back only if a
+Pi-side sensor is added (board item `pisensor`): Mode 01 through a USB adapter is too slow,
+and has no interrupt of ours, to justify either. **A**, **C** and raw CAN are stretch only.
+Full rationale: `docs/DECISIONS.md` §B.1 (D-017).
 
 ---
 

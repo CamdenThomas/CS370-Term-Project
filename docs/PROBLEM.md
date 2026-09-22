@@ -60,13 +60,13 @@ see.
 
 > First guess at two menu items, one sentence of justification each. May change by M2.
 
-**B — interrupt-driven input with a polling comparison.** At 500 kbit/s the MCP2515's
-two receive buffers overflow in milliseconds, so a poll loop either burns a core or
-loses frames; the `INT` line lets us service the controller only when it has something.
-
 **D — custom append-only storage with crash consistency.** The power is cut mid-write
 every single time the key turns off, so the storage layer never gets a clean shutdown
 and must recover a torn tail on every boot.
+
+**E — multi-process architecture with a supervisor.** A recorder that dies silently has
+harmed its owner, who believes it is on duty; capture, storage and analysis run as
+separate processes so that a crash in the analysis cannot take the recording down with it.
 
 ## The risk
 

@@ -719,11 +719,16 @@ slug = "canirq"
 milestone = "M3"
 labels = ["task"]
 owner = "camden"
-blocked_by = ["firstcap", "designdoc"]
-title = "M3 can: SocketCAN open + epoll on the interrupt-driven RX path"
+decision = "D-017"
+blocked_by = ["pisensor", "designdoc"]
+title = "M3 capture: interrupt-driven read path for the Pi-side sensor"
 body = '''
-Mechanism B. Instrument arrival->push latency into a histogram from the start —
-retrofitting measurement is how evaluations end up with means and no distributions.
+**Only if `pisensor` adds an MPU-6050** (D-017); cut this item otherwise. Originally
+the SocketCAN RX path, retargeted when D-015 made raw CAN a stretch goal.
+
+Mechanism B. The MPU-6050's INT pin on a GPIO, watched with epoll on the gpio chardev.
+Instrument arrival->push latency into a histogram from the start — retrofitting
+measurement is how evaluations end up with means and no distributions.
 '''
 
 [[item]]
@@ -732,9 +737,9 @@ milestone = "M3"
 labels = ["task"]
 owner = "camden"
 blocked_by = ["canirq"]
-title = "M3 can: --poll variant behind a flag for the mechanism-B comparison"
+title = "M3 capture: --poll variant behind a flag for the mechanism-B comparison"
 body = '''
-A flag, not a rewrite. The head-to-head comparison is a graded deliverable, so the
+Only if `pisensor` adds an MPU-6050 (D-017). A flag, not a rewrite. The head-to-head comparison is a graded deliverable, so the
 two paths must be switchable at runtime on identical hardware.
 '''
 
@@ -889,7 +894,7 @@ system cannot survive an hour.
 slug = "m3demo"
 milestone = "M3"
 labels = ["task"]
-blocked_by = ["canirq", "canreq", "storewrite", "heartbeat"]
+blocked_by = ["canreq", "storewrite", "heartbeat"]
 title = "M3 demo: checkpoint demonstration rehearsal (graded live, 10 points)"
 body = '''
 Both sensors through the real pipeline into real storage, with at least one menu
@@ -1038,7 +1043,8 @@ owner = "camden"
 blocked_by = ["canpoll"]
 title = "M4 experiment: interrupt vs polling — latency distribution and CPU, idle and loaded"
 body = '''
-**Required by mechanism B. Cannot be cut.** Present as an experiment: method,
+**Required by mechanism B, if `pisensor` commits it (D-017)** — cut together with
+`canirq` otherwise. Present as an experiment: method,
 data, conclusion. Include the CPU cost of the polling design at the rate needed to
 match the interrupt design's drop rate — that comparison is the point.
 '''
@@ -1051,7 +1057,25 @@ owner = "camden"
 blocked_by = ["ringshm"]
 title = "M4 experiment: no-drop under CPU contention, proven by sequence accounting"
 body = '''
-**Required by mechanism F.** Sustained rate, zero drops, under stress-ng.
+**Required by mechanism F, if `pisensor` commits it (D-017)** — cut otherwise.
+Sustained rate, zero drops, under stress-ng, at the MPU-6050's sample rate.
+'''
+
+[[item]]
+slug = "expkill"
+milestone = "M4"
+labels = ["task", "critical-path"]
+decision = "D-017"
+blocked_by = ["supbackoff"]
+title = "M4 experiment: supervision — kill -9 each child, time detection and recovery"
+body = '''
+**Required by mechanism E. Cannot be cut** — E is one of only two committed
+mechanisms (D-017).
+
+For each child, N trials of `kill -9` at random moments: time to detection, time to
+recovery, what degraded in between, and `ls /proc/<pid>/fd` before and after to prove
+no descriptor leaked across the restart. Present as an experiment: method, data,
+conclusion (docs/EVALUATION.md §6.2).
 '''
 
 [[item]]
@@ -1064,6 +1088,36 @@ title = "M4 experiment: crash consistency — N power-cut trials"
 body = '''
 **Required by mechanism D.** Pull power mid-write, repeatedly. Record recovery
 outcome and bytes lost per trial.
+'''
+
+[[item]]
+slug = "pisensor"
+milestone = "M2"
+labels = ["decision", "critical-path"]
+owner = "camden"
+decision = "D-017"
+blocked_by = ["order"]
+title = "M2 decision: add a sensor on the Pi itself — MPU-6050, DS18B20, both, or neither?"
+body = '''
+With the USB OBD2 adapter (D-015) as the only data source, three things weaken at once:
+
+1. **Mechanisms.** Only D and E stand (D-017). Two is the floor, with nothing in reserve.
+2. **Handout §3.1, two physically distinct sensors.** The car's sensors are distinct, but
+   all arrive through one USB device at one rate — a grader may call that one sensor.
+3. **The soak.** "The 48-hour soak runs on live sensors" (handout §5); a parked car on a
+   fake OBD2 port is not live (D-006, `soakq`).
+
+Options:
+- **MPU-6050** ($4, I2C, INT pin, kHz FIFO): restores B and F, gives the soak a live
+  high-rate sensor, adds vibration the ECU cannot see.
+- **DS18B20** ($4, 1-Wire, kernel driver): an ambient/under-hood temperature the cooling
+  diagnostic (#2) gates on, and a live soak sensor — but restores neither B nor F.
+- **Both** ($8). **Neither**: D + E only, and accept the §3.1 and soak risk.
+
+**Recommendation: both.** Cheapest insurance in the project.
+
+**Answer that unblocks it:** one word — MPU-6050 / DS18B20 / both / neither. If yes,
+add the part to the order; `canirq`, `canpoll`, `expirq` and `expdrop` follow the answer.
 '''
 
 [[item]]
@@ -1149,7 +1203,7 @@ The handout is explicit that a food container is an acceptable enclosure.
 slug = "freeze"
 milestone = "M4"
 labels = ["task", "critical-path"]
-blocked_by = ["infer", "obdrest", "phoneview", "expirq", "expdrop", "expcrash"]
+blocked_by = ["infer", "obdrest", "phoneview", "expirq", "expdrop", "expcrash", "expkill"]
 title = "M4 process: FEATURE FREEZE — no new features after this line"
 body = '''
 No new features after this line. Bugs only.
@@ -1223,7 +1277,7 @@ whole point.
 slug = "evalreport"
 milestone = "M5"
 labels = ["task", "critical-path"]
-blocked_by = ["plots", "expirq", "expdrop", "expcrash", "fvac", "fcool"]
+blocked_by = ["plots", "expirq", "expdrop", "expcrash", "expkill", "fvac", "fcool"]
 title = "M5 docs: write docs/EVALUATION.md"
 body = '''
 Latency distributions (idle + loaded), per-process CPU/RSS over the full soak, one

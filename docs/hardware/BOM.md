@@ -18,11 +18,11 @@
 
 **Core subtotal ≈ $125.**
 
-## Conditional — only if D-006 resolves to "add physical sensors"
+## Conditional — only if `pisensor` or D-006 resolves to "add physical sensors"
 
 | Qty | Part | ~Cost | Notes |
 |---|---|---|---|
-| 1 | MPU-6050 IMU | $4 | I2C 400 kHz, hardware FIFO. Buys mechanism F a high-rate source and gives vibration data the ECU cannot see. |
+| 1 | MPU-6050 IMU | $4 | I2C 400 kHz, hardware FIFO, `INT` pin. The only way mechanisms B and F come back (D-017), and vibration data the ECU cannot see. |
 | 1 | DS18B20 waterproof probe | $4 | 1-Wire, kernel driver exists. |
 | 1 | 4.7 kΩ resistor | — | 1-Wire pull-up. |
 | 1 | Battery tender | $30 | Only for a parked-car soak, which also needs a socket that stays live in accessory (D-011). |
