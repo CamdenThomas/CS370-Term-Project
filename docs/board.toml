@@ -319,6 +319,11 @@ Ten minutes with the ELM327. No custom hardware needed.
 **Most important question: is oil pressure published as an analog value, or only
 as a binary low-pressure switch?**
 
+**Second question, same session (D-012):** run `ATMA` at the port for 60 s with the
+engine running. Constant traffic (or BUFFER FULL) = broadcast present. Silence until
+you send a request = request/response only, which weakens mechanism B's
+justification for this car.
+
 Record results in docs/hardware/pid-survey.md.
 '''
 
@@ -701,6 +706,26 @@ two paths must be switchable at runtime on identical hardware.
 '''
 
 [[item]]
+slug = "canreq"
+milestone = "M3"
+labels = ["task"]
+owner = "camden"
+decision = "D-012"
+blocked_by = ["firstcap", "designdoc"]
+title = "M3 can: rate-limited Mode 01 requester with a --listen-only flag"
+body = '''
+Primary data path (D-012). Round-robin the PID list at the request budget set in
+docs/DESIGN.md §4, one request outstanding at a time, functional ID 0x7DF,
+responses 0x7E8-0x7EF.
+
+Must log every timeout and every unanswered PID — a PID the car stops answering is
+a sensor fault the analysis must see, not a gap it silently fills.
+
+--listen-only puts the MCP2515 in listen-only mode and sends nothing, for either
+owner who objects to the device transmitting on their car.
+'''
+
+[[item]]
 slug = "ringshm"
 milestone = "M3"
 labels = ["task"]
@@ -815,7 +840,7 @@ system cannot survive an hour.
 slug = "m3demo"
 milestone = "M3"
 labels = ["task"]
-blocked_by = ["canirq", "storewrite", "heartbeat"]
+blocked_by = ["canirq", "canreq", "storewrite", "heartbeat"]
 title = "M3 demo: checkpoint demonstration rehearsal (graded live, 10 points)"
 body = '''
 Both sensors through the real pipeline into real storage, with at least one menu

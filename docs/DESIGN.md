@@ -21,7 +21,9 @@
   ┌──────────────┐  SPI0 @ [N] MHz     ┌────────────────┐
   │ MCP2515 +    │────────────────────▶│   candaemon    │  [mech B]
   │ TJA1050      │  INT ──▶ GPIO[N]    │  IRQ RX path   │
+  │              │◀────────────────────│  Mode 01 req.  │  [N] req/s, D-012
   └──────────────┘  edge-triggered     └───────┬────────┘
+     RX rate = responses + any port broadcast (pid-survey ATMA)
                                                │ SPSC ring, [N] frames/s  [mech F]
                                                │ shm, sequence-accounted
                     ┌──────────────────────────┼──────────────────────┐
@@ -67,6 +69,7 @@ each here with the measured numbers that justify it.
 |---|---|---|---|---|
 | MCP2515 | physically unplugged mid-drive | | degrade, do not restart-storm | |
 | MCP2515 | SPI transaction timeout | | | |
+| ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
 | candaemon | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
 | ring | consumer stalls, producer would overwrite | sequence gap accounting | | |
 | storaged | disk full | | | |
@@ -82,7 +85,7 @@ each here with the measured numbers that justify it.
 > it when the power dies mid-write.
 
 - **Record format:** [magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]
-- **Rates:** [fill]
+- **Rates:** [fill — Mode 01 request budget, and the per-PID rate it implies (D-012)]
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
 - **fsync discipline:** [fill — batch size, interval, and the argument for it]
 - **Crash story:** [fill — recovery scan, torn-tail truncation, what is lost and why

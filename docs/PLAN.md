@@ -64,6 +64,11 @@ publish analog oil pressure?* If the answer is no, we find out in Week 4 with th
 design still soft, instead of Week 11 with the analysis engine half-written around a value
 that does not exist. Both feed `oilq`, which is where the answer gets recorded.
 
+The same ten minutes answers a second question for free: a 60 s `ATMA` capture says whether
+the port carries broadcast traffic or only answers our requests (D-012). That decides
+whether mechanism B's buffer-overflow argument holds on each car — worth knowing before
+the design document argues it.
+
 ---
 
 ## 2. Phase structure

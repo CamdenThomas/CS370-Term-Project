@@ -24,6 +24,22 @@ transmission still to be confirmed from the VIN).
 | 0x2F | Fuel level | | | |
 | 0x31 | Distance since codes cleared | | | odometer proxy for oil-age trending |
 
+## Broadcast traffic at the port (D-012)
+
+Same session, same ELM327: `ATMA` (monitor all) for 60 seconds, engine running, nothing
+else plugged in. Save the raw output to `fixtures/` labeled `src=live`.
+
+| | Outback | CR-V |
+|---|---|---|
+| Frames seen in 60 s (approx.) | | |
+| Distinct arbitration IDs | | |
+| Verdict: broadcast present / request-response only | | |
+
+Cheap ELM327 clones overflow their buffer on a busy bus (`BUFFER FULL`) — that itself
+means "broadcast present". A port that prints nothing until you send `0100` means
+request/response only, and mechanism B's justification must be revisited for that car
+(DECISIONS §A.7).
+
 ## If oil pressure is unavailable on both vehicles
 
 Options, in order of preference:

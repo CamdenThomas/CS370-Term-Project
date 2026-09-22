@@ -40,6 +40,7 @@ Decisions currently awaiting a human signature:
 |---|---|---|---|---|
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
 | D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power and CAN schematic blocks |
+| D-012 | Rate-limited Mode 01 requests are the primary data path; broadcast is a bonus (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 
 > All decisions below were made with Camden in the conversation and are marked LOCKED
 > accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
@@ -214,6 +215,44 @@ true: power is cut, unannounced, at every key-off.
   harmless; **measure before trusting it** (CLAUDE.md §8.4).
 - The CAN side still needs a physical cable to the port; the product is "one box, two
   cables", not "one dongle".
+
+## A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
+`D-012` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+**Decision.** `candaemon` gets its signals by sending **standard OBD2 Mode 01 requests** at
+a fixed, rate-limited schedule (functional request ID `0x7DF`, responses `0x7E8`–`0x7EF`,
+one request outstanding at a time). Manufacturer broadcast frames are recorded when the
+port carries them and used where decoded, but **nothing depends on them.** A
+`--listen-only` build flag puts the MCP2515 in listen-only mode and sends nothing.
+
+**Why.** D-011 makes this a plug-in device, and the thing that makes a plug-in device work
+on a car it has never seen is the part of the protocol every car must speak. Mode 01 over
+CAN is mandatory on US cars from model year 2008; manufacturer frames differ per make, per
+model, often per year. This also matches D-005's existing mitigation — "start on standard
+Mode 01 PIDs only". *"Learns this car's normal"* is precisely what lets one device serve
+different cars without per-model decode work: it never needs to know what normal *is*
+ahead of time.
+
+**Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
+(request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
+~8 PIDs. That is ample for what we diagnose (oil trend over weeks, warm-up over minutes,
+fuel trim against load) and must be stated in `docs/DESIGN.md` §4. The request budget itself
+is a design-doc number to justify, not a constant to pick.
+
+**Consequence for mechanism B — to check, not assumed.** D-002's case for interrupts is a
+busy 500 kbit/s bus overflowing the MCP2515's two buffers in milliseconds. That holds only
+if the port carries **broadcast** traffic. If a car's port is silent except for our own
+responses, B's *commitment* stands but its *justification* on that car does not. The PID
+survey now includes a 60 s `ATMA` capture at the port for exactly this
+(`docs/hardware/pid-survey.md`). If both ports are quiet, B.1's justification is reopened
+with a human — not quietly rewritten.
+
+**Cost.** The device now transmits on a daily driver's bus. Kept safe by the rate limit,
+one outstanding request, and only standard requests; the listen-only flag is the fallback
+if either owner objects.
+
+**Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
+still E.1: three faults, two cars, measured error rates.
 
 ---
 
