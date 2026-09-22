@@ -8,7 +8,7 @@
 ## Copy-out, every milestone M1–M5
 
 ```sh
-cp ~/.claude/projects/*CS370*/*.jsonl partners/camden/transcripts/
+mkdir -p partners/camden/transcripts && cp ~/.claude/projects/*CS370*/*.jsonl partners/camden/transcripts/
 ```
 
 Transcripts purge after 30 days by default and this project runs 15 weeks. Losing

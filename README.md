@@ -62,13 +62,11 @@ deeper is `obdctl` (decision D-013).
 src/         systems core, C17, -Wall -Wextra -Werror clean
   common/    logging, time, config, error paths
   can/       MCP2515 SPI + interrupt RX path        [mechanism B]
-  capture/   optional physical sensors (MPU-6050, DS18B20)
   ipc/       SPSC no-drop ring, UDS protocol        [mechanisms E, F]
   store/     append-only crash-consistent log       [mechanism D]
   analysis/  features, baselines, model, state machine
   supervisor/ watchdog, restart policy              [mechanism E]
   interface/ obdctl query CLI + read-only phone status page (D-013)
-drivers/     out-of-tree kernel module (stretch, mechanism A)
 tools/       PYTHON ALLOWED HERE ONLY — replay harness, training, plots,
              board_sync.py (reconciles docs/board.toml onto the GitHub board)
 tests/       unit tests and fixtures

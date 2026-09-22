@@ -6,7 +6,6 @@ build/
 soak/logs/
 fixtures/raw/
 models/*.bin
-!models/.gitkeep
 __pycache__/
 .venv/
 *.pyc

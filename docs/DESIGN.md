@@ -124,7 +124,7 @@ the measured numbers that justify it.
 ## 7. Ownership map
 | Owner | Subsystems |
 |---|---|
-| Camden | `src/can/`, `src/capture/`, `src/ipc/`, `drivers/` |
+| Camden | `src/can/`, `src/ipc/` |
 | Lance | `src/store/`, `src/analysis/`, `tools/train/` |
 | Shared | `src/supervisor/`, `src/interface/`, `src/common/`, docs |
 
