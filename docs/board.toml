@@ -224,15 +224,43 @@ milestone = "M0"
 labels = ["decision", "critical-path"]
 owner = "camden"
 decision = "D-006"
-title = "M0 decision: 48-hour soak on a synthesized CAN source — ask Pallickara"
+title = "M0 decision: 48-hour soak on a fake OBD2 port — ask Pallickara"
 body = '''
 Handout §5: 'The 48-hour soak and the live demonstration run on live sensors.'
-Our PC-side CAN generator is synthesized data by that definition.
+A soak on our fake OBD2 port (`obdsim`) is synthesized data by that definition.
+Options (a) exception, (b) live Pi-side sensor + synth OBD, (c) parked car on the
+live port — DECISIONS.md §E.3.
 
-Draft email ready at docs/professor-email-draft.md with all three options.
+**Build as if the answer is no.** Fallback is (b), which `pisensor` decides.
 
-**Build as if the answer is no.** Fallback is adding an MPU-6050 + DS18B20 (~$8)
-so the soak runs on live sensors while CAN is replayed and labeled.
+**Email — edit into your own voice, send from Camden with Lance cc'd:**
+
+> Subject: CS370 term project — 48-hour soak against a simulated OBD2 port
+>
+> Professor Pallickara,
+>
+> Camden Thomas and Lance Baron. Our term project is an in-vehicle diagnostic
+> recorder: a Pi reading a 2015 Honda CR-V's own sensors through a USB OBD2
+> adapter and learning that car's normal, so it can flag developing faults that a
+> fixed maintenance interval misses.
+>
+> A car cannot run for 48 continuous hours, so we are building a simulated OBD2
+> port that answers the same requests the car does, from recorded drives. §5 says
+> the soak runs on live sensors, and we read a simulated port as synthesized data.
+> Every record it produces is labeled synth. Three ways we could go:
+>
+> 1. Soak against the simulated port, labeled synth throughout the logs, report
+>    and demo.
+> 2. Add a sensor to the Pi itself (an accelerometer and a temperature probe) that
+>    runs live for all 48 hours while the OBD side is simulated and labeled.
+> 3. Soak in the parked car on the live port with a battery tender.
+>
+> We are building toward option 2 by default. If option 1 is acceptable it saves
+> hardware time we would rather spend on the analysis and the evaluation; if you
+> prefer option 3 we would like to know now, while the design is cheap to change.
+>
+> Thank you,
+> Camden Thomas & Lance Baron
 
 Decision D-006. Must close before M4.
 '''
@@ -860,6 +888,32 @@ title = "M3 interface: obdctl UDS transport + status verb"
 body = '''
 First of five verbs. Resist the web app — a crisp CLI is more defensible and far
 more extensible at the live-modification station on demo day.
+'''
+
+[[item]]
+slug = "obdsim"
+milestone = "M3"
+labels = ["task"]
+owner = "camden"
+decision = "D-006"
+blocked_by = ["firstcap"]
+title = "M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth"
+body = '''
+Camden's memo (PROBLEM.md, risk): a car cannot run for 48 hours, so something must
+answer Mode 01 requests continuously for soak rehearsal and testing.
+
+tools/obdsim.py opens a pseudo-terminal and answers AT and Mode 01 requests the way
+the adapter does, from recorded live captures (`firstcap`) at real or accelerated
+speed. The capture daemon opens it exactly like /dev/obd, so the real pipeline runs
+unmodified. **Everything it produces is `src=synth`** — CLAUDE.md §2.7, no exceptions.
+
+**Training caution.** A model trained on the fake port learns our generator, not the
+car. Train on labeled live captures and induced faults; use synth only where it is
+labeled as such in the evaluation (handout §5: ten labeled recordings you made beat
+ten thousand samples you did not).
+
+A hardware OBD2 simulator board, which would exercise the real adapter and USB path,
+is optional — only if D-006 requires the soak to include them.
 '''
 
 [[item]]

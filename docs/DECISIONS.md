@@ -506,25 +506,29 @@ We cannot wait a semester for a failure, so we provoke conditions and label the 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
 
-## E.3 — 48-hour soak: live sensors vs. synthetic CAN ❓ OPEN
-`D-006` · **Owner:** Camden · **Tracked as:** GitHub issue (label `decision`, milestone M4)
+## E.3 — 48-hour soak: live sensors vs. a fake OBD2 port ❓ OPEN
+`D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
 · **Must close before M4** · Blocks nothing before M3
 
-**The conflict.** Our PC-side rig generating CAN traffic is a good idea and we are building
-it regardless — handout §5 explicitly endorses a replay harness as "a legitimate systems
+**The conflict.** A car cannot run for 48 hours, so Camden's memo (PROBLEM.md, risk)
+proposes a **fake OBD2 port** that answers Mode 01 requests continuously — board item
+`obdsim`. Handout §5 endorses exactly this kind of harness as "a legitimate systems
 artifact." But the same paragraph says: *"The 48-hour soak and the live demonstration run
-on live sensors; everything else may run on honest replay."* A soak on generated traffic is
-synthesized data by definition.
+on live sensors; everything else may run on honest replay."* A soak on the fake port is
+synthesized data by definition, and is labeled `src=synth` everywhere regardless.
 
-**Options.** (a) Written exception from Pallickara — email drafted at
-`docs/professor-email-draft.md`. (b) Add MPU-6050 + DS18B20 (~$8) so the soak runs on
-genuinely live sensors while CAN is replayed and labeled; bonus is vibration order-tracked
-against CAN RPM, which no dongle can produce. (c) Soak in the parked car on live CAN with a
-battery tender.
+**Options.**
+- **(a)** A written exception from Pallickara for a soak on the fake port. The email text
+  is in the body of board item `soakq`.
+- **(b)** A sensor on the Pi itself (`pisensor`: MPU-6050 and/or DS18B20, ~$8) runs live
+  for all 48 hours while the OBD side comes from the fake port, labeled `synth`.
+- **(c)** The parked CR-V, key in accessory, on the live port with a battery tender. Fully
+  live, but engine-off values barely move, the socket must stay live in accessory (D-011),
+  and it ties up Lance's car for two days.
 
-**Posture.** Build as if (a) is refused. (b) is the default fallback and the tree is already
-shaped for it — `src/capture/` exists and is empty on purpose. The `src=` field is in the
-record format regardless.
+**Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
+reason `pisensor` is on the critical path. The `src=` field is in the record format
+regardless.
 
 ---
 

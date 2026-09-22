@@ -45,8 +45,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] **Hardware ordered** — `order`, see `docs/hardware/BOM.md`. Shipping time is the
       most common silent schedule-killer; order the day this is read.
 - [x] Lance's Honda year/model recorded — `honda` (**D-007**)
-- [ ] Email to Pallickara sent re: soak-on-synthetic-CAN — `soakq` (**D-006**,
-      `docs/professor-email-draft.md`)
+- [ ] Email to Pallickara sent re: soak on a fake OBD2 port — `soakq` (**D-006**; the
+      email text is in the item's body)
 - [x] Milestone dates verified against syllabus — `dates` (**D-008**)
 - [x] `cleanupPeriodDays` raised on **both** partners' machines — `cleanup`
 - [x] Branch protection set on `main` — `ghsetup` (web UI; the API cannot do it)
