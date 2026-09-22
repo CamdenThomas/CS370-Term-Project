@@ -410,6 +410,25 @@ If either answer is weak, say so now — a returned memo costs a week.
 '''
 
 [[item]]
+slug = "productform"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+status = "in-review"
+decision = "D-011"
+title = "M1 docs: factor the plug-in product design through the repo"
+body = '''
+Decided with Camden on 2026-09-21: the device plugs into the OBD2 port for data
+(Y-splitter), takes power from the car's USB-C, is read from a phone over its own
+Wi-Fi, and has a warning light. Recorded as D-011 through D-014, all UNREVIEWED,
+plus the D-007 Honda answer (2015 CR-V EX-L).
+
+Lance reviews each decision separately — one commit each — and signs or contests it
+in docs/DECISIONS.md. Must merge before the M1 memo is written, since the memo's
+"why a device" section argues from this design.
+'''
+
+[[item]]
 slug = "tx1"
 milestone = "M1"
 labels = ["task"]
