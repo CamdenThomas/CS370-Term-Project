@@ -466,6 +466,25 @@ in docs/DECISIONS.md. Must merge before the M1 memo is written, since the memo's
 '''
 
 [[item]]
+slug = "overhaul"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+status = "in-review"
+decision = "D-015"
+title = "M1 docs: overhaul the repo for the USB-OBD2, one-car design"
+body = '''
+Camden's M1 memo and his answers on 2026-09-21 moved the project to a USB OBD2
+adapter (raw CAN is a stretch goal, D-015), one testbed (the 2015 CR-V, D-016), and
+mechanisms D + E with B and F conditional on a Pi-side sensor (D-017). The soak
+question was reframed around a fake OBD2 port (D-006).
+
+This item tracks the pass that removes stale information and empty staging
+directories across the repo, and adds docs/README.md as the index. The C and
+Makefile rename (src/can -> src/obd) follows separately, once it can be built.
+'''
+
+[[item]]
 slug = "tx1"
 milestone = "M1"
 labels = ["task"]
