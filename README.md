@@ -22,7 +22,9 @@ University.
 
 See `docs/hardware/BOM.md` for the parts list and `docs/hardware/wiring.md` for the
 pinout and the 3.3 V safety notes. Summary: Raspberry Pi 4, MCP2515 + TJA1050 CAN
-module on SPI0 with `INT` on a GPIO, OBD2 pigtail (CAN_H pin 6, CAN_L pin 14).
+module on SPI0 with `INT` on a GPIO, OBD2 pass-through Y-splitter (CAN_H pin 6, CAN_L
+pin 14, signal ground pin 5). Power comes from the car's USB-C port or a 12 V-socket
+USB-C adapter — no wiring into the car, nothing cut (decision D-011).
 
 ## Quick start (clean Raspberry Pi OS)
 

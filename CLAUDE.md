@@ -79,8 +79,9 @@ shown me the output.** Not "should pass." Output, pasted.
 
 ## 3. What we are building (the one-paragraph version)
 
-A Raspberry Pi wired to the OBD2 connector through an MCP2515 CAN controller on SPI,
-riding in a daily-driven car. It reads the car's own sensors off the bus — oil pressure,
+A Raspberry Pi with an MCP2515 CAN controller on SPI, riding in a daily-driven car. It plugs into the OBD2 port for data (a pass-through
+Y-splitter) and into the car's USB-C port for power — nothing is cut or spliced
+(D-011). It reads the car's own sensors off the bus — oil pressure,
 coolant temp, MAP, O2, fuel trims, RPM, load — and builds a statistical model of what
 normal looks like *for this car, at this operating point*. It then reports deviations
 that a mileage sticker and a check-engine light both miss.

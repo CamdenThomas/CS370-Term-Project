@@ -27,18 +27,38 @@ dtoverlay=mcp2515-can0,oscillator=<8000000|16000000>,interrupt=25
 dtoverlay=spi0-hw-cs
 ```
 
-## OBD2 connector
+## OBD2 connector — data only (D-011)
 
-| OBD2 pin | Signal |
-|---|---|
-| 6 | CAN_H |
-| 14 | CAN_L |
-| 16 | +12 V battery (always live) |
-| 4, 5 | Chassis / signal ground |
+Connected through a **pass-through Y-splitter**, so the port stays free for a scan tool.
+Nothing on the car is cut, spliced or pierced.
 
-**Pin 16 is live with the key off.** That is what makes the unattended soak possible and
-what makes a dead battery possible. Fuse it, and measure the device's key-off draw
-before leaving it in a car overnight — record the number in `docs/EVALUATION.md`.
+| OBD2 pin | Signal | Used? |
+|---|---|---|
+| 6 | CAN_H | yes → module CAN_H |
+| 14 | CAN_L | yes → module CAN_L |
+| 5 | Signal ground | yes → module GND (CAN reference) |
+| 4 | Chassis ground | no |
+| 16 | +12 V battery (always live) | **no** — power comes from USB-C, below |
+
+**Before the module ever touches a car:**
+1. **Remove the module's 120 Ω termination jumper** (often `J1`). The car's bus is already
+   terminated at both ends; a third terminator drops it to ~40 Ω.
+2. **Keep the stub short:** Y-cable plus module leads under ~0.3 m at 500 kbit/s.
+
+## Power — the car's USB-C (D-011)
+
+The Pi is powered from the car's own USB-C port, or a USB-C adapter in the 12 V socket.
+There is no buck converter and no connection to OBD2 pin 16.
+
+| Check | How | Record |
+|---|---|---|
+| Is the port switched (off with the key)? | Meter or a USB power tester, key off / ACC / run | here, per car |
+| Does it hold the Pi up at crank? | `vcgencmd get_throttled` after a cold start; must be `0x0` | here, per car |
+| Rating | ≥ 5.1 V / 3 A for a Pi 4 | adapter model, here |
+| Ground offset | Meter Pi GND to OBD2 pin 5, engine running | the reading, with the date |
+
+A cheap built-in USB port is the likeliest silent failure in this design: an undervolted Pi
+keeps running and corrupts the SD card later. Prove the port, do not trust its label.
 
 ## Bring-up order
 

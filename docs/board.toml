@@ -168,8 +168,9 @@ labels = ["hardware", "critical-path"]
 owner = "camden"
 title = "M0 hardware: order the core BOM (and the ELM327 in the same cart)"
 body = '''
-See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, MCP2515+TJA1050, OBD2 pigtail,
-12V->5V automotive buck converter, jumpers. ~$90.
+See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, MCP2515+TJA1050, OBD2
+pass-through Y-splitter, 12V-socket USB-C adapter (>= 5.1V / 3A) + cable, jumpers.
+~$100. No buck converter: power is the car's USB-C (D-011).
 
 **Also order the $12 ELM327 now.** It unblocks the PID survey weeks before the
 MCP2515 matters, and the PID survey answers the project's named risk.
@@ -464,7 +465,7 @@ This is the M2 exit criterion: both sensors electrically alive.
 slug = "baseline"
 milestone = "M2"
 labels = ["task", "critical-path"]
-blocked_by = ["firstcap"]
+blocked_by = ["firstcap", "keyoff"]
 title = "M2 CRITICAL PATH: start baseline collection on BOTH vehicles"
 body = '''
 **This is the single most schedule-critical task in the project.**
@@ -596,8 +597,8 @@ labels = ["task"]
 owner = "lance"
 title = "M2 hw: draw the Power block"
 body = '''
-OBD2 pin 16 (+12V, LIVE WITH THE KEY OFF), fuse, 12V->5V automotive buck, bulk and
-bypass caps, the Pi 5V rail.
+USB-C input from the car (switched — D-011) as an off-sheet connector, bulk and
+bypass caps, the Pi 5V rail. No OBD2 pin 16 and no buck converter.
 
 Annotate every power net with its voltage domain. See
 docs/hardware/schematic-conventions.md.
@@ -611,8 +612,9 @@ owner = "lance"
 blocked_by = ["bench"]
 title = "M2 hw: draw the CAN block"
 body = '''
-OBD2 pin 6 / pin 14, TJA1050, MCP2515, crystal + load caps, termination decision,
-INT to GPIO.
+OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050, MCP2515, crystal + load
+caps, INT to GPIO. Draw the 120R termination jumper OPEN — the car's bus is already
+terminated (D-011).
 
 **Put the crystal frequency in a value field, not a comment.** 8 MHz vs 16 MHz
 changes the device-tree overlay and a wrong value produces a silently dead bus.
@@ -973,15 +975,21 @@ outcome and bytes lost per trial.
 
 [[item]]
 slug = "keyoff"
-milestone = "M4"
-labels = ["hardware"]
+milestone = "M2"
+labels = ["hardware", "critical-path"]
 owner = "camden"
-blocked_by = ["firstcap"]
-title = "M4 hardware: measure key-off current draw"
+decision = "D-011"
+blocked_by = ["order"]
+title = "M2 hardware: prove the USB-C supply — switched, and no brown-out at crank"
 body = '''
-OBD2 pin 16 is live with the key off — that is what makes the unattended soak
-possible and a dead battery possible. Fuse it. Measure before leaving it overnight.
-Record the number in docs/EVALUATION.md.
+Originally "measure key-off current draw" on OBD2 pin 16. Under D-011 the device is
+powered from the car's USB-C port instead, so the questions changed:
+
+1. Is the port switched? Meter key off / ACC / run, on both cars.
+2. Does the Pi survive a cold crank? `vcgencmd get_throttled` must read 0x0 after.
+3. Ground offset between Pi GND and OBD2 pin 5, engine running.
+
+Record every number in docs/hardware/wiring.md and docs/EVALUATION.md.
 '''
 
 [[item]]

@@ -14,9 +14,9 @@
 > they are what makes the mechanism justifications checkable.
 
 ```
-  OBD2 connector
-  pin 6 / pin 14
-        │ CAN 500 kbit/s
+  OBD2 port (Y-splitter, D-011)        car USB-C / 12 V socket (switched)
+  pin 6 / 14 / 5                               │ 5.1 V ≥ 3 A → Pi
+        │ CAN 500 kbit/s                       │ (cut, unannounced, at every key-off)
         ▼
   ┌──────────────┐  SPI0 @ [N] MHz     ┌────────────────┐
   │ MCP2515 +    │────────────────────▶│   candaemon    │  [mech B]
@@ -74,6 +74,8 @@ each here with the measured numbers that justify it.
 | analyzed | model file missing or corrupt | | fall back to residuals only | |
 | supervisor | itself dies | systemd `Restart=always` | | |
 | clock | no RTC, time jumps at boot | | | |
+| power | USB port sags at crank; Pi undervolts but keeps running (D-011) | `vcgencmd get_throttled` polled by supervisor | | |
+| power | cut at key-off, every drive (D-011) | none possible in advance — recovery scan at next boot | | |
 
 ## 4. Storage and data
 > What is stored, at what rate, in what format, with what retention, and what happens to
@@ -97,6 +99,7 @@ each here with the measured numbers that justify it.
 | Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
 | A year of failing engines | Induced faults on two healthy cars | Only three fault classes, and none of them is a real bearing failure |
 | 48h of live driving | [pending D-006] | |
+| Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
 
 ## 6. Evaluation plan
 > The measurements we will take, each with **method and committed target**. Numbers

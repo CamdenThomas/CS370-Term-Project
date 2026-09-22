@@ -10,12 +10,13 @@
 | 1 | Raspberry Pi 4 (2 GB+) | $45 | Pi 5/3B+ also fine. Zero 2 W is fine to *deploy* but painfully slow to compile on. |
 | 1 | 32 GB A2 microSD | $10 | A2 endurance matters for a 48 h write soak. Buy two; the soak eats cards. |
 | 1 | MCP2515 + TJA1050 CAN module | $8 | **Check the crystal — 8 MHz vs 16 MHz changes the bitrate config.** Many boards are 5 V-only; see wiring notes. |
-| 1 | OBD2 male pigtail / breakout | $10 | Need pin 6 (CAN_H), pin 14 (CAN_L), pin 16 (+12 V), pin 4/5 (GND). |
-| 1 | 12 V → 5 V 3 A buck converter | $8 | Automotive-rated. The Pi browns out on a cheap one at crank. |
+| 1 | OBD2 pass-through Y-splitter cable | $10 | One male end to the car, one female pass-through, one breakout. Need pin 6 (CAN_H), pin 14 (CAN_L), pin 5 (signal GND). Pin 16 unused (D-011). |
+| 1 | 12 V socket → USB-C adapter, ≥ 5.1 V / 3 A | $12 | Powers the Pi (D-011). Skip only if the car's built-in USB-C port is **measured** to hold 3 A through a cold crank. |
+| 1 | USB-C cable, short, 3 A-rated | $6 | |
 | 1 | Jumper wires + breadboard | $8 | |
 | 1 | Multimeter | — | Assume you have one. Do not skip the voltage check. |
 
-**Core subtotal ≈ $90.**
+**Core subtotal ≈ $100.**
 
 ## Conditional — only if D-006 resolves to "add physical sensors"
 
@@ -32,5 +33,6 @@
 | 1 | Cheap ELM327 BT dongle | $12 | **Not the product's path (D-001)** — a `tools/`-side cross-check and the fastest way to run the D-007 PID survey this week. |
 | 1 | USB-to-CAN adapter | $25 | Drives the bench replay rig for `make replay` and soak rehearsal. |
 | 1 | Logic analyzer (8ch clone) | $12 | The instrument that settles SPI timing arguments Claude cannot settle. |
-| 1 | Battery tender | $30 | Only if D-006 resolves to the parked-car soak. |
+| 1 | Battery tender | $30 | Only if D-006 resolves to the parked-car soak — which also needs a socket that stays live in accessory (D-011). |
+| 1 | USB-C power meter (inline) | $10 | Settles "is this port switched, and does it sag at crank" in seconds (D-011). |
 | 1 | Food container | $0 | The enclosure. The handout is explicit about this. |

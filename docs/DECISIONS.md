@@ -39,6 +39,7 @@ Decisions currently awaiting a human signature:
 | ID | Decision | Made by | Session date | Reviewer needed |
 |---|---|---|---|---|
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
+| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power and CAN schematic blocks |
 
 > All decisions below were made with Camden in the conversation and are marked LOCKED
 > accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
@@ -167,6 +168,52 @@ diff a human can actually read. It is regenerated, never hand-edited.
 **Open sub-item (Lance, M2):** `sym-lib-table` referenced `CS370_Project_Library.kicad_sym`,
 which did not exist — KiCad errors on project open. An empty library is committed to resolve
 it; populate it as parts are drawn.
+
+## A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
+`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+**Decision.** The device is a box anyone could install without tools:
+- **Data:** a Y-splitter (pass-through) cable at the OBD2 port — CAN_H pin 6, CAN_L pin 14,
+  signal ground pin 5 — into the MCP2515 module. The port stays usable for a scan tool
+  or an emissions inspection.
+- **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
+  **OBD2 pin 16 is not used.** The 12 V→5 V buck converter leaves the BOM.
+- **Nothing is cut, spliced, pierced or clamped** on either car.
+
+**Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
+prototype is built the way the product would be installed. We are building the model to
+prove the idea is worth something, not the finished product — but a prototype that needs
+harness surgery proves a different, less interesting idea. Switched USB power also means
+no battery drain while parked, and it makes mechanism D's defining constraint literally
+true: power is cut, unannounced, at every key-off.
+
+**Alternatives rejected** (discussed 2026-09-21):
+- *Splice CAN_H/CAN_L behind the OBD2 port.* The wires behind the port are the same
+  conductors as pins 6 and 14 — same traffic, plus a cut harness on a daily driver. If a
+  gateway were filtering the port, a splice there would not get past it either.
+- *In-line harness at the forward camera.* Not available: the 2015 CR-V EX-L has no Honda
+  Sensing camera (D-007).
+- *Contactless (inductive) CAN clamp.* Receive-only, a black box between the bus and our
+  code, and it needs a wiring diagram to find the pair.
+- *OBD2 pin 16 + our own buck converter.* Live with the key off (battery drain), and more
+  hardware to build and defend.
+
+**Rules this imposes** (also in `docs/hardware/wiring.md`):
+1. **Remove the module's 120 Ω termination jumper.** The car's bus is already terminated;
+   ours would drop it to ~40 Ω.
+2. **Keep the stub short** — the Y-cable plus module leads under ~0.3 m at 500 kbit/s.
+3. **The Pi must not brown out at crank.** Adapter rated ≥ 5.1 V / 3 A (Pi 4). Proven by
+   `vcgencmd get_throttled` after a cold start, not by the adapter's label.
+
+**Cost.**
+- No recording while the key is off — nothing happens then worth recording, but the device
+  also cannot run overnight in a parked car.
+- D-006 option (c), the parked-car soak, now requires a socket that stays live in
+  accessory plus a battery tender.
+- USB ground and OBD2 signal ground both reach chassis by different paths. Expected to be
+  harmless; **measure before trusting it** (CLAUDE.md §8.4).
+- The CAN side still needs a physical cable to the port; the product is "one box, two
+  cables", not "one dongle".
 
 ---
 
