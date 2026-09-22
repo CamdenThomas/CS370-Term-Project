@@ -388,8 +388,8 @@ title = "M1 decision: is analog oil pressure available? If not, what replaces di
 body = '''
 This is the project's named risk (docs/PROBLEM.md).
 
-If neither vehicle publishes analog oil pressure, options in preference order:
-  1. Sniff manufacturer-specific frames for a pressure value
+If the CR-V does not publish analog oil pressure, options in preference order:
+  1. Query manufacturer (Mode 22) PIDs through the same USB adapter (D-015)
   2. Add a physical sender at the sender port (real work on a daily driver —
      do not commit to this after Week 10)
   3. Replace diagnostic #1 with an oil-temperature thermal-load metric, and
