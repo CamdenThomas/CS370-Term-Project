@@ -542,8 +542,11 @@ The binding ruleset lives in **`CLAUDE.md` §7**, because that is the file the a
 every session. Summary of the load-bearing parts:
 
 - Claude never commits to `main`, never merges, never force-pushes, never `git add -A`.
-- One commit = one idea. **≤ 150 changed lines and ≤ 3 files**, default one file.
-- One PR = one reviewable claim. **≤ 500 changed lines, ≤ 10 commits.**
+- One commit = one responsibility, sized by what it is responsible for — not by line
+  count. *(The original ≤ 150-line / ≤ 3-file and ≤ 500-line PR caps were replaced by the
+  responsibility test in `CLAUDE.md` §7.3 and §7.5 during M0; CLAUDE.md is the binding
+  text.)*
+- One PR = one reviewable claim.
 - **If the reviewer does not understand a line, the PR does not merge.** The remedy is
   explanation or a smaller commit, never trust.
 - Every commit builds and passes tests on its own.

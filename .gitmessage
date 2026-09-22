@@ -9,8 +9,9 @@ VERIFY: The exact commands run and their result.
 # area: can | capture | ipc | store | analysis | supervisor | interface |
 #       common | drivers | build | tests | tools | soak | docs
 #
-# Caps: one idea per commit. <= 3 files, <= 150 changed lines.
-# The one-sentence test: if the summary needs "and", it is two commits.
+# One responsibility per commit, sized by what it is responsible for, not by
+# line count (CLAUDE.md 7.3). The one-sentence test: if the summary needs "and",
+# it is two commits. Past ~400 changed lines, say in WHY why it is indivisible.
 # Banned: wip, fix, updates, misc, cleanup, changes, address feedback.
 #
 # Enable with:  git config commit.template .gitmessage
