@@ -64,6 +64,6 @@ N power-cut trials, recovery outcome each time, bytes lost per trial.
 "An honest limitations section is worth more at the defense than a suspiciously perfect
 results section, and we notice which one we are reading."
 
-Name at minimum: the fault classes we could not induce, what two vehicles cannot tell
-us about a third, how long a baseline our window actually covers versus what the oil
+Name at minimum: the fault classes we could not induce, what one vehicle cannot tell
+us about a second, how long a baseline our window actually covers versus what the oil
 trend deserves, and every place a number came from replay rather than live driving.

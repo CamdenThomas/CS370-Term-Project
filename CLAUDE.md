@@ -90,13 +90,12 @@ exact interface. A single warning light on the box blinks while it is on duty an
 changes pattern when something needs attention (D-014).
 
 **The user:** a named owner of a specific car who wants maintenance driven by measured
-condition instead of a generic interval. Testbeds: a **Subaru Outback** and **Lance's
-2015 Honda CR-V EX-L** — the same sticker says 5,000 miles to both cars, and the cars
-disagree. (The CR-V has Maintenance Minder, an oil-life *estimate* from a usage model; our
-answer to "the car already does this" is that it estimates and we measure — D-007.)
+condition instead of a generic interval. Testbed: **Lance's 2015 Honda CR-V EX-L**, the
+only one (D-016). Its sticker and its Maintenance Minder both *estimate* from how far and
+how hard it has been driven; the device *measures* the engine's condition (D-007).
 
-**The claim we defend:** *"detects the three faults we can induce on these two vehicles,
-with these measured error rates."* Not "predicts failure." (handout §5)
+**The claim we defend:** *"detects the three faults we can induce on this vehicle, with
+these measured error rates."* Not "predicts failure." (handout §5)
 
 ---
 

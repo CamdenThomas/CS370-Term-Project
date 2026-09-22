@@ -311,9 +311,13 @@ slug = "pidsub"
 milestone = "M1"
 labels = ["hardware", "critical-path"]
 owner = "camden"
+status = "done"
 blocked_by = ["order"]
 title = "M1 hardware: supported-PID survey on the Outback"
 body = '''
+**Cut 2026-09-21 (D-016).** The Outback is no longer a testbed; the CR-V survey
+(`pidhonda`) is the only one.
+
 Mode 01 PIDs 0x00 / 0x20 / 0x40 / 0x60 return bitmaps of supported PIDs.
 Ten minutes with the USB OBD2 adapter (D-015). No custom hardware needed.
 
@@ -331,8 +335,12 @@ owner = "lance"
 blocked_by = ["order", "honda"]
 title = "M1 hardware: supported-PID survey on the Honda"
 body = '''
-Same procedure as the Outback survey, on the 2015 CR-V EX-L (D-007). Record in
-docs/hardware/pid-survey.md.
+Mode 01 PIDs 0x00 / 0x20 / 0x40 / 0x60 return bitmaps of supported PIDs. Ten
+minutes with the USB OBD2 adapter (D-015) on the 2015 CR-V EX-L (D-007, D-016) —
+procedure in docs/hardware/pid-survey.md, which is also where the results go.
+
+**Most important question: is oil pressure published as an analog value, or only
+as a binary low-pressure switch?**
 
 Expect oil pressure to be a switch only — that is inference from Honda practice, not
 evidence. This survey is the evidence.
@@ -342,7 +350,7 @@ evidence. This survey is the evidence.
 slug = "oilq"
 milestone = "M1"
 labels = ["decision", "critical-path"]
-blocked_by = ["pidsub", "pidhonda"]
+blocked_by = ["pidhonda"]
 title = "M1 decision: is analog oil pressure available? If not, what replaces diagnostic #1?"
 body = '''
 This is the project's named risk (docs/PROBLEM.md).
@@ -367,9 +375,9 @@ body = '''
 The handout rejects personas: 'people who might want to monitor things' is not a
 user, and neither is 'a cautious driver'.
 
-Need a real person and a real car — ideally two, one work truck and one commuter,
-since that contrast IS the thesis: the same sticker says 5,000 miles to both cars
-and the cars disagree.
+Need a real person and a real car. The car is settled (D-016): Lance's 2015 CR-V
+EX-L. The person is the one who drives it and can say what its sticker and its
+Maintenance Minder claim versus what the engine is actually doing.
 
 Memos that fail this are returned for revision, costing a week.
 '''
@@ -491,7 +499,7 @@ slug = "baseline"
 milestone = "M2"
 labels = ["task", "critical-path"]
 blocked_by = ["firstcap", "keyoff"]
-title = "M2 CRITICAL PATH: start baseline collection on BOTH vehicles"
+title = "M2 CRITICAL PATH: start baseline collection on the CR-V"
 body = '''
 **This is the single most schedule-critical task in the project.**
 
@@ -1070,7 +1078,7 @@ body = '''
 Originally "measure key-off current draw" on OBD2 pin 16. Under D-011 the Pi is
 powered from the car's USB-C port instead, so the questions changed:
 
-1. Is the port switched? Meter key off / ACC / run, on both cars.
+1. Is the port switched? Meter key off / ACC / run.
 2. Does the Pi survive a cold crank? `vcgencmd get_throttled` must read 0x0 after.
 3. The USB OBD2 adapter still draws from pin 16, live with the key off (D-015).
    Measure its key-off current before leaving it plugged in overnight.
@@ -1083,7 +1091,7 @@ slug = "fvac"
 milestone = "M4"
 labels = ["hardware"]
 blocked_by = ["bin"]
-title = "M4 ground truth: induce and label a vacuum leak, both vehicles"
+title = "M4 ground truth: induce and label a vacuum leak on the CR-V"
 body = '''
 Briefly disconnect a small vacuum line. Reversible, safe, moves LTFT within a
 minute. Label the recording with exactly what was done and when.
@@ -1120,7 +1128,7 @@ slug = "foil"
 milestone = "M4"
 labels = ["hardware", "critical-path"]
 blocked_by = ["baseline"]
-title = "M4 CRITICAL PATH: capture across a real oil change on both vehicles"
+title = "M4 CRITICAL PATH: capture across a real oil change on the CR-V"
 body = '''
 Critical path A. This is the one that cannot be faked and cannot be rushed.
 Depends entirely on baseline collection having started at M2.

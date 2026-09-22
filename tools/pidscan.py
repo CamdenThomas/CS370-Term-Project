@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Mode 01 supported-PID bitmap scan. Closes D-007.
 
-Run this on BOTH vehicles before M2. Ten minutes per car through the USB OBD2 adapter
+Run this on the CR-V before M2. Ten minutes through the USB OBD2 adapter
 (/dev/obd, D-015). The answer decides whether diagnostic #1 (oil pressure) is
 implementable at all, and that is the project's named risk.
 

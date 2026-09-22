@@ -44,6 +44,7 @@ Decisions currently awaiting a human signature:
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
 | D-015 | The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal (§A.1, supersedes D-001) | Camden + Claude | 2026-09-21 | Lance — reopens a LOCKED decision; changes every data rate you design against |
+| D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -81,22 +82,26 @@ why the STN chip is preferred.
 and the design doc follow. The PID survey needs no extra hardware — the same adapter does
 it.
 
-## A.2 — Testbeds: Subaru Outback and Lance's Honda 🔒
-`D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+## A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
+`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-005 (§G.2)
 
-**Decision.** Two daily-driven vehicles — Camden's Subaru Outback and Lance's Honda.
+**Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
 
-**Why.** The product's thesis is that a generic maintenance interval is a generalization
-and your car is not generic. One vehicle cannot demonstrate that; two with different duty
-cycles can, and the comparison is the demo's strongest five seconds. Two also gives each
-partner a vehicle they can instrument on their own schedule.
+**Why.** Camden's call, 2026-09-21. D-005 itself named the second vehicle as the first
+thing to cut when the schedule slipped, and the CAN detour (PROMPTLOG E-02) spent that
+slack. One car halves the survey, baseline and ground-truth work, and the baseline window
+is the one thing that cannot be compressed by working harder in Week 14.
 
-**Cost.** Roughly doubles decode and baseline-collection work, and the baseline window is
-the one thing that cannot be compressed by working harder in Week 14. Mitigation: start
-on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
-
-**Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
-mechanism, and not the evaluation. Record it here if it happens.
+**Cost.**
+- The two-car contrast — *"the same sticker says 5,000 miles to both cars, and the cars
+  disagree"* — was the thesis's strongest demonstration, and it is gone. The thesis is now
+  argued within one car: its measured condition against its own sticker and its own
+  Maintenance Minder estimate (D-007).
+- If the CR-V publishes only an oil-pressure switch, diagnostic #1 has no second car to
+  fall back on (`oilq`).
+- Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
+  schedule; Camden owns the capture code but not the car.
 
 ## A.3 — Honda year/model/engine ⚠️ UNREVIEWED
 `D-007` · **Owner:** Lance · **Tracked as:** GitHub issue `honda` (label `question`)
@@ -113,7 +118,7 @@ confirms against the VIN or the door-jamb sticker, then closes the issue.
   lane-keep camera connector to tap. The OBD2 port is the tap point (**D-011**).
 - **Oil pressure is expected to be a switch, not a sender.** This is inference from
   Honda practice, not a service-manual reading; `pidhonda` confirms it. If true, diagnostic
-  #1 cannot run on the Honda from any tap point and rests on the Outback alone (`oilq`).
+  #1 cannot run from any tap point and must be replaced or dropped (`oilq`).
 - **The Honda has Maintenance Minder** — an oil-life percentage estimated from how the
   engine has been run. For this car the "generic 5,000-mile sticker" framing is false, and
   `docs/PROBLEM.md` must answer the skeptic's version instead: *the car already estimates
@@ -124,12 +129,12 @@ We still need, from the car itself: which Mode 01 PIDs the ECU actually supports
 whether oil pressure is published as an analog value or only as an idiot-light bit.
 
 **Why it is urgent.** A large fraction of consumer vehicles publish only a binary
-low-oil-pressure switch. If neither testbed publishes analog oil pressure, **diagnostic
-#1 is not implementable from the bus** and we must substitute a physical sender (real
+low-oil-pressure switch. If the CR-V does not publish analog oil pressure, **diagnostic
+#1 is not implementable from the port** and we must substitute a physical sender (real
 automotive work on a daily driver) or replace the diagnostic. This is the project's named
 risk in `docs/PROBLEM.md`.
 
-**Action.** Run a supported-PID scan on both vehicles with the USB OBD2 adapter (D-015) —
+**Action.** Run a supported-PID scan on the CR-V with the USB OBD2 adapter (D-015) —
 a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
 ## A.4 — Capture the schematic in KiCad; do not fabricate a PCB 🔒
@@ -242,7 +247,7 @@ outstanding request, and only standard read-only Mode 01 requests — the same t
 scan tool does.
 
 **Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
-still E.1: three faults, two cars, measured error rates.
+still E.1: three faults, one car, measured error rates.
 
 ---
 
@@ -458,8 +463,9 @@ diagnostic** — this is checked at the defense.
 ## E.1 — Three induced-and-measured diagnostics, and no more 🔒
 `D-003` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-The claim we defend is: *"detects the three faults we can induce on these two vehicles,
-with these error rates."* Not "predicts failure." Not "generalizes to any post-1996 car."
+The claim we defend is: *"detects the three faults we can induce on this vehicle, with
+these error rates."* Not "predicts failure." Not "generalizes to any post-1996 car."
+*(Narrowed from "these two vehicles" by D-016, 2026-09-21.)*
 
 1. **Oil pressure degradation across oil life** — residual after normalizing for RPM and
    temperature, trended across an interval.
@@ -480,7 +486,7 @@ We cannot wait a semester for a failure, so we provoke conditions and label the 
   within a minute.
 - **Cooling** — partially block radiator airflow with cardboard.
 - **Sensor fault** — unplug a sensor. Also demo day's injected fault, so it gets rehearsed.
-- **Oil** — log continuously across a real oil change on both vehicles. Cannot be faked
+- **Oil** — log continuously across a real oil change on the CR-V. Cannot be faked
   and cannot be rushed, which is why baseline collection starts at M2.
 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
@@ -580,6 +586,25 @@ vehicle. Accepted.
 **What replaced it, and what that cost.** D-015 accepts the mechanism loss this entry
 warned about, in exchange for hardware that works on day one; D-017 records which
 mechanisms survive.
+
+## G.2 — (was A.2) Testbeds: Subaru Outback and Lance's Honda 🗑
+`D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-21 by D-016 (§A.2)** — the second vehicle was cut, as this entry
+said it would be first.
+
+**Decision.** Two daily-driven vehicles — Camden's Subaru Outback and Lance's Honda.
+
+**Why.** The product's thesis is that a generic maintenance interval is a generalization
+and your car is not generic. One vehicle cannot demonstrate that; two with different duty
+cycles can, and the comparison is the demo's strongest five seconds. Two also gives each
+partner a vehicle they can instrument on their own schedule.
+
+**Cost.** Roughly doubles decode and baseline-collection work, and the baseline window is
+the one thing that cannot be compressed by working harder in Week 14. Mitigation: start
+on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
+
+**Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
+mechanism, and not the evaluation. Record it here if it happens.
 
 ---
 

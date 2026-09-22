@@ -70,7 +70,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] **Three-isolated-workers check passes** on `docs/DESIGN.md`: a design-only reviewer, a
       parts-only buyer who never sees the design, and a builder who only follows
       instructions must each succeed from their own section alone
-- [ ] Baseline data collection started on both vehicles — this is the long pole and it
+- [ ] Baseline data collection started on the CR-V — this is the long pole and it
       cannot be compressed later
 
 ## M3 — exit criteria

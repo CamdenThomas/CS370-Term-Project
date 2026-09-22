@@ -9,23 +9,23 @@ replies below the table, dated.
 
 ## What we specifically need to know
 
-Vehicles: Camden's Subaru Outback; Lance's **2015 Honda CR-V EX-L** (D-007 — engine and
-transmission still to be confirmed from the VIN).
+Vehicle: Lance's **2015 Honda CR-V EX-L** (D-007, D-016 — engine and transmission still
+to be confirmed from the VIN).
 
-| PID | Signal | Outback | CR-V | Notes |
-|---|---|---|---|---|
-| 0x0C | RPM | | | |
-| 0x04 | Calculated load | | | |
-| 0x05 | Coolant temp | | | |
-| 0x0F | Intake air temp | | | |
-| 0x0B | MAP | | | |
-| 0x06/0x07 | Short/long term fuel trim B1 | | | |
-| 0x5C | Engine oil temp | | | |
-| **—** | **Oil pressure** | | | **Usually NOT a standard PID.** Try manufacturer (Mode 22) PIDs through the same adapter, or accept that only a binary low-pressure switch exists. |
-| 0x2F | Fuel level | | | |
-| 0x31 | Distance since codes cleared | | | odometer proxy for oil-age trending |
+| PID | Signal | CR-V | Notes |
+|---|---|---|---|
+| 0x0C | RPM | | |
+| 0x04 | Calculated load | | |
+| 0x05 | Coolant temp | | |
+| 0x0F | Intake air temp | | |
+| 0x0B | MAP | | |
+| 0x06/0x07 | Short/long term fuel trim B1 | | |
+| 0x5C | Engine oil temp | | |
+| **—** | **Oil pressure** | | **Usually NOT a standard PID.** Try manufacturer (Mode 22) PIDs through the same adapter, or accept that only a binary low-pressure switch exists. |
+| 0x2F | Fuel level | | |
+| 0x31 | Distance since codes cleared | | odometer proxy for oil-age trending |
 
-## If oil pressure is unavailable on both vehicles
+## If oil pressure is unavailable
 
 Options, in order of preference:
 1. Query manufacturer-specific (Mode 22) PIDs through the same adapter for an analog
