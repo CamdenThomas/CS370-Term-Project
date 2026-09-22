@@ -46,6 +46,7 @@ Decisions currently awaiting a human signature:
 | D-015 | The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal (§A.1, supersedes D-001) | Camden + Claude | 2026-09-21 | Lance — reopens a LOCKED decision; changes every data rate you design against |
 | D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
 | D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
+| D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -565,14 +566,17 @@ Ownership means **first authorship and answerability at the defense**, not exclu
 Each partner must still be able to answer one question from across the boundary — demo day
 guarantees one.
 
-## F.3 — Milestone dates ❓ OPEN
-`D-008` · **Owner:** Camden · **Tracked as:** GitHub issue (label `question`, milestone M0)
-· **Close this week**
+## F.3 — Milestone dates ⚠️ UNREVIEWED
+`D-008` · **Owner:** Camden · **Tracked as:** board item `dates` (label `question`)
+· **Answered:** 2026-09-21, by Camden · **Reviewed:** Camden ⬜ / Lance ⬜
 
-`docs/milestones.md` assumes a semester start of Mon 2026-08-24, placing 2026-09-11 at the
-end of Week 3 — meaning **M0 is due next week**. The handout gives weeks, not dates. If the
-assumption is off by one week the M4 soak start moves, and M4 already lands on Thanksgiving
-week. Verify against the syllabus and mark LOCKED.
+**Answer.** Camden verified the milestone dates against the syllabus (checked off in
+`docs/milestones.md`, 2026-09-21): the `[[milestone]]` dates in `docs/board.toml` stand as
+written, M0 2026-09-20 through M6 2026-12-18. Recorded by Claude from that check-off;
+Camden marks it LOCKED in his own commit.
+
+**Why it mattered.** The handout gives weeks, not dates; a one-week error would have moved
+the M4 soak start, and M4 already lands on Thanksgiving week.
 
 ---
 

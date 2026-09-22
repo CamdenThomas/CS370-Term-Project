@@ -216,6 +216,10 @@ already lands on Thanksgiving week.
 
 Answer: paste the real milestone dates. Then correct docs/milestones.md and the
 [[milestone]] due dates in docs/board.toml, and re-run board_sync. Decision D-008.
+
+**Answered 2026-09-21 (Camden, milestones.md check-off):** the dates in board.toml
+are correct as written. Camden: mark D-008 LOCKED in your own commit, then close this
+issue (question label — needs `--close-questions`).
 '''
 
 [[item]]
@@ -305,6 +309,7 @@ slug = "cleanup"
 milestone = "M0"
 labels = ["task"]
 owner = "camden"
+status = "done"
 title = "M0 admin: raise cleanupPeriodDays on both machines"
 body = '''
 Transcripts purge after 30 days by default; this project runs 15 weeks.
