@@ -166,14 +166,15 @@ slug = "order"
 milestone = "M0"
 labels = ["hardware", "critical-path"]
 owner = "camden"
-title = "M0 hardware: order the core BOM (and the ELM327 in the same cart)"
+title = "M0 hardware: order the core BOM, USB OBD2 adapter first"
 body = '''
-See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, MCP2515+TJA1050, OBD2
-pass-through Y-splitter, 12V-socket USB-C adapter (>= 5.1V / 3A) + cable, jumpers.
-~$100. No buck converter: power is the car's USB-C (D-011).
+See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, a USB OBD2 adapter with an STN
+chip (e.g. OBDLink SX, D-015), a 12V-socket USB-C adapter (>= 5.1V / 3A) + cable, the
+LED and resistor. ~$125.
 
-**Also order the $12 ELM327 now.** It unblocks the PID survey weeks before the
-MCP2515 matters, and the PID survey answers the project's named risk.
+**The OBD2 adapter is the whole data path.** The PID survey, the bench bring-up and
+every capture after them run on it, and the PID survey answers the project's named
+risk.
 
 Critical path B. The handout names shipping time as the most common silent
 schedule-killer, twice. Blocks every piece of physical work in the project.
@@ -189,7 +190,7 @@ owner = "lance"
 decision = "D-007"
 title = "M0 question: confirm the Honda's year, model, engine and transmission"
 body = '''
-Blocks the PID survey (and therefore diagnostic #1) and the CAN bitrate choice.
+Blocks the PID survey (and therefore diagnostic #1).
 
 Need: year, model, engine, transmission.
 
@@ -295,7 +296,7 @@ labels = ["task"]
 owner = "lance"
 title = "M0 review: Lance reads and signs the decision log"
 body = '''
-docs/DECISIONS.md — at minimum §A.1 (MCP2515 over Bluetooth), §B.1 (mechanism
+docs/DECISIONS.md — at minimum §A.1 (USB OBD2 adapter, D-015), §B.1 (mechanism
 commitments), §C.1 (append-only storage) and §D.1 (self-trained model).
 Those four bind your subsystems.
 
@@ -314,15 +315,10 @@ blocked_by = ["order"]
 title = "M1 hardware: supported-PID survey on the Outback"
 body = '''
 Mode 01 PIDs 0x00 / 0x20 / 0x40 / 0x60 return bitmaps of supported PIDs.
-Ten minutes with the ELM327. No custom hardware needed.
+Ten minutes with the USB OBD2 adapter (D-015). No custom hardware needed.
 
 **Most important question: is oil pressure published as an analog value, or only
 as a binary low-pressure switch?**
-
-**Second question, same session (D-012):** run `ATMA` at the port for 60 s with the
-engine running. Constant traffic (or BUFFER FULL) = broadcast present. Silence until
-you send a request = request/response only, which weakens mechanism B's
-justification for this car.
 
 Record results in docs/hardware/pid-survey.md.
 '''
@@ -447,15 +443,15 @@ milestone = "M2"
 labels = ["hardware", "critical-path"]
 owner = "camden"
 blocked_by = ["order"]
-title = "M2 hardware: MCP2515 bench bring-up on the Pi, no car"
+decision = "D-015"
+title = "M2 hardware: USB OBD2 adapter bring-up on the Pi, no car"
 body = '''
-1. Meter the module VCC and MISO with the Pi DISCONNECTED — many cheap boards
-   drive 5V onto MISO and will silently kill the Pi.
-2. Note the crystal: 8 MHz vs 16 MHz changes the overlay and a wrong value
-   produces a silently dead bus.
-3. dtoverlay + dtparam in config.txt, reboot, 'ip link show can0'.
+1. Plug the adapter in; `lsusb` for its vendor/product ID; record both and the
+   adapter's baud in docs/hardware/wiring.md.
+2. Install the /dev/obd udev rule (scripts/provision_pi.sh); `ls -l /dev/obd`.
+3. `screen /dev/obd <baud>`, send `ATZ` — the adapter answers with its version.
 
-See docs/hardware/wiring.md. Wire with the board powered off.
+Originally the MCP2515 bring-up; rewritten when D-015 made raw CAN a stretch goal.
 '''
 
 [[item]]
@@ -463,9 +459,13 @@ slug = "twonode"
 milestone = "M2"
 labels = ["hardware"]
 owner = "camden"
+status = "done"
 blocked_by = ["bench"]
 title = "M2 hardware: two-node bench CAN bus — prove frames move before a car is attached"
 body = '''
+**Cut 2026-09-21 (D-015).** Raw CAN became a stretch goal; with a USB OBD2 adapter
+there is no bus of ours to prove on the bench. Reopen only with the CAN stretch goal.
+
 MCP2515 module + USB-to-CAN adapter on the same bench bus.
 
 Do not skip this. Debugging a silent bus with a car attached is debugging two
@@ -477,12 +477,13 @@ slug = "firstcap"
 milestone = "M2"
 labels = ["hardware", "critical-path"]
 owner = "camden"
-blocked_by = ["twonode"]
+blocked_by = ["bench"]
 title = "M2 hardware: first live capture from a real car"
 body = '''
-Key to accessory first, then running. 'candump can0 > capture.log'.
+Key to run, engine off: `0100` returns the supported-PID bitmap. Then engine running:
+log raw replies to a file, labeled src=live. Crude is fine — `screen -L` is fine.
 
-This is the M2 exit criterion: both sensors electrically alive.
+This is the M2 exit criterion: real Mode 01 replies from a real car, captured.
 '''
 
 [[item]]
@@ -498,7 +499,7 @@ Diagnostic #1 claims oil pressure degrades measurably across an oil-change
 interval. That needs a real interval to develop — 5-7 weeks of driving — and
 calendar time cannot be bought back by working harder in Week 14.
 
-Crude is fine. 'candump' to a file on a timer is fine. **On time is not optional.**
+Crude is fine. Raw adapter replies to a file on a timer is fine. **On time is not optional.**
 A crude capture that starts now beats an elegant one that starts three weeks late.
 
 If this has not started by the M2 deadline, diagnostic #1 is dead — decide that
@@ -663,9 +664,13 @@ slug = "meterv"
 milestone = "M2"
 labels = ["hardware", "critical-path"]
 owner = "camden"
+status = "done"
 blocked_by = ["order"]
 title = "M2 hw: measure MCP2515 module VCC and MISO with the Pi DISCONNECTED"
 body = '''
+**Cut 2026-09-21 (D-015).** No MCP2515 is ordered; the USB OBD2 adapter never touches
+the Pi's GPIO. Reopen only with the CAN stretch goal.
+
 Cheap MCP2515 breakouts vary. Some run the TJA1050 at 5V and level-shift the
 controller side; some do not, and those drive **5V onto MISO**, which kills a Pi
 silently — sometimes taking the whole SoC with it.
@@ -732,17 +737,14 @@ labels = ["task"]
 owner = "camden"
 decision = "D-012"
 blocked_by = ["firstcap", "designdoc"]
-title = "M3 can: rate-limited Mode 01 requester with a --listen-only flag"
+title = "M3 obd: rate-limited Mode 01 requester on the adapter tty"
 body = '''
-Primary data path (D-012). Round-robin the PID list at the request budget set in
-docs/DESIGN.md §4, one request outstanding at a time, functional ID 0x7DF,
-responses 0x7E8-0x7EF.
+Primary data path (D-012, D-015). Open /dev/obd, initialise the adapter (ATZ, ATE0,
+ATSP0), then round-robin the PID list at the request budget set in docs/DESIGN.md §4,
+one request outstanding at a time. Parse each reply into a ring slot.
 
 Must log every timeout and every unanswered PID — a PID the car stops answering is
 a sensor fault the analysis must see, not a gap it silently fills.
-
---listen-only puts the MCP2515 in listen-only mode and sends nothing, for either
-owner who objects to the device transmitting on their car.
 '''
 
 [[item]]
@@ -1065,12 +1067,13 @@ decision = "D-011"
 blocked_by = ["order"]
 title = "M2 hardware: prove the USB-C supply — switched, and no brown-out at crank"
 body = '''
-Originally "measure key-off current draw" on OBD2 pin 16. Under D-011 the device is
+Originally "measure key-off current draw" on OBD2 pin 16. Under D-011 the Pi is
 powered from the car's USB-C port instead, so the questions changed:
 
 1. Is the port switched? Meter key off / ACC / run, on both cars.
 2. Does the Pi survive a cold crank? `vcgencmd get_throttled` must read 0x0 after.
-3. Ground offset between Pi GND and OBD2 pin 5, engine running.
+3. The USB OBD2 adapter still draws from pin 16, live with the key off (D-015).
+   Measure its key-off current before leaving it plugged in overnight.
 
 Record every number in docs/hardware/wiring.md and docs/EVALUATION.md.
 '''

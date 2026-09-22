@@ -36,38 +36,35 @@ baseline collection starts ──── 5-7 weeks of driving ────▶ oil
 ```
 
 **Consequence:** logging must be running on both cars by the end of M2, even if the code
-is ugly, even if it is just `candump` to a file. A crude capture that starts on time beats
+is ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts on time beats
 an elegant one that starts three weeks late. **If baseline collection has not started by the
 M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2 and #3 — decide that
 consciously, record it in `DECISIONS.md`, and narrow the claim in writing.
 
-Board chain: `order` → `bench` → `twonode` → `firstcap` → **`baseline`** → `foil`.
+Board chain: `order` → `bench` → `firstcap` → **`baseline`** → `foil`, with `keyoff`
+(the USB-C supply proven) also gating `baseline`.
 
 ### Critical path B — hardware lead time
 
 ```
-order (M0) ──▶ arrives ──▶ bench bring-up ──▶ two-node bench bus ──▶ first live car capture ──▶ pipeline (M3)
+order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first live car capture ──▶ pipeline (M3)
 ```
 
 Nothing downstream of "arrives" can start early. The handout names shipping time as the most
-common silent schedule-killer, twice. **Order on the day you read this**, and order the $12
-ELM327 in the same cart — it unblocks the PID survey weeks before the MCP2515 matters.
+common silent schedule-killer, twice. **Order on the day you read this.** The USB OBD2
+adapter (D-015) is the whole data path — the same part runs the PID survey, the bench
+bring-up and every capture after it.
 
-Board chain: `order` blocks `pidsub`, `pidhonda`, `bench` and `meterv` — five of the eight
-M0/M1 items and everything physical after them.
+Board chain: `order` blocks the PID survey, `bench` and `keyoff`, and everything physical
+after them.
 
 ### The one cheap experiment that de-risks everything
 
 **The PID survey (`pidsub` on the Outback, `pidhonda` on the Honda).** Ten minutes per car,
-$12, no custom hardware. It answers the project's named risk: *does either testbed actually
+no custom hardware — just the adapter. It answers the project's named risk: *does either testbed actually
 publish analog oil pressure?* If the answer is no, we find out in Week 4 with the whole
 design still soft, instead of Week 11 with the analysis engine half-written around a value
 that does not exist. Both feed `oilq`, which is where the answer gets recorded.
-
-The same ten minutes answers a second question for free: a 60 s `ATMA` capture says whether
-the port carries broadcast traffic or only answers our requests (D-012). That decides
-whether mechanism B's buffer-overflow argument holds on each car — worth knowing before
-the design document argues it.
 
 ---
 
@@ -78,7 +75,7 @@ the design document argues it.
 | **M0** | 4 | Commit and order | Parts ordered, questions asked, board live |
 | **M1** | 5 | Know the problem | A named user, a named risk, and PID survey results |
 | **M2** | 6–7 | Argue on paper | Design settled, **logging running on both cars** |
-| **M3** | 8–10 | Build the spine | Frames → ring → disk, supervised, on a real car |
+| **M3** | 8–10 | Build the spine | Samples → ring → disk, supervised, on a real car |
 | **M4** | 11–14 | Make it smart, then prove it | Analysis done, experiments measured, soak passed |
 | **M5** | 15 | Account for it honestly | Report written, limits named, history clean |
 | **M6** | 15–16 | Defend it | Both partners fluent in both halves |

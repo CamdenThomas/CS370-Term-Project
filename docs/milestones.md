@@ -57,8 +57,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] A **named** user and a **named** vehicle — not a persona
 - [ ] Risk named plainly
 - [ ] Both partners' transcripts copied to `partners/<name>/transcripts/`
-- [ ] Stretch: MCP2515 module physically talking to the Pi over SPI (`ip link` shows
-      the interface), even if no car is involved yet
+- [ ] Stretch: the USB OBD2 adapter answering the Pi as `/dev/obd` (`ATZ` returns its
+      version string), even if no car is involved yet
 
 ## M2 — exit criteria
 
@@ -66,7 +66,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       justified _from user requirements_; failure-mode table; storage/retention/fsync
       policy; constraints-and-substitutions section; evaluation plan with committed
       target numbers; ownership map; AI-use plan
-- [ ] Both sensors electrically alive — real frames from a real car, captured to a file
+- [ ] Both sensors alive — real Mode 01 replies from a real car, captured to a file
 - [ ] **Three-isolated-workers check passes** on `docs/DESIGN.md`: a design-only reviewer, a
       parts-only buyer who never sees the design, and a builder who only follows
       instructions must each succeed from their own section alone

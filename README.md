@@ -1,7 +1,7 @@
 # carwatch
 
-An always-on in-vehicle diagnostic recorder. It reads a car's own sensors off the CAN
-bus, learns what *that specific car* looks like at each operating point, and reports
+An always-on in-vehicle diagnostic recorder. It reads a car's own sensors through the
+OBD2 port, learns what *that specific car* looks like at each operating point, and reports
 developing faults that a mileage sticker and a check-engine light both miss.
 
 CS 370 Operating Systems term project — Camden Thomas & Lance Baron, Colorado State
@@ -21,10 +21,10 @@ University.
 ## Hardware
 
 See `docs/hardware/BOM.md` for the parts list and `docs/hardware/wiring.md` for the
-pinout and the 3.3 V safety notes. Summary: Raspberry Pi 4, MCP2515 + TJA1050 CAN
-module on SPI0 with `INT` on a GPIO, OBD2 pass-through Y-splitter (CAN_H pin 6, CAN_L
-pin 14, signal ground pin 5). Power comes from the car's USB-C port or a 12 V-socket
-USB-C adapter — no wiring into the car, nothing cut (decision D-011). One LED on
+connections and the safety notes. Summary: a Raspberry Pi 4 and a USB OBD2 adapter in
+the car's OBD2 port, appearing on the Pi as `/dev/obd` (decision D-015). Power comes
+from the car's USB-C port or a 12 V-socket USB-C adapter — no wiring into the car,
+nothing cut (decision D-011). One LED on
 GPIO17 is the warning light: slow blink = recording, double-blink = a finding, fast
 blink = degraded, **steady on or off = not running** (decision D-014).
 
@@ -32,7 +32,7 @@ blink = degraded, **steady on or off = not running** (decision D-014).
 
 ```sh
 git clone <repo> && cd CS370-Term-Project
-./scripts/provision_pi.sh      # packages, SPI overlay, user, service units
+./scripts/provision_pi.sh      # packages, /dev/obd udev rule, service units
 make                           # -Wall -Wextra -Werror clean
 make test
 sudo ./scripts/install.sh      # installs supervisor + daemons

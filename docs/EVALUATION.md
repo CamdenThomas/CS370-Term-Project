@@ -14,7 +14,7 @@ how many trials. Enough for a TA to re-measure.
 ## 2. Latency / timing
 > Distributions, not just means. Under both idle and loaded CPU.
 
-- CAN frame arrival → durable in the log: p50 / p95 / p99 / max, idle and loaded
+- OBD reply arrival (tty read) → durable in the log: p50 / p95 / p99 / max, idle and loaded
 - Histogram, not a table of means. [figure]
 
 ## 3. Resource footprint

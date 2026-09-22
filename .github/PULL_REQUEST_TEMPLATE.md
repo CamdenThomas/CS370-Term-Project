@@ -51,8 +51,8 @@
 ```
 </details>
 
-<!-- Hardware changes also require real evidence: dmesg verbatim, /proc/interrupts
-     before and after, timing capture, candump excerpt. No fixes argued from a verbal
+<!-- Hardware changes also require real evidence: dmesg verbatim, raw adapter replies,
+     vcgencmd get_throttled, timing capture. No fixes argued from a verbal
      description of the symptom. -->
 
 

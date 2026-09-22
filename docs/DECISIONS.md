@@ -39,41 +39,47 @@ Decisions currently awaiting a human signature:
 | ID | Decision | Made by | Session date | Reviewer needed |
 |---|---|---|---|---|
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
-| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power and CAN schematic blocks |
-| D-012 | Rate-limited Mode 01 requests are the primary data path; broadcast is a bonus (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
+| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power schematic block |
+| D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
+| D-015 | The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal (§A.1, supersedes D-001) | Camden + Claude | 2026-09-21 | Lance — reopens a LOCKED decision; changes every data rate you design against |
 
-> All decisions below were made with Camden in the conversation and are marked LOCKED
-> accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
-> §A.1, §B.1, §C.1 and §D.1, since those bind your subsystems.
+> Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
+> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
+> subsystems.
 
 ---
 
 # A. Hardware and interfaces
 
-## A.1 — CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🔒
-`D-001` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+## A.1 — The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal ⚠️ UNREVIEWED
+`D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-001 (§G.1)
 
-**Decision.** The Pi reads raw CAN frames through an MCP2515 + TJA1050 module on SPI0,
-with the controller's `INT` line on a GPIO for edge-triggered receive. Not a Bluetooth
-ELM327 dongle.
+**Decision.** A USB OBD2 adapter with an ELM327-compatible chip plugs into the OBD2 port
+and appears on the Pi as a serial device, pinned to `/dev/obd` by a udev rule. Our C daemon
+sends Mode 01 requests over it and parses the replies. Prefer an STN-chip adapter (e.g.
+OBDLink SX) over a clone ELM327. No MCP2515, no SPI, no CAN wiring.
 
-**Why.** A Bluetooth ELM327 hands us parsed ASCII over a userspace socket at a few
-samples per second. With no interrupt line, no SPI transaction and no bus-level timing,
-mechanisms **A, B, C and F all become unavailable** — and the handout requires at least
-two mechanisms implemented by us, below the application layer. The MCP2515 path keeps
-the kernel boundary inside our repository, where it is graded. It is also better for the
-user: raw bus access sees frames the ELM327 protocol never exposes, at the rate the ECU
-publishes them rather than the rate a request/response dongle can poll.
+**Raw CAN is a stretch goal** — an MCP2515 on SPI, taken up only after mechanisms D and E
+are implemented *and measured*.
 
-**Cost.** More wiring, a 3.3 V/5 V level question to get right, one-time decode work per
-vehicle. Accepted.
+**Why.** Camden's call (PROMPTLOG E-02): time spent making raw CAN access work was time
+not spent on the problem. The adapter speaks every OBD2 protocol for us, which is exactly
+what a plug-in product (D-011) needs, and it removes a class of hardware risk — 5 V on
+MISO, crystal frequency, bus termination — that could kill a Pi or disturb a daily
+driver's bus.
 
-**Consequences.** `src/can/` owns SPI transactions and the IRQ path (Camden). The
-interrupt-vs-polling comparison is a first-class deliverable, not an afterthought. A
-Bluetooth ELM327 may appear in `tools/` as a cross-check; it may never be the product's
-path.
+**Cost — the reason D-001 existed, still true.** An adapter hands us parsed ASCII at
+roughly 10–20 PID replies per second, with no interrupt line and no bus timing. That
+takes most of the mechanism menu away from the OBD data path; **D-017** records what
+survives. Clone ELM327s are also unreliable (truncated buffers, fake firmware), which is
+why the STN chip is preferred.
+
+**Consequences.** The capture daemon becomes a serial reader. Wiring, BOM, provisioning
+and the design doc follow. The PID survey needs no extra hardware — the same adapter does
+it.
 
 ## A.2 — Testbeds: Subaru Outback and Lance's Honda 🔒
 `D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
@@ -114,9 +120,8 @@ confirms against the VIN or the door-jamb sticker, then closes the issue.
   this.* The answer is that the Minder is an open-loop estimate from a usage model; it
   never measures the engine's condition. Ours measures.
 
-We still need, from the car itself: which Mode 01 PIDs the ECU actually supports, whether
-oil pressure is published as an analog value or only as an idiot-light bit, and the bus
-bitrate.
+We still need, from the car itself: which Mode 01 PIDs the ECU actually supports, and
+whether oil pressure is published as an analog value or only as an idiot-light bit.
 
 **Why it is urgent.** A large fraction of consumer vehicles publish only a binary
 low-oil-pressure switch. If neither testbed publishes analog oil pressure, **diagnostic
@@ -124,9 +129,8 @@ low-oil-pressure switch. If neither testbed publishes analog oil pressure, **dia
 automotive work on a daily driver) or replace the diagnostic. This is the project's named
 risk in `docs/PROBLEM.md`.
 
-**Action.** Run a supported-PID scan on both vehicles with a $12 ELM327 — a $0, ten-minute
-experiment that does not need the MCP2515 to have arrived. Record in
-`docs/hardware/pid-survey.md`.
+**Action.** Run a supported-PID scan on both vehicles with the USB OBD2 adapter (D-015) —
+a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
 ## A.4 — Capture the schematic in KiCad; do not fabricate a PCB 🔒
 `D-009` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
@@ -175,13 +179,15 @@ it; populate it as parts are drawn.
 ## A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
 `D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
+*Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
+became a USB OBD2 adapter.*
+
 **Decision.** The device is a box anyone could install without tools:
-- **Data:** a Y-splitter (pass-through) cable at the OBD2 port — CAN_H pin 6, CAN_L pin 14,
-  signal ground pin 5 — into the MCP2515 module. The port stays usable for a scan tool
-  or an emissions inspection.
+- **Data:** the USB OBD2 adapter (D-015) plugs into the OBD2 port; one USB cable runs to
+  the Pi.
 - **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
-  **OBD2 pin 16 is not used.** The 12 V→5 V buck converter leaves the BOM.
-- **Nothing is cut, spliced, pierced or clamped** on either car.
+  No buck converter.
+- **Nothing is cut, spliced, pierced or clamped** on the car.
 
 **Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
 prototype is built the way the product would be installed. We are building the model to
@@ -190,50 +196,40 @@ harness surgery proves a different, less interesting idea. Switched USB power al
 no battery drain while parked, and it makes mechanism D's defining constraint literally
 true: power is cut, unannounced, at every key-off.
 
-**Alternatives rejected** (discussed 2026-09-21):
-- *Splice CAN_H/CAN_L behind the OBD2 port.* The wires behind the port are the same
-  conductors as pins 6 and 14 — same traffic, plus a cut harness on a daily driver. If a
-  gateway were filtering the port, a splice there would not get past it either.
-- *In-line harness at the forward camera.* Not available: the 2015 CR-V EX-L has no Honda
-  Sensing camera (D-007).
-- *Contactless (inductive) CAN clamp.* Receive-only, a black box between the bus and our
-  code, and it needs a wiring diagram to find the pair.
-- *OBD2 pin 16 + our own buck converter.* Live with the key off (battery drain), and more
-  hardware to build and defend.
+**Alternatives rejected** (discussed 2026-09-21): splicing the bus behind the OBD2 port
+(the same conductors as the port pins, plus a cut harness on a daily driver); an in-line
+harness at the forward camera (the 2015 CR-V EX-L has none, D-007); a contactless bus
+clamp (receive-only, a black box); powering the Pi from OBD2 pin 16 through our own buck
+converter (live with the key off, and more hardware to build and defend).
 
-**Rules this imposes** (also in `docs/hardware/wiring.md`):
-1. **Remove the module's 120 Ω termination jumper.** The car's bus is already terminated;
-   ours would drop it to ~40 Ω.
-2. **Keep the stub short** — the Y-cable plus module leads under ~0.3 m at 500 kbit/s.
-3. **The Pi must not brown out at crank.** Adapter rated ≥ 5.1 V / 3 A (Pi 4). Proven by
-   `vcgencmd get_throttled` after a cold start, not by the adapter's label.
+**Rule this imposes:** **the Pi must not brown out at crank.** The USB-C supply is rated
+≥ 5.1 V / 3 A (Pi 4), and is proven by `vcgencmd get_throttled` after a cold start, not
+by its label (`docs/hardware/wiring.md`).
 
 **Cost.**
 - No recording while the key is off — nothing happens then worth recording, but the device
   also cannot run overnight in a parked car.
+- **The OBD2 adapter itself draws from pin 16, which is live with the key off.** Its
+  key-off current must be measured before it is left plugged in overnight.
 - D-006 option (c), the parked-car soak, now requires a socket that stays live in
   accessory plus a battery tender.
-- USB ground and OBD2 signal ground both reach chassis by different paths. Expected to be
-  harmless; **measure before trusting it** (CLAUDE.md §8.4).
-- The CAN side still needs a physical cable to the port; the product is "one box, two
-  cables", not "one dongle".
+- The product is "one box, two cables", not "one dongle".
 
 ## A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 `D-012` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-**Decision.** `candaemon` gets its signals by sending **standard OBD2 Mode 01 requests** at
-a fixed, rate-limited schedule (functional request ID `0x7DF`, responses `0x7E8`–`0x7EF`,
-one request outstanding at a time). Manufacturer broadcast frames are recorded when the
-port carries them and used where decoded, but **nothing depends on them.** A
-`--listen-only` build flag puts the MCP2515 in listen-only mode and sends nothing.
+*Revised 2026-09-21 by D-015, before any review: the CAN-level detail (arbitration IDs,
+broadcast frames, a listen-only flag, the port-traffic check) went with the MCP2515.*
+
+**Decision.** The capture daemon gets its signals by sending **standard OBD2 Mode 01
+requests** through the USB adapter (D-015) on a fixed, rate-limited, round-robin schedule,
+one request outstanding at a time. Every timeout and every unanswered PID is logged.
 
 **Why.** D-011 makes this a plug-in device, and the thing that makes a plug-in device work
-on a car it has never seen is the part of the protocol every car must speak. Mode 01 over
-CAN is mandatory on US cars from model year 2008; manufacturer frames differ per make, per
-model, often per year. This also matches D-005's existing mitigation — "start on standard
-Mode 01 PIDs only". *"Learns this car's normal"* is precisely what lets one device serve
-different cars without per-model decode work: it never needs to know what normal *is*
-ahead of time.
+on a car it has never seen is the part of the protocol every car must speak: Mode 01 is
+mandatory on US cars from model year 1996. *"Learns this car's normal"* is precisely what
+lets one device serve different cars without per-model decode work: it never needs to
+know what normal *is* ahead of time.
 
 **Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
 (request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
@@ -241,17 +237,9 @@ ahead of time.
 fuel trim against load) and must be stated in `docs/DESIGN.md` §4. The request budget itself
 is a design-doc number to justify, not a constant to pick.
 
-**Consequence for mechanism B — to check, not assumed.** D-002's case for interrupts is a
-busy 500 kbit/s bus overflowing the MCP2515's two buffers in milliseconds. That holds only
-if the port carries **broadcast** traffic. If a car's port is silent except for our own
-responses, B's *commitment* stands but its *justification* on that car does not. The PID
-survey now includes a 60 s `ATMA` capture at the port for exactly this
-(`docs/hardware/pid-survey.md`). If both ports are quiet, B.1's justification is reopened
-with a human — not quietly rewritten.
-
-**Cost.** The device now transmits on a daily driver's bus. Kept safe by the rate limit,
-one outstanding request, and only standard requests; the listen-only flag is the fallback
-if either owner objects.
+**Cost.** The device sends requests to the car's ECU. Kept safe by the rate limit, one
+outstanding request, and only standard read-only Mode 01 requests — the same thing every
+scan tool does.
 
 **Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
 still E.1: three faults, two cars, measured error rates.
@@ -351,7 +339,7 @@ pattern*:
 
 | Light | Meaning | Priority |
 |---|---|---|
-| fast blink (~4 Hz) | **degraded** — a child is down, CAN silent while the engine runs, storage failing, or undervoltage | highest |
+| fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
 | double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
 | slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
 | **steady on or steady off** | **the device is not running.** Never a valid state. | — |
@@ -566,9 +554,32 @@ week. Verify against the syllabus and mark LOCKED.
 
 # G. Superseded
 
-*(none yet — when a decision is replaced, move it here with a pointer to its replacement.
-Never delete one. The reasoning is evidence, and "what M2 got wrong" is a graded section of
-`docs/DESIGN.md`.)*
+When a decision is replaced, it moves here with a pointer to its replacement. Never delete
+one: the reasoning is evidence, and "what M2 got wrong" is a graded section of
+`docs/DESIGN.md`.
+
+## G.1 — (was A.1) CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🗑
+`D-001` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-21 by D-015 (§A.1)** — raw CAN became a stretch goal.
+
+**Decision.** The Pi reads raw CAN frames through an MCP2515 + TJA1050 module on SPI0,
+with the controller's `INT` line on a GPIO for edge-triggered receive. Not a Bluetooth
+ELM327 dongle.
+
+**Why.** A Bluetooth ELM327 hands us parsed ASCII over a userspace socket at a few
+samples per second. With no interrupt line, no SPI transaction and no bus-level timing,
+mechanisms **A, B, C and F all become unavailable** — and the handout requires at least
+two mechanisms implemented by us, below the application layer. The MCP2515 path keeps
+the kernel boundary inside our repository, where it is graded. It is also better for the
+user: raw bus access sees frames the ELM327 protocol never exposes, at the rate the ECU
+publishes them rather than the rate a request/response dongle can poll.
+
+**Cost.** More wiring, a 3.3 V/5 V level question to get right, one-time decode work per
+vehicle. Accepted.
+
+**What replaced it, and what that cost.** D-015 accepts the mechanism loss this entry
+warned about, in exchange for hardware that works on day one; D-017 records which
+mechanisms survive.
 
 ---
 
