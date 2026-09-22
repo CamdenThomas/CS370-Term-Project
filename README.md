@@ -68,7 +68,7 @@ src/                systems core, C17, -Wall -Wextra -Werror clean
   supervisor/       spawn, restart with backoff, heartbeats, warning light [mechanism E]
   interface/        obdctl CLI + read-only phone status page (D-013)
   common/           logging and shared helpers
-include/            headers, one directory per src/ subsystem
+include/            headers shared between subsystems (common, ipc, store)
 tests/              unit tests (make test)
 tools/              Python only here: board sync, PID scan, replay, training
 scripts/            provision a clean Pi; install the service
