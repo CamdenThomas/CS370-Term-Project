@@ -14,6 +14,7 @@
 | 1 | 12 V socket → USB-C adapter, ≥ 5.1 V / 3 A | $12 | Powers the Pi (D-011). Skip only if the car's built-in USB-C port is **measured** to hold 3 A through a cold crank. |
 | 1 | USB-C cable, short, 3 A-rated | $6 | |
 | 1 | Jumper wires + breadboard | $8 | |
+| 1 | 5 mm LED + 330 Ω resistor | $1 | The warning light (D-014). Any colour; pick it for the enclosure. |
 | 1 | Multimeter | — | Assume you have one. Do not skip the voltage check. |
 
 **Core subtotal ≈ $100.**

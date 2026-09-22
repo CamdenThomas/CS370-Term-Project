@@ -41,9 +41,9 @@
                     ▲                          ▲
                     └──────────┬───────────────┘
                                │ spawn / heartbeat / restart-with-backoff
-                        ┌──────────────┐
-                        │  supervisor  │  [mech E]
-                        └──────────────┘
+                        ┌──────────────┐  GPIO17
+                        │  supervisor  │──────────▶ warning light (D-014)
+                        └──────────────┘  [mech E]  blink = alive; steady = not running
 ```
 
 **TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
@@ -79,7 +79,7 @@ each here with the measured numbers that justify it.
 | storaged | disk full | | | |
 | storaged | power cut mid-write | CRC mismatch on recovery scan | truncate torn tail | |
 | analyzed | model file missing or corrupt | | fall back to residuals only | |
-| supervisor | itself dies | systemd `Restart=always` | | |
+| supervisor | itself dies | systemd `Restart=always` | warning light freezes steady, which by design reads "not running" (D-014) | |
 | status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
 | clock | no RTC, time jumps at boot | | | |
 | power | USB port sags at crank; Pi undervolts but keeps running (D-011) | `vcgencmd get_throttled` polled by supervisor | | |

@@ -86,7 +86,8 @@ coolant temp, MAP, O2, fuel trims, RPM, load — and builds a statistical model 
 normal looks like *for this car, at this operating point*. It then reports deviations
 that a mileage sticker and a check-engine light both miss. The owner reads it from their
 phone over the device's own Wi-Fi — read-only, no internet (D-013); `obdctl` stays the
-exact interface.
+exact interface. A single warning light on the box blinks while it is on duty and
+changes pattern when something needs attention (D-014).
 
 **The user:** a named owner of a specific car who wants maintenance driven by measured
 condition instead of a generic interval. Testbeds: a **Subaru Outback** and **Lance's

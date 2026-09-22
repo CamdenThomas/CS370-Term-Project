@@ -19,6 +19,16 @@
 | SCK | 23 | GPIO11 / SPI0_SCLK | |
 | INT | [TBD] | GPIO25 (proposed) | Edge-triggered. This line *is* mechanism B. |
 
+## Warning light → Pi (D-014)
+
+| Part | Pi pin | Pi signal | Note |
+|---|---|---|---|
+| LED anode, via 330 Ω | 11 | GPIO17 (proposed) | ~4 mA at 3.3 V — well inside the pin's limit. Written only by the supervisor. |
+| LED cathode | 9 | GND | |
+
+Every live state is a blink pattern; a **steady** light, on or off, means the device is not
+running (DECISIONS §B.5).
+
 **Crystal:** note whether your module has an 8 MHz or 16 MHz crystal — it goes straight
 into the bitrate configuration and a wrong value produces a silently dead bus.
 

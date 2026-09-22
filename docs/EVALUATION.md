@@ -37,12 +37,13 @@ separately because a monitor that cries wolf twice gets unplugged.
 > For each failure mode in the design document's table: what we injected, what the
 > system did, and **the log excerpt proving it**.
 
-| Injected | Expected | Observed | Log excerpt |
-|---|---|---|---|
-| Sensor unplugged 10 min | | | |
-| `kill -9 candaemon` | | | |
-| Power cut mid-write | | | |
-| Disk full | | | |
+| Injected | Expected | Observed | Warning light (D-014) | Log excerpt |
+|---|---|---|---|---|
+| Sensor unplugged 10 min | | | | |
+| `kill -9 candaemon` | | | | |
+| `kill -9 supervisor` | | | | |
+| Power cut mid-write | | | | |
+| Disk full | | | | |
 
 ## 6. Mechanism comparisons
 > Required by our menu choices. Present as experiments: method, data, conclusion.

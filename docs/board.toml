@@ -633,7 +633,8 @@ owner = "lance"
 blocked_by = ["bench"]
 title = "M2 hw: draw the Pi interface block"
 body = '''
-40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, grounds.
+40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, the warning-light
+LED + 330R on GPIO17 / pin 11 (D-014), grounds.
 
 The Pi has no 5V-tolerant inputs and no over-voltage protection.
 '''
@@ -784,6 +785,25 @@ child in a tight loop because its hardware is gone is a restart storm, and it is
 the failure most likely to appear at hour 31 of the soak.
 
 Distinguish 'crashed' from 'absent' and log the distinction.
+'''
+
+[[item]]
+slug = "led"
+milestone = "M3"
+labels = ["task"]
+decision = "D-014"
+blocked_by = ["supfork"]
+title = "M3 supervisor: drive the warning light from child health and verdicts"
+body = '''
+D-014. The supervisor is the only writer of GPIO17. Every live state blinks:
+slow = on duty, double-blink = a verdict surfaced, fast = degraded. A steady light,
+on or off, must only ever mean "not running".
+
+The blink timer must never delay waitpid handling — fold it into the supervisor's
+existing event loop, do not add a thread.
+
+Test: kill -9 the supervisor and confirm the light freezes steady; kill -9
+analyzed and confirm it goes to fast blink, not a stale verdict.
 '''
 
 [[item]]
@@ -1068,6 +1088,9 @@ title = "M4 ground truth: sensor unplug — and demo-day rehearsal"
 body = '''
 They WILL unplug a sensor mid-demo, at a moment of their choosing. Announced in
 the handout so nobody can call it unfair. Rehearse it until it is boring.
+
+The warning light must go to fast blink within seconds, and the phone page must
+show the same degraded state (D-013, D-014).
 '''
 
 [[item]]

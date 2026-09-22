@@ -32,7 +32,7 @@ architecture, which makes both documents easier to defend:
 |---|---|
 | **Power** | USB-C input from the car (switched, D-011) as an off-sheet connector, the Pi's 5 V rail, bulk and bypass caps. **No** OBD2 pin 16 and no buck converter. |
 | **CAN** | OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050 transceiver, MCP2515, crystal + load caps, termination jumper **drawn open** (D-011), `INT` to GPIO |
-| **Pi interface** | 40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, grounds |
+| **Pi interface** | 40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, the warning-light LED + 330 Ω on GPIO17 (D-014), grounds |
 | **Sensors** *(conditional, D-006)* | MPU-6050 on I2C with pull-ups; DS18B20 on 1-Wire with its 4.7 kΩ |
 
 ## Rules

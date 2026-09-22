@@ -42,6 +42,7 @@ Decisions currently awaiting a human signature:
 | D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power and CAN schematic blocks |
 | D-012 | Rate-limited Mode 01 requests are the primary data path; broadcast is a bonus (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
+| D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
 
 > All decisions below were made with Camden in the conversation and are marked LOCKED
 > accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
@@ -340,6 +341,39 @@ remains demonstrable through `obdctl` alone.
 - **Open sub-decision (M2, both):** the server's language. C in `src/interface/` keeps an
   interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
   §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
+
+## B.5 — One warning light, driven by the supervisor ⚠️ UNREVIEWED
+`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+**Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
+**only by the supervisor**. Every state in which the device is working is a *blink
+pattern*:
+
+| Light | Meaning | Priority |
+|---|---|---|
+| fast blink (~4 Hz) | **degraded** — a child is down, CAN silent while the engine runs, storage failing, or undervoltage | highest |
+| double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
+| slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
+| **steady on or steady off** | **the device is not running.** Never a valid state. | — |
+
+**Why a light at all.** The 3 a.m. test: nobody is looking at a phone at the moment that
+matters. It also makes "honest reporting through our own interface" (demo movement 1)
+visible from across the room when a sensor is unplugged.
+
+**Why every live state blinks.** A GPIO keeps its last level after the process driving it
+dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
+alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
+either kind can only mean *not running*. This is D-002's principle — a recorder that dies
+silently has harmed its user — applied to the one output a driver actually sees.
+
+**Why the supervisor, not `analyzed`.** The supervisor already knows every child's
+liveness (mechanism E), so it can show "degraded" when `analyzed` itself has died; a light
+owned by `analyzed` would show a stale verdict instead. Verdicts reach the supervisor over
+the existing UDS. One writer, no GPIO contention.
+
+**Cost.** One more thing the supervisor does, and one more thing it must not block on: the
+blink timer must never delay `waitpid` handling. Colour, brightness and placement are open
+(M4 enclosure).
 
 ---
 
