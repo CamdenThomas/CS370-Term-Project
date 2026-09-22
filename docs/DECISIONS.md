@@ -561,7 +561,7 @@ Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 
 | Owner | Subsystems |
 |---|---|
-| **Camden** | `src/can/`, `src/ipc/` |
+| **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
 

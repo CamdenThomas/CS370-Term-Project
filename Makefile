@@ -29,7 +29,7 @@ TEST_BIN   = $(TEST_SRC:tests/%.c=$(BIN)/%)
 
 all: $(DAEMON_BIN)
 
-$(BIN)/candaemon:  $(BUILD)/src/can/main.o        $(COMMON_OBJ)
+$(BIN)/candaemon:  $(BUILD)/src/obd/main.o        $(COMMON_OBJ)
 $(BIN)/storaged:   $(BUILD)/src/store/main.o      $(COMMON_OBJ)
 $(BIN)/analyzed:   $(BUILD)/src/analysis/main.o   $(COMMON_OBJ)
 $(BIN)/supervisor: $(BUILD)/src/supervisor/main.o $(COMMON_OBJ)

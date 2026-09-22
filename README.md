@@ -61,7 +61,7 @@ deeper is `obdctl` (decision D-013).
 
 ```
 src/                systems core, C17, -Wall -Wextra -Werror clean
-  can/              capture daemon: Mode 01 requests over the OBD2 adapter tty
+  obd/              capture daemon: Mode 01 requests over the OBD2 adapter tty
   ipc/              SPSC ring + Unix-socket protocol between processes   [mechanism E]
   store/            append-only crash-consistent log                     [mechanism D]
   analysis/         binning, baselines, residuals, trends, model, state machine

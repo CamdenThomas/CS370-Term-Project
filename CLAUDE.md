@@ -122,7 +122,7 @@ standing "threshold test" rule: `docs/DECISIONS.md` §D.
 
 | Owner | Subsystems |
 |---|---|
-| **Camden** | `src/can/`, `src/ipc/` |
+| **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/`, **`electricalDrawing/`** |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
 
@@ -233,7 +233,7 @@ REVIEW: What the reviewer should check hardest, and what I am least sure about.
 VERIFY: The exact commands run and their result.
 ```
 
-`<area>` is one of: `can`, `ipc`, `store`, `analysis`, `supervisor`,
+`<area>` is one of: `obd`, `ipc`, `store`, `analysis`, `supervisor`,
 `interface`, `common`, `build`, `tests`, `tools`, `soak`, `docs`.
 
 Real example:
