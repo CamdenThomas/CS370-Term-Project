@@ -963,6 +963,25 @@ verdicts, series, baseline, faults — each with exact, documented semantics.
 '''
 
 [[item]]
+slug = "phoneview"
+milestone = "M4"
+labels = ["task"]
+decision = "D-013"
+blocked_by = ["obdrest"]
+title = "M4 interface: read-only phone status page over the device's own Wi-Fi"
+body = '''
+D-013. Two screens only — status and current verdicts — rendered from the same
+supervisor UDS verbs obdctl uses. No state, no analysis, no writes, no framework.
+
+1. Provision the Pi as a WPA2 access point with no upstream (scripts/provision_pi.sh).
+2. A supervised child in src/interface/ serves the page, bound to the AP interface only.
+3. Unplug-a-sensor test: the page must show the degraded state, not a stale "OK".
+
+Settle the server language in docs/DESIGN.md first (C recommended — no interpreter in
+the soak's RSS plot). First thing cut if M4 slips (PLAN.md §3).
+'''
+
+[[item]]
 slug = "expirq"
 milestone = "M4"
 labels = ["task", "critical-path"]
@@ -1077,7 +1096,7 @@ The handout is explicit that a food container is an acceptable enclosure.
 slug = "freeze"
 milestone = "M4"
 labels = ["task", "critical-path"]
-blocked_by = ["infer", "obdrest", "expirq", "expdrop", "expcrash"]
+blocked_by = ["infer", "obdrest", "phoneview", "expirq", "expdrop", "expcrash"]
 title = "M4 process: FEATURE FREEZE — no new features after this line"
 body = '''
 No new features after this line. Bugs only.

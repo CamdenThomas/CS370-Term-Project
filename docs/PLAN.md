@@ -98,7 +98,10 @@ order now, while it is cheap, so the decision is not made at 2 a.m. in Week 13:
    limitations section.
 3. **The trained classifier** — `train`, `infer`. The features are the intelligence;
    residuals and trends still produce verdicts without it. Say so at the defense.
-4. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
+4. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
+   reporting through your own interface"; the page is the product's face, not a graded
+   mechanism (D-013). Cut it before any `obdctl` verb.
+5. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
 
 **Never cut, in any circumstance:** the soak (`soak1`), the mechanism comparison
 experiments (`expirq`, `expdrop`, `expcrash`), the limitations section (`evalreport`), or

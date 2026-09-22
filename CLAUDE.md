@@ -84,7 +84,9 @@ Y-splitter) and into the car's USB-C port for power — nothing is cut or splice
 (D-011). It reads the car's own sensors off the bus — oil pressure,
 coolant temp, MAP, O2, fuel trims, RPM, load — and builds a statistical model of what
 normal looks like *for this car, at this operating point*. It then reports deviations
-that a mileage sticker and a check-engine light both miss.
+that a mileage sticker and a check-engine light both miss. The owner reads it from their
+phone over the device's own Wi-Fi — read-only, no internet (D-013); `obdctl` stays the
+exact interface.
 
 **The user:** a named owner of a specific car who wants maintenance driven by measured
 condition instead of a generic interval. Testbeds: a **Subaru Outback** and **Lance's

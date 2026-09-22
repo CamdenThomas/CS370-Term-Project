@@ -50,6 +50,10 @@ obdctl baseline <pid>                # the learned model for an operating-point 
 obdctl faults                        # detection/degradation/recovery events
 ```
 
+**From a phone:** join the device's own Wi-Fi network (no internet — it has none) and open
+its status page. The page is read-only and shows exactly `status` and `verdicts`; anything
+deeper is `obdctl` (decision D-013).
+
 ## Repository layout
 
 ```
@@ -61,7 +65,7 @@ src/         systems core, C17, -Wall -Wextra -Werror clean
   store/     append-only crash-consistent log       [mechanism D]
   analysis/  features, baselines, model, state machine
   supervisor/ watchdog, restart policy              [mechanism E]
-  interface/ obdctl query CLI
+  interface/ obdctl query CLI + read-only phone status page (D-013)
 drivers/     out-of-tree kernel module (stretch, mechanism A)
 tools/       PYTHON ALLOWED HERE ONLY — replay harness, training, plots,
              board_sync.py (reconciles docs/board.toml onto the GitHub board)
@@ -80,4 +84,5 @@ partners/    per-partner PROMPTLOG, REFLECTION, raw .jsonl transcripts
 This product contains no LLM client, no cloud inference, and no third-party pretrained
 model. The classifier weights in `models/` were trained by us from data we collected;
 the training code is in `tools/train/`. The only network activity in the shipped tree
-is serving the LAN interface. See `CLAUDE.md` §2.
+is serving the read-only status page on the device's own Wi-Fi access point, which has
+no upstream connection. See `CLAUDE.md` §2.

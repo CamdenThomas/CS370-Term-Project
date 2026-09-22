@@ -33,7 +33,11 @@
             │ append-only   │◀────────│ features →     │────▶│ query CLI      │
             │ CRC, fsync    │  read   │ baseline →     │ UDS │ 5 verbs        │
             │   [mech D]    │         │ model → FSM    │     └────────────────┘
-            └───────────────┘         └────────────────┘
+            └───────────────┘         └───────┬────────┘     ┌────────────────┐
+                                              └─────────────▶│ status page    │──▶ phone
+                                                        UDS  │ read-only,     │  own Wi-Fi AP,
+                                                             │ status+verdicts│  no upstream
+                                                             └────────────────┘  (D-013)
                     ▲                          ▲
                     └──────────┬───────────────┘
                                │ spawn / heartbeat / restart-with-backoff
@@ -76,6 +80,7 @@ each here with the measured numbers that justify it.
 | storaged | power cut mid-write | CRC mismatch on recovery scan | truncate torn tail | |
 | analyzed | model file missing or corrupt | | fall back to residuals only | |
 | supervisor | itself dies | systemd `Restart=always` | | |
+| status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
 | clock | no RTC, time jumps at boot | | | |
 | power | USB port sags at crank; Pi undervolts but keeps running (D-011) | `vcgencmd get_throttled` polled by supervisor | | |
 | power | cut at key-off, every drive (D-011) | none possible in advance — recovery scan at next boot | | |
@@ -135,7 +140,8 @@ adversarial review of diffs, documentation. Not used for: the analysis pipeline'
 design decisions, and never at runtime.
 
 The boundary is legible by inspection: `src/` contains no HTTP client and no network
-code except the LAN interface in `src/interface/`. `grep -r` for any network symbol
+code except the read-only status page server in `src/interface/`, which serves the
+device's own Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network symbol
 outside that directory returns nothing, and that check is in `make test`.
 
 ## 9. Changelog (added at M5)

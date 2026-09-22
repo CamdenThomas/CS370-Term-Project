@@ -41,6 +41,7 @@ Decisions currently awaiting a human signature:
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
 | D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power and CAN schematic blocks |
 | D-012 | Rate-limited Mode 01 requests are the primary data path; broadcast is a bonus (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
+| D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 
 > All decisions below were made with Camden in the conversation and are marked LOCKED
 > accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
@@ -307,6 +308,38 @@ looks like a quiet minute. Enforced by `tests/test_ring.c`.
 
 **Reviewer note.** This is a real trade: under sustained overload we drop *new* data
 rather than *old*. If that is ever the wrong choice for a diagnostic, reopen this.
+
+## B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
+`D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+**Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
+upstream connection, no internet**. The owner's phone joins it and opens a status page
+served from `src/interface/` by a supervised child process. The page shows exactly two
+things — **status** and **current verdicts** — rendered from the same supervisor UDS verbs
+`obdctl` uses. It holds no state, runs no analysis, and writes nothing. `obdctl` remains
+the primary, exact interface with all five verbs. No app, no account, no cloud, no
+Bluetooth pairing.
+
+**Why.** The user is a car owner, not someone with a terminal in the passenger seat, so a
+product that can only be read over SSH has no user. The handout permits it directly
+("Serving a dashboard on the LAN is fine", §3.3; CLAUDE.md §2.1), and the device keeps
+working with no phone present at all. It also sharpens the phone-app test: the Pi is the
+part that is awake at every key-on; the phone is only a window onto what it already
+recorded.
+
+**Why so thin.** The handout warns: *"Resist the pretty web app. A crisp CLI with five
+query verbs and exact semantics is more defensible, and far more extensible at the
+live-modification station."* So the page is a view, not a second interface: two screens,
+no framework, and no number on it that `obdctl` cannot also produce. Every graded behavior
+remains demonstrable through `obdctl` alone.
+
+**Cost.**
+- A network listener in the product. It binds only to the AP interface, is read-only, and
+  lives only in `src/interface/`, where `make boundary` already allows network symbols.
+- One more process in the 48-hour RSS plot, and Wi-Fi radio power on the car's USB port.
+- **Open sub-decision (M2, both):** the server's language. C in `src/interface/` keeps an
+  interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
+  §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
 
 ---
 
