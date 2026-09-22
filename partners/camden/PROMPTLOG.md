@@ -103,3 +103,19 @@ Items absent from the manifest are never touched.
 >   my rule for that class of claim from here on?
 
 **Outcome.** Commits: *(fill in)*. What I would do differently: *(fill in)*.
+
+
+
+### E-02 — Avoid Overcomplications with CAN
+
+**Milestone:** 1?  **Date:9/21/2026**  **Category:** plan change
+
+**Context.** 
+
+**What I asked.** The actual prompt, or its substance. Include the evidence I pasted.
+
+**What came back.** Summarized, with the part that mattered quoted.
+
+**My judgment.** I had been digging around into ways to make accessign CAN simple for far to long before even begining the dreded goal of untangling the cars CAN messages.
+
+**Outcome.** Commit(s), and what I would do differently.
