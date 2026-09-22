@@ -38,7 +38,7 @@ Decisions currently awaiting a human signature:
 
 | ID | Decision | Made by | Session date | Reviewer needed |
 |---|---|---|---|---|
-| — | *(empty)* | | | |
+| D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
 
 > All decisions below were made with Camden in the conversation and are marked LOCKED
 > accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
@@ -88,13 +88,31 @@ on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
 **Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
 mechanism, and not the evaluation. Record it here if it happens.
 
-## A.3 — Honda year/model/engine ❓ OPEN
-`D-007` · **Owner:** Lance · **Tracked as:** GitHub issue (label `question`, milestone M2)
+## A.3 — Honda year/model/engine ⚠️ UNREVIEWED
+`D-007` · **Owner:** Lance · **Tracked as:** GitHub issue `honda` (label `question`)
+· **Answered:** 2026-09-21, by Camden in session · **Reviewed:** Camden ✅ / Lance ⬜
 · **Blocks:** the PID survey, and therefore diagnostic #1
 
-We need year, model, engine and transmission, and from that: which Mode 01 PIDs the ECU
-actually supports, whether oil pressure is published as an analog value or only as an
-idiot-light bit, and the bus bitrate.
+**Answer.** **2015 Honda CR-V EX-L.** By model year that is the 2015 refresh: 2.4 L
+direct-injected four-cylinder (K24W) with a CVT. FWD or AWD is not yet recorded. The
+engine and transmission are inferred from the model year, not read off the car — Lance
+confirms against the VIN or the door-jamb sticker, then closes the issue.
+
+**What the answer changes.**
+- **No Honda Sensing on the EX-L** (it was Touring-only in 2015), so there is no
+  lane-keep camera connector to tap. The OBD2 port is the tap point (**D-011**).
+- **Oil pressure is expected to be a switch, not a sender.** This is inference from
+  Honda practice, not a service-manual reading; `pidhonda` confirms it. If true, diagnostic
+  #1 cannot run on the Honda from any tap point and rests on the Outback alone (`oilq`).
+- **The Honda has Maintenance Minder** — an oil-life percentage estimated from how the
+  engine has been run. For this car the "generic 5,000-mile sticker" framing is false, and
+  `docs/PROBLEM.md` must answer the skeptic's version instead: *the car already estimates
+  this.* The answer is that the Minder is an open-loop estimate from a usage model; it
+  never measures the engine's condition. Ours measures.
+
+We still need, from the car itself: which Mode 01 PIDs the ECU actually supports, whether
+oil pressure is published as an analog value or only as an idiot-light bit, and the bus
+bitrate.
 
 **Why it is urgent.** A large fraction of consumer vehicles publish only a binary
 low-oil-pressure switch. If neither testbed publishes analog oil pressure, **diagnostic

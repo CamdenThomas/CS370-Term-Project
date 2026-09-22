@@ -192,7 +192,10 @@ Blocks the PID survey (and therefore diagnostic #1) and the CAN bitrate choice.
 
 Need: year, model, engine, transmission.
 
-Answer here in one line and this closes. Decision D-007 in docs/DECISIONS.md.
+**Answered 2026-09-21 (Camden, in session): 2015 Honda CR-V EX-L.** By model year:
+2.4 L direct-injected K24W with a CVT; FWD/AWD not recorded. Lance: confirm the engine
+and drivetrain from the VIN or door-jamb sticker, sign D-007 in docs/DECISIONS.md §A.3,
+then close this issue.
 '''
 
 [[item]]
@@ -326,7 +329,11 @@ owner = "lance"
 blocked_by = ["order", "honda"]
 title = "M1 hardware: supported-PID survey on the Honda"
 body = '''
-Same procedure as the Outback survey. Record in docs/hardware/pid-survey.md.
+Same procedure as the Outback survey, on the 2015 CR-V EX-L (D-007). Record in
+docs/hardware/pid-survey.md.
+
+Expect oil pressure to be a switch only — that is inference from Honda practice, not
+evidence. This survey is the evidence.
 '''
 
 [[item]]
@@ -375,6 +382,10 @@ title = "M1 docs: draft docs/PROBLEM.md, all six required headings"
 body = '''
 user / problem / why a device / sensors / mechanisms / risk.
 One page. Must survive a skeptical stranger. Template already in docs/PROBLEM.md.
+
+The skeptic's first question for the CR-V: *"Maintenance Minder already does this."*
+Answer it in the problem section — the Minder estimates oil life from a usage model and
+never measures the engine; we measure (D-007).
 '''
 
 [[item]]

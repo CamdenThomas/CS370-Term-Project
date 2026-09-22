@@ -87,7 +87,9 @@ that a mileage sticker and a check-engine light both miss.
 
 **The user:** a named owner of a specific car who wants maintenance driven by measured
 condition instead of a generic interval. Testbeds: a **Subaru Outback** and **Lance's
-Honda** — the same sticker says 5,000 miles to both cars, and the cars disagree.
+2015 Honda CR-V EX-L** — the same sticker says 5,000 miles to both cars, and the cars
+disagree. (The CR-V has Maintenance Minder, an oil-life *estimate* from a usage model; our
+answer to "the car already does this" is that it estimates and we measure — D-007.)
 
 **The claim we defend:** *"detects the three faults we can induce on these two vehicles,
 with these measured error rates."* Not "predicts failure." (handout §5)

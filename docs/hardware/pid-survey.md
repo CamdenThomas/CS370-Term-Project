@@ -8,7 +8,10 @@ minutes per car; no need to wait on the MCP2515 hardware.
 
 ## What we specifically need to know
 
-| PID | Signal | Outback | Honda | Notes |
+Vehicles: Camden's Subaru Outback; Lance's **2015 Honda CR-V EX-L** (D-007 — engine and
+transmission still to be confirmed from the VIN).
+
+| PID | Signal | Outback | CR-V | Notes |
 |---|---|---|---|---|
 | 0x0C | RPM | | | |
 | 0x04 | Calculated load | | | |
