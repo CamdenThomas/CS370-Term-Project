@@ -75,7 +75,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 ## M3 — exit criteria
 
-- [ ] `candaemon` → ring → `storaged` → disk, end to end, on a real car
+- [ ] `obdd` → ring → `storaged` → disk, end to end, on a real car
 - [ ] Mechanism **D** or **E** demonstrably working and instrumented
 - [ ] Overnight soak-style runs already happening at small scale. Every leak found in
       Week 9 is a crisis avoided in Week 14.

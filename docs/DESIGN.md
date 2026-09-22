@@ -18,7 +18,7 @@
         │                          Pi power: car USB-C / 12 V socket, ≥ 5.1 V / 3 A,
   ┌──────────────┐                 switched — cut, unannounced, at every key-off (D-011)
   │ USB OBD2     │  USB tty /dev/obd   ┌────────────────┐
-  │ adapter      │◀───────────────────▶│   candaemon    │  Mode 01 requests,
+  │ adapter      │◀───────────────────▶│      obdd      │  Mode 01 requests,
   │ (D-015)      │  [N] baud           │  tty reader    │  [N] req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
                                                │ SPSC ring, [N] samples/s  (mech F only with pisensor)
@@ -71,7 +71,7 @@ the measured numbers that justify it.
 | OBD2 adapter | unplugged mid-drive (`/dev/obd` disappears) | read error / `ENODEV` on the tty | degrade, do not restart-storm; reopen when udev brings it back | |
 | OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | `ATZ` reset, then back off | |
 | ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
-| candaemon | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
+| obdd | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
 | ring | consumer stalls, producer would overwrite | sequence gap accounting | | |
 | storaged | disk full | | | |
 | storaged | power cut mid-write | CRC mismatch on recovery scan | truncate torn tail | |

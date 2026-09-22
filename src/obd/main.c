@@ -1,30 +1,25 @@
-/* candaemon — MCP2515 receive path. Mechanism B lives here.
+/* obdd — capture daemon: Mode 01 requests over the USB OBD2 adapter (D-012, D-015).
  *
- * OWNER: Camden.  M3 target: real frames from a real car into the ring.
+ * OWNER: Camden.  M3 target: real Mode 01 replies from the CR-V into the ring.
  *
- * Design intent (see docs/DESIGN.md §2): the MCP2515's INT line is wired to a GPIO and
- * watched with epoll on the gpio chardev / SocketCAN fd. The polling variant is kept
- * behind --poll so the head-to-head comparison docs/EVALUATION.md §6.1 requires is a flag,
- * not a rewrite.
+ * Design intent (see docs/DESIGN.md §1): open /dev/obd, a udev symlink to the adapter's
+ * tty; initialise the adapter (ATZ, ATE0, ATSP0); then round-robin the PID list at a fixed
+ * request budget, one request outstanding at a time. Every timeout and every unanswered
+ * PID is logged — a PID the car stops answering is a fault the analysis must see, not a
+ * gap to fill.
  */
 #include "common/log.h"
 
-#include <stdio.h>
-#include <string.h>
-
-int main(int argc, char **argv)
+int main(void)
 {
-    int poll_mode = 0;
-    for (int i = 1; i < argc; i++)
-        if (strcmp(argv[i], "--poll") == 0) poll_mode = 1;
+    log_init("obdd", LOG_INFO);
+    LOG_I("start");
 
-    log_init("candaemon", LOG_INFO);
-    LOG_I("start mode=%s", poll_mode ? "poll" : "irq");
-
-    /* TODO(M2): open SocketCAN can0; bring up via scripts/provision_pi.sh overlay.
-     * TODO(M3): epoll on the CAN fd; push ring_slot_t into the shm ring.
-     * TODO(M3): --poll variant with a configurable interval for the B comparison.
-     * TODO(M4): instrument arrival->push latency into a histogram. */
+    /* TODO(M2): open /dev/obd; raw line discipline at the adapter's baud.
+     * TODO(M3): adapter init; round-robin Mode 01 requests; parse each reply into a
+     *           ring_slot_t and push it into the shm ring with src = live.
+     * TODO(M3): per-request timeout; log unanswered PIDs; ATZ reset, then back off.
+     * TODO(M4): instrument reply-arrival -> push latency into a histogram. */
 
     LOG_W("not implemented — M0 scaffold");
     return 0;

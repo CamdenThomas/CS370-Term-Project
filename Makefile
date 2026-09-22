@@ -18,7 +18,7 @@ ALL_SRC    = $(wildcard src/*/*.c)
 COMMON_SRC = $(filter-out %/main.c,$(ALL_SRC))
 COMMON_OBJ = $(COMMON_SRC:%.c=$(BUILD)/%.o)
 
-DAEMONS    = candaemon storaged analyzed supervisor obdctl
+DAEMONS    = obdd storaged analyzed supervisor obdctl
 DAEMON_BIN = $(addprefix $(BIN)/,$(DAEMONS))
 
 TEST_SRC   = $(wildcard tests/test_*.c)
@@ -29,7 +29,7 @@ TEST_BIN   = $(TEST_SRC:tests/%.c=$(BIN)/%)
 
 all: $(DAEMON_BIN)
 
-$(BIN)/candaemon:  $(BUILD)/src/obd/main.o        $(COMMON_OBJ)
+$(BIN)/obdd:       $(BUILD)/src/obd/main.o        $(COMMON_OBJ)
 $(BIN)/storaged:   $(BUILD)/src/store/main.o      $(COMMON_OBJ)
 $(BIN)/analyzed:   $(BUILD)/src/analysis/main.o   $(COMMON_OBJ)
 $(BIN)/supervisor: $(BUILD)/src/supervisor/main.o $(COMMON_OBJ)
