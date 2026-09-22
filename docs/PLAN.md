@@ -36,8 +36,8 @@ baseline collection starts ──── 5-7 weeks of driving ────▶ oil
 ```
 
 **Consequence:** logging must be running on the CR-V by the end of M2, even if the code
-is ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts on time beats
-an elegant one that starts three weeks late. **If baseline collection has not started by the
+is ugly, even if it is just raw adapter replies logged to a file. A crude capture that
+starts on time beats an elegant one that starts three weeks late. **If baseline collection has not started by the
 M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2 and #3 — decide that
 consciously, record it in `DECISIONS.md`, and narrow the claim in writing.
 
@@ -63,7 +63,8 @@ after them.
 **The PID survey (`pidhonda`).** Ten minutes, no custom hardware — just the adapter. It
 answers the project's named risk: *does the CR-V actually publish analog oil pressure?*
 If the answer is no, we find out in Week 5 with the whole design still soft, instead of
-Week 11 with the analysis engine half-written around a value that does not exist. It feeds `oilq`, which is where the answer gets recorded.
+Week 11 with the analysis engine half-written around a value that does not exist. It
+feeds `oilq`, which is where the answer gets recorded.
 
 ---
 

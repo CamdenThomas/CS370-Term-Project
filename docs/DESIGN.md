@@ -102,7 +102,7 @@ the measured numbers that justify it.
 | Wanted | Using | What the substitution costs |
 |---|---|---|
 | Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
-| A year of failing engines | Induced faults on two healthy cars | Only three fault classes, and none of them is a real bearing failure |
+| A year of failing engines | Induced faults on one healthy car (D-016) | Only three fault classes, and none of them is a real bearing failure |
 | Raw CAN at the ECU's own publish rate | Mode 01 replies through a USB OBD2 adapter (D-015) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
 | 48h of live driving | [pending D-006] | |
 | Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
