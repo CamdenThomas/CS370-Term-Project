@@ -113,12 +113,11 @@ was made deliberately rather than a task that quietly stopped being mentioned.
 
 ## 4. Standing weekly rhythm
 
+Every session starts and ends by `CLAUDE.md` §0: read the review queue, `--status`, sync
+and copy transcripts out at the end. On top of that:
+
 - **Monday:** `python tools/board_sync.py --check`, then work the **Ready** column. Cards
   move out of Backlog on their own as blockers close — what you are looking for is anything
   Ready that nobody has picked up, and anything still Backlog that should not be.
-- **Both partners, every session:** read the `DECISIONS.md` review queue and sign or contest.
 - **Friday:** cross-review at least one of the other's merged PRs, and log it in
   `PROMPTLOG.md` while it is fresh.
-- **Every milestone:** transcripts out, no exceptions, before anything else is submitted.
-- **End of every session:** `python tools/board_sync.py`. A run with nothing to do writes
-  nothing, so there is no excuse for skipping it.
