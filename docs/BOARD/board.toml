@@ -491,12 +491,42 @@ labels = ["task"]
 title = "M1 process: transcript copy-out, both partners"
 body = '''
     mkdir -p partners/<name>/transcripts
-    cp ~/.claude/projects/*CS370*/*.jsonl partners/<name>/transcripts/
+    cp ~/.claude/projects/*CS370-Term-Project*/*.jsonl partners/<name>/transcripts/
 
 Raw. Not summarized, not exported, not retyped. Both partners, separately.
 '''
 
 [[item]]
+slug = "txglob"
+milestone = "M1"
+labels = ["bug"]
+owner = "camden"
+title = "M1 process: the transcript copy-out glob also matches the HW1 project folder"
+body = '''
+The copy-out command in both partners' transcripts/README.md, and in `tx1`'s own
+body, is:
+
+    cp ~/.claude/projects/*CS370*/*.jsonl partners/<name>/transcripts/
+
+`*CS370*` is too wide. On Camden's Linux machine it matches two folders:
+
+    ~/.claude/projects/-s-...-Documents-CS370-CS370-Term-Project    <- this project
+    ~/.claude/projects/-s-...-Documents-CS370-HW1-rbtree-lab        <- HW1
+
+So running our own documented command drags **seven HW1 red-black-tree sessions**
+into this project's graded transcript folder. Handout 12 and CLAUDE.md 9 grade
+each partner's process from the .jsonl files in `partners/<name>/transcripts/`;
+filling that folder with another assignment's sessions misrepresents the record
+and buries the real ones.
+
+FIX
+Narrow the glob to `*CS370-Term-Project*` in all five places:
+
+    docs/BOARD/board.toml:494              (tx1's body)
+    partners/camden/transcripts/README.md  (sh and PowerShell)
+    partners/lance/transcripts/README.md   (sh and PowerShell)
+
+Found while doing tx1 (#17). See the copy-out PR for the full session inventory.
 slug = "boardpath"
 milestone = "M1"
 labels = ["bug", "critical-path"]

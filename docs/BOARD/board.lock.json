@@ -352,6 +352,9 @@
       "number": 71,
       "title": "M4 process: transcript copy-out"
     },
+    "txglob": {
+      "number": 99,
+      "title": "M1 process: the transcript copy-out glob also matches the HW1 project folder"
     "txwin": {
       "number": 97,
       "title": "M1 process: recover Camden's M0 transcripts from the Windows machine before they purge"
