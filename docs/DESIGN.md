@@ -146,10 +146,10 @@ Used for: planning, explaining kernel and serial-device mechanics, drafting test
 adversarial review of diffs, documentation. Not used for: the analysis pipeline's
 design decisions, and never at runtime.
 
-The boundary is legible by inspection: `src/` contains no HTTP client and no network
-code except the read-only status page server in `src/interface/`, which serves the
-device's own Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network symbol
-outside that directory returns nothing, and that check is in `make test`.
+The boundary is legible by inspection: `src/` contains no HTTP client and no network code
+except the read-only status page server in `src/interface/`, which serves the device's own
+Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network
+symbol outside that directory returns nothing, and that check is in `make test`.
 
 ## 9. Changelog (added at M5)
 >

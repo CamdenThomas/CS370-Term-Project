@@ -59,7 +59,8 @@ Decisions currently awaiting a human signature:
 
 ### A.1 — The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal ⚠️ UNREVIEWED
 
-`D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-001 (§G.1)
 
 **Decision.** A USB OBD2 adapter with an ELM327-compatible chip plugs into the OBD2 port
@@ -88,7 +89,8 @@ it.
 
 ### A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
 
-`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-005 (§G.2)
 
 **Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
@@ -137,8 +139,8 @@ We still need, from the car itself: which Mode 01 PIDs the ECU actually supports
 whether oil pressure is published as an analog value or only as an idiot-light bit.
 
 **Why it is urgent.** A large fraction of consumer vehicles publish only a binary
-low-oil-pressure switch. If the CR-V does not publish analog oil pressure, **diagnostic
-#1 is not implementable from the port** and we must substitute a physical sender (real
+low-oil-pressure switch. If the CR-V does not publish analog oil pressure, **diagnostic #1
+is not implementable from the port** and we must substitute a physical sender (real
 automotive work on a daily driver) or replace the diagnostic. This is the project's named
 risk in `docs/PROBLEM.md`.
 
@@ -149,10 +151,10 @@ a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
 `D-009` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-**Decision.** We draw the full schematic in KiCad (`electricalDrawing/`, KiCad 10, owned by
-Lance) and treat it as the source of truth for wiring and the BOM. We do **not** fabricate a
-custom PCB unless we take The Reach (handout §14). The empty `.kicad_pcb` stays in the repo
-on purpose.
+**Decision.** We draw the full schematic in KiCad (`electricalDrawing/`, KiCad 10, owned
+by Lance) and treat it as the source of truth for wiring and the BOM. We do **not**
+fabricate a custom PCB unless we take The Reach (handout §14). The empty `.kicad_pcb`
+stays in the repo on purpose.
 
 **Why.** A custom board earns zero points — the rubric grades mechanisms, measurements and
 the soak — and fab turnaround lands on top of critical path B, already the likeliest cause
@@ -182,10 +184,10 @@ and that SVG is **committed**.
 remembers to look at. Unconnected pins and power-output conflicts are exactly the class of
 error that survives a human read and kills a board.
 
-**Why commit a generated file.** Normally we would not. But a reviewer cannot read a diff of
-S-expression coordinates, and §7.6 says a PR nobody understands does not merge — so without
-a rendered picture, hardware would fall outside the review process entirely. The SVG is the
-diff a human can actually read. It is regenerated, never hand-edited.
+**Why commit a generated file.** Normally we would not. But a reviewer cannot read a diff
+of S-expression coordinates, and §7.6 says a PR nobody understands does not merge — so
+without a rendered picture, hardware would fall outside the review process entirely. The
+SVG is the diff a human can actually read. It is regenerated, never hand-edited.
 
 **Open sub-item (Lance, M2):** `sym-lib-table` referenced `CS370_Project_Library.kicad_sym`,
 which did not exist — KiCad errors on project open. An empty library is committed to resolve
@@ -193,7 +195,8 @@ it; populate it as parts are drawn.
 
 ### A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
 
-`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 
 *Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
 became a USB OBD2 adapter.*
@@ -235,7 +238,8 @@ by its label (`docs/hardware/wiring.md`).
 
 ### A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 
-`D-012` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-012` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 
 *Revised 2026-09-21 by D-015, before any review: the CAN-level detail (arbitration IDs,
 broadcast frames, a listen-only flag, the port-traffic check) went with the MCP2515.*
@@ -269,7 +273,8 @@ still E.1: three faults, one car, measured error rates.
 
 ### B.1 — Mechanism commitments: D and E; B and F only with a Pi-side sensor ⚠️ UNREVIEWED
 
-`D-017` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-017` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-002 (§G.3)
 
 The handout requires two, implemented by us and measured.
@@ -335,7 +340,8 @@ rather than *old*. If that is ever the wrong choice for a diagnostic, reopen thi
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 
-`D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 
 **Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
 upstream connection, no internet**. The owner's phone joins it and opens a status page
@@ -369,7 +375,8 @@ remains demonstrable through `obdctl` alone.
 
 ### B.5 — One warning light, driven by the supervisor ⚠️ UNREVIEWED
 
-`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
 
 **Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
 **only by the supervisor**. Every state in which the device is working is a *blink
@@ -389,8 +396,8 @@ visible from across the room when a sensor is unplugged.
 **Why every live state blinks.** A GPIO keeps its last level after the process driving it
 dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
 alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
-either kind can only mean *not running*. This is mechanism E's principle — a recorder that dies
-silently has harmed its user — applied to the one output a driver actually sees.
+either kind can only mean *not running*. This is mechanism E's principle — a recorder that
+dies silently has harmed its user — applied to the one output a driver actually sees.
 
 **Why the supervisor, not `analyzed`.** The supervisor already knows every child's
 liveness (mechanism E), so it can show "degraded" when `analyzed` itself has died; a light
@@ -441,7 +448,8 @@ anywhere in it.
 
 ### D.1 — Self-trained model; training in Python, inference in C 🔒
 
-`D-004` · Decided M0 · **By:** Camden (confirmed with instructor) · **Reviewed:** Camden ✅ / Lance ⬜
+`D-004` · Decided M0 · **By:** Camden (confirmed with instructor)
+· **Reviewed:** Camden ✅ / Lance ⬜
 
 A locally-trained, self-authored model is permitted; hosted APIs and third-party
 pretrained weights are not. Therefore: training in `tools/train/`, weights versioned under
@@ -492,8 +500,8 @@ Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 Every diagnostic we ship must require at least two cooperating sensors to reach its
 conclusion. If a single threshold on a single value could produce the verdict, it is not
-intelligence and it does not count. **Write the reason down in `docs/DESIGN.md` when adding a
-diagnostic** — this is checked at the defense.
+intelligence and it does not count. **Write the reason down in `docs/DESIGN.md` when
+adding a diagnostic** — this is checked at the defense.
 
 ---
 
@@ -614,7 +622,8 @@ the M4 soak start, and M4 already lands on Thanksgiving week.
 
 ### F.4 — Markdown is linted with markdownlint, at a 90-column wrap ⚠️ UNREVIEWED
 
-`D-018` · **By:** Claude, in Camden's session 2026-09-23 · **Reviewed:** Camden ⬜ / Lance ⬜
+`D-018` · **By:** Claude, in Camden's session 2026-09-23
+· **Reviewed:** Camden ⬜ / Lance ⬜
 
 `.markdownlint.jsonc` at the repository root sets the rules the VS Code markdownlint
 extension enforces: every default rule on, lines wrapped at **90 columns** (tables, code

@@ -22,7 +22,8 @@
 
 ### E-00 — (short title)
 
-**Milestone:** M?  **Date:**  **Category:** plan / rejected diff / hardware loop / partner review
+**Milestone:** M?  **Date:**
+**Category:** plan / rejected diff / hardware loop / partner review
 
 **Context.** What I was trying to do and what I already knew.
 
@@ -115,6 +116,7 @@ Items absent from the manifest are never touched.
 
 **What came back.** Summarized, with the part that mattered quoted.
 
-**My judgment.** I had been digging around into ways to make accessing CAN simple for far too long before even beginning the dreaded goal of untangling the car's CAN messages.
+**My judgment.** I had been digging around into ways to make accessing CAN simple for far
+too long before even beginning the dreaded goal of untangling the car's CAN messages.
 
 **Outcome.** Commit(s), and what I would do differently.

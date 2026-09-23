@@ -35,11 +35,12 @@ baseline collection starts ──── 5-7 weeks of driving ────▶ oil
         M2 (mid-Oct)                                       (~mid-Nov)                     M4 (late Nov)
 ```
 
-**Consequence:** logging must be running on the CR-V by the end of M2, even if the code
-is ugly, even if it is just raw adapter replies logged to a file. A crude capture that
-starts on time beats an elegant one that starts three weeks late. **If baseline collection has not started by the
-M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2 and #3 — decide that
-consciously, record it in `DECISIONS.md`, and narrow the claim in writing.
+**Consequence:** logging must be running on the CR-V by the end of M2, even if the code is
+ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts
+on time beats an elegant one that starts three weeks late. **If baseline collection has
+not started by the M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2
+and #3 — decide that consciously, record it in `DECISIONS.md`, and narrow the claim in
+writing.
 
 Board chain: `order` → `bench` → `firstcap` → **`baseline`** → `foil`, with `keyoff`
 (the USB-C supply proven) also gating `baseline`.

@@ -510,8 +510,8 @@ module.
    fix from a verbal description. Paste the artifact: `dmesg` verbatim, the raw adapter
    replies, the `vcgencmd get_throttled` reading, the timing histogram.
    Without evidence, your job is to say what to capture — not to guess.
-5. **Adversarial review.** Every milestone's diff gets a fresh-context agent review *and* a
-   human review by the partner who did not write it.
+5. **Adversarial review.** Every milestone's diff gets a fresh-context agent review *and*
+   a human review by the partner who did not write it.
 6. **Smallest diff that passes.** Do not refactor unrelated code. Do not "improve" things
    nobody asked about.
 7. **Autonomous execution with declared blockers.** Run to completion on everything you
@@ -544,8 +544,8 @@ hardware evidence, and one review of the partner's work. **Write these as they h
 ## 10. Deliverables checklist (handout §12)
 
 - [ ] Source + `Makefile` + `README.md` that takes a TA from a clean Pi to running
-- [ ] `docs/PROBLEM.md` (as revised), `docs/DESIGN.md` (as it ended + changelog of what M2 got
-      wrong), `docs/EVALUATION.md`
+- [ ] `docs/PROBLEM.md` (as revised), `docs/DESIGN.md` (as it ended + changelog of what M2
+      got wrong), `docs/EVALUATION.md`
 - [ ] Raw unedited 48-hour soak logs including the injected fault
 - [ ] `CLAUDE.md`, checked in, visibly evolving across milestones
 - [ ] Per partner: `PROMPTLOG.md`, `REFLECTION.md`, raw `.jsonl` transcripts
