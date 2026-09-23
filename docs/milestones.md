@@ -14,13 +14,13 @@ short name other docs cite.
 
 | M | Deliverable | Week | Due | Team hrs | Progress |
 | --- | --- | --- | --- | --- | --- |
-| M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | — |
-| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | — |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | — |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | — |
-| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | — |
-| M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | — |
-| M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | — |
+| M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
+| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 11/22 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 2/22 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/17 |
+| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | ⬜ 0/26 |
+| M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
+| M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/3 |
 
 <sub>Edit Deliverable, Week, Due and hours by hand; sync fills Progress and sets the GitHub
 milestone due dates. Dates verified against the syllabus 2026-09-21 (D-008).</sub>
@@ -31,9 +31,10 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 ## M0 — Team formed; hardware ordered; repo + CLAUDE.md initialized
 
-- [x] **Repo initialized, `CLAUDE.md` written and committed**
+- [x] **Repo initialized, `CLAUDE.md` written and committed** <!-- #116 -->
 - [x] **Directory structure and build system in place; `make` is green on stubs**
-- [x] **Board live on GitHub, driven from this list**
+      <!-- #117 -->
+- [x] **Board live on GitHub, driven from this list** <!-- #118 -->
 - [x] **Team registered as Camden Thomas + Lance Baron** `team` @camden <!-- #3 -->
 - [x] **Lance's Honda year/model recorded (D-007)** `honda` @lance <!-- #5 -->
 - [x] **Milestone dates verified against the syllabus (D-008)** `dates` @camden
@@ -49,7 +50,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [x] **`docs/PROBLEM.md` complete, all six headings, passes the phone-app test** `memo`
       @camden <!-- #15 -->
 - [x] **A named user and a named vehicle, not a persona** `nameuser` @camden <!-- #14 -->
-- [x] **Risk named plainly**
+- [x] **Risk named plainly** <!-- #119 -->
 - [x] **Both partners' transcripts copied to `partners/<name>/transcripts/`** `tx1`
       <!-- #17 -->
 - [ ] **Hardware ordered (`docs/hardware/BOM.md`); shipping time is the most common silent
@@ -81,7 +82,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M1 docs: condense CLAUDE.md into a rules-only index over the source docs
       `claudeindex` @camden <!-- #106 -->
 - [ ] M1 tools: make docs/milestones.md the board; retire board.toml (D-020) `boardlist`
-      @camden
+      @camden <!-- #120 -->
 - [ ] M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2
       `ownmap` @lance <!-- #112 -->
 - [ ] M1 hw: stop tracking electricalDrawing/.kicad_prl and .history `kicadtrack` @lance
@@ -129,7 +130,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 - [ ] **`obdd` → ring → `storaged` → disk, end to end, on a real car** `m3demo`
       <!-- #47 -->
-- [ ] **Mechanism D or E demonstrably working and instrumented**
+- [ ] **Mechanism D or E demonstrably working and instrumented** <!-- #121 -->
 - [ ] **Overnight soak-style runs already happening at small scale** `nightly`
       <!-- #46 -->
 - [ ] **Replay harness runs a recorded capture through the real pipeline** `replay` @lance
@@ -160,8 +161,9 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 - [ ] **Feature freeze: no new features after this line; bugs only** `freeze` <!-- #67 -->
 - [ ] **Mechanisms D and E implemented and measured (plus B and F if `pisensor` added
-      them)**
+      them)** <!-- #122 -->
 - [ ] **Induced-fault captures recorded and labeled for all three diagnostics**
+      <!-- #123 -->
 - [ ] **`make asan` and `make memcheck` clean everywhere** `sanitize` <!-- #70 -->
 - [ ] **48-hour soak begins, with the injected fault planned and scripted** `soak1`
       <!-- #68 -->
@@ -201,7 +203,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 - [ ] **`docs/EVALUATION.md` written, with an honest limitations section** `evalreport`
       <!-- #73 -->
-- [ ] **Raw unedited soak logs committed**
+- [ ] **Raw unedited soak logs committed** <!-- #124 -->
 - [ ] **`docs/DESIGN.md` as-built, with a changelog of what M2 got wrong** `designfinal`
       <!-- #74 -->
 - [ ] **≥ 40 meaningful commits, both partners represented** `commitaudit` @camden
