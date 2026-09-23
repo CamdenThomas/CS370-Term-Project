@@ -43,10 +43,10 @@ Decisions currently awaiting a human signature:
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
-| D-015 | The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal (§A.1, supersedes D-001) | Camden + Claude | 2026-09-21 | Lance — reopens a LOCKED decision; changes every data rate you design against |
 | D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
 | D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
+| D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -57,35 +57,54 @@ Decisions currently awaiting a human signature:
 
 ## A. Hardware and interfaces
 
-### A.1 — The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal ⚠️ UNREVIEWED
+### A.1 — The Pi reads OBD2 over a Bluetooth Classic adapter; USB is the fallback ⚠️ UNREVIEWED
 
-`D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
-· **Supersedes:** D-001 (§G.1)
+`D-019` · Decided M1, 2026-09-23 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-015 (§G.4)
 
-**Decision.** A USB OBD2 adapter with an ELM327-compatible chip plugs into the OBD2 port
-and appears on the Pi as a serial device, pinned to `/dev/obd` by a udev rule. Our C daemon
-sends Mode 01 requests over it and parses the replies. Prefer an STN-chip adapter (e.g.
-OBDLink SX) over a clone ELM327. No MCP2515, no SPI, no CAN wiring.
+**Decision.** An **OBDLink LX** (STN chip, **Bluetooth Classic, Serial Port Profile**; not
+BLE) plugs into the OBD2 port. The Pi, powered from the car's USB (D-011), talks to it with
+its built-in Bluetooth radio over RFCOMM. Provisioning pairs and trusts the adapter once,
+binds it with `rfcomm bind` to `/dev/rfcomm0`, and a udev rule links that to **`/dev/obd`**,
+so every consumer still opens `/dev/obd` and sends Mode 01 requests (D-012). No MCP2515, no
+SPI, no CAN wiring, and no data cable in the cabin.
 
-**Raw CAN is a stretch goal** — an MCP2515 on SPI, taken up only after mechanisms D and E
-are implemented *and measured*.
+**Raw CAN is still a stretch goal**: an MCP2515 on SPI, taken up only after mechanisms D
+and E are implemented *and measured* (unchanged from D-015).
 
-**Why.** Camden's call (PROMPTLOG E-02): time spent making raw CAN access work was time
-not spent on the problem. The adapter speaks every OBD2 protocol for us, which is exactly
-what a plug-in product (D-011) needs, and it removes a class of hardware risk — 5 V on
-MISO, crystal frequency, bus termination — that could kill a Pi or disturb a daily
-driver's bus.
+**Why.** Camden's call, 2026-09-23: the goal is the simplest data path that works. The box
+becomes one power cable; the adapter stays in the port. The protocol, the parsing and every
+downstream design are the same as D-015, because an STN adapter speaks the same ELM327
+command set over Bluetooth as over USB.
 
-**Cost — the reason D-001 existed, still true.** An adapter hands us parsed ASCII at
-roughly 10–20 PID replies per second, with no interrupt line and no bus timing. That
-takes most of the mechanism menu away from the OBD data path; **D-017** records what
-survives. Clone ELM327s are also unreliable (truncated buffers, fake firmware), which is
-why the STN chip is preferred.
+**Why a tty and not our own Bluetooth socket.** Opening an RFCOMM socket from `obdd` would
+put `socket()` in `src/obd/`, which `make boundary` forbids outside `src/interface/`
+(CLAUDE.md §2.1). Letting the kernel's RFCOMM layer present a tty keeps the boundary check
+meaningful and keeps `obdd` a plain serial reader.
 
-**Consequences.** The capture daemon becomes a serial reader. Wiring, BOM, provisioning
-and the design doc follow. The PID survey needs no extra hardware — the same adapter does
-it.
+**What D-001 (§G.1) said against this, and why it no longer applies.** G.1 rejected a
+Bluetooth ELM327 because it gives up interrupts and bus-level timing, taking mechanisms A,
+B, C and F with it. D-015 already accepted exactly that loss for the USB adapter, and D-017
+records what survives (D and E). Bluetooth costs no further mechanism.
+
+**Costs and risks.**
+
+- **Provisioning.** Pairing, trust and a persistent bind must survive reboots and every
+  key-off (`scripts/provision_pi.sh`, board item `bench`).
+- **A new failure mode.** The link can drop while the engine runs (adapter out of range,
+  adapter asleep, radio interference). `obdd` sees a hangup on the tty and must reconnect
+  with backoff, not crash-loop (`docs/DESIGN.md` §3, `supbackoff`).
+- **One radio, two jobs.** The Pi 4's single Wi-Fi/Bluetooth chip also runs the phone
+  access point (D-013). Coexistence is expected to work but is unmeasured: board item
+  `btcoex`. Putting the access point on 5 GHz is the first mitigation to try.
+- **Key-off draw.** The adapter still draws from OBD2 pin 16, live with the key off, and a
+  Bluetooth adapter keeps a radio up. Its sleep behavior and key-off current are measured
+  before it stays plugged in overnight (`keyoff`).
+
+**Fallback.** The USB adapter of D-015 (§G.4) needs only a different udev rule to appear as
+`/dev/obd`. If Bluetooth proves unreliable in the car, switching back is a provisioning
+change, not a code change.
 
 ### A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
 
@@ -144,7 +163,7 @@ is not implementable from the port** and we must substitute a physical sender (r
 automotive work on a daily driver) or replace the diagnostic. This is the project's named
 risk in `docs/PROBLEM.md`.
 
-**Action.** Run a supported-PID scan on the CR-V with the USB OBD2 adapter (D-015) —
+**Action.** Run a supported-PID scan on the CR-V with the OBD2 adapter (D-019) —
 a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
 ### A.4 — Capture the schematic in KiCad; do not fabricate a PCB 🔒
@@ -199,12 +218,13 @@ it; populate it as parts are drawn.
 · **Reviewed:** Camden ✅ / Lance ⬜
 
 *Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
-became a USB OBD2 adapter.*
+became a USB OBD2 adapter. Revised again 2026-09-23 by D-019: the adapter talks to the Pi
+over Bluetooth Classic, so no data cable runs to the Pi.*
 
 **Decision.** The device is a box anyone could install without tools:
 
-- **Data:** the USB OBD2 adapter (D-015) plugs into the OBD2 port; one USB cable runs to
-  the Pi.
+- **Data:** the Bluetooth OBD2 adapter (D-019) plugs into the OBD2 port; the Pi reads it
+  over RFCOMM. No data cable.
 - **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
   No buck converter.
 - **Nothing is cut, spliced, pierced or clamped** on the car.
@@ -234,7 +254,7 @@ by its label (`docs/hardware/wiring.md`).
   key-off current must be measured before it is left plugged in overnight.
 - D-006 option (c), the parked-car soak, now requires a socket that stays live in
   accessory plus a battery tender.
-- The product is "one box, two cables", not "one dongle".
+- The product is "one box, one power cable, plus the dongle in the port".
 
 ### A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 
@@ -245,7 +265,7 @@ by its label (`docs/hardware/wiring.md`).
 broadcast frames, a listen-only flag, the port-traffic check) went with the MCP2515.*
 
 **Decision.** The capture daemon gets its signals by sending **standard OBD2 Mode 01
-requests** through the USB adapter (D-015) on a fixed, rate-limited, round-robin schedule,
+requests** through the OBD2 adapter (D-019) on a fixed, rate-limited, round-robin schedule,
 one request outstanding at a time. Every timeout and every unanswered PID is logged.
 
 **Why.** D-011 makes this a plug-in device, and the thing that makes a plug-in device work
@@ -295,12 +315,12 @@ and proving recovery (`expcrash`).
 duty. Any child may be `kill -9`'d; the system degrades, logs, recovers. Measured by killing
 each child repeatedly and timing detection and recovery (`expkill`).
 
-**Why B and F left the OBD data path (D-015).** B needs an interrupt that *our* design
-services. The USB adapter's interrupts belong to the kernel's USB-serial driver; our process
-only blocks on a tty, and at ~10–20 replies/s a poll loop keeps up trivially — the
-comparison would measure the tty layer, not a design of ours. F needs a *high-rate* stream;
-~10–20 samples/s never stresses a ring, so "zero drops under contention" would be true and
-meaningless.
+**Why B and F left the OBD data path (D-015, D-019).** B needs an interrupt that *our*
+design services. The adapter's interrupts belong to the kernel's Bluetooth and RFCOMM
+stack; our process only blocks on a tty, and at ~10–20 replies/s a poll loop keeps up
+trivially — the comparison would measure the tty layer, not a design of ours. F needs a
+*high-rate* stream; ~10–20 samples/s never stresses a ring, so "zero drops under
+contention" would be true and meaningless.
 
 **What brings them back.** An MPU-6050 on the Pi's I2C, its `INT` pin on a GPIO: kHz
 samples from a hardware FIFO give a real interrupt-vs-polling comparison (B) and a rate
@@ -348,8 +368,8 @@ upstream connection, no internet**. The owner's phone joins it and opens a statu
 served from `src/interface/` by a supervised child process. The page shows exactly two
 things — **status** and **current verdicts** — rendered from the same supervisor UDS verbs
 `obdctl` uses. It holds no state, runs no analysis, and writes nothing. `obdctl` remains
-the primary, exact interface with all five verbs. No app, no account, no cloud, no
-Bluetooth pairing.
+the primary, exact interface with all five verbs. No app, no account, no cloud, and the
+phone never pairs over Bluetooth. (The Pi itself pairs with the OBD2 adapter, D-019.)
 
 **Why.** The user is a car owner, not someone with a terminal in the passenger seat, so a
 product that can only be read over SSH has no user. The handout permits it directly
@@ -369,6 +389,8 @@ remains demonstrable through `obdctl` alone.
 - A network listener in the product. It binds only to the AP interface, is read-only, and
   lives only in `src/interface/`, where `make boundary` already allows network symbols.
 - One more process in the 48-hour RSS plot, and Wi-Fi radio power on the car's USB port.
+- The access point shares the Pi 4's one radio chip with the Bluetooth link to the adapter
+  (D-019). Measured by `btcoex`.
 - **Open sub-decision (M2, both):** the server's language. C in `src/interface/` keeps an
   interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
   §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
@@ -654,7 +676,7 @@ one: the reasoning is evidence, and "what M2 got wrong" is a graded section of
 ### G.1 — (was A.1) CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🗑
 
 `D-001` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
-· **Superseded 2026-09-21 by D-015 (§A.1)** — raw CAN became a stretch goal.
+· **Superseded 2026-09-21 by D-015 (now §G.4)** — raw CAN became a stretch goal.
 
 **Decision.** The Pi reads raw CAN frames through an MCP2515 + TJA1050 module on SPI0,
 with the controller's `INT` line on a GPIO for edge-triggered receive. Not a Bluetooth
@@ -673,7 +695,8 @@ vehicle. Accepted.
 
 **What replaced it, and what that cost.** D-015 accepts the mechanism loss this entry
 warned about, in exchange for hardware that works on day one; D-017 records which
-mechanisms survive.
+mechanisms survive. D-019 then moved that adapter to Bluetooth, the option this entry
+rejected, at no further mechanism cost.
 
 ### G.2 — (was A.2) Testbeds: Subaru Outback and Lance's Honda 🗑
 
@@ -723,6 +746,38 @@ under contention.
 **Stretch, M4+ only:** **A** (character driver for the MCP2515) and **C** (`SCHED_FIFO` on
 the capture path). Do not start either until B, D, E and F are implemented *and measured*.
 A half-finished kernel module is worth zero points and costs two weeks.
+
+### G.4 — (was A.1) The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal 🗑
+
+`D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-001 (§G.1)
+· **Superseded 2026-09-23 by D-019 (§A.1)**: the same protocol over Bluetooth Classic,
+with this USB adapter kept as the fallback.
+
+**Decision.** A USB OBD2 adapter with an ELM327-compatible chip plugs into the OBD2 port
+and appears on the Pi as a serial device, pinned to `/dev/obd` by a udev rule. Our C daemon
+sends Mode 01 requests over it and parses the replies. Prefer an STN-chip adapter (e.g.
+OBDLink SX) over a clone ELM327. No MCP2515, no SPI, no CAN wiring.
+
+**Raw CAN is a stretch goal** — an MCP2515 on SPI, taken up only after mechanisms D and E
+are implemented *and measured*.
+
+**Why.** Camden's call (PROMPTLOG E-02): time spent making raw CAN access work was time
+not spent on the problem. The adapter speaks every OBD2 protocol for us, which is exactly
+what a plug-in product (D-011) needs, and it removes a class of hardware risk — 5 V on
+MISO, crystal frequency, bus termination — that could kill a Pi or disturb a daily
+driver's bus.
+
+**Cost — the reason D-001 existed, still true.** An adapter hands us parsed ASCII at
+roughly 10–20 PID replies per second, with no interrupt line and no bus timing. That
+takes most of the mechanism menu away from the OBD data path; **D-017** records what
+survives. Clone ELM327s are also unreliable (truncated buffers, fake firmware), which is
+why the STN chip is preferred.
+
+**Consequences.** The capture daemon becomes a serial reader. Wiring, BOM, provisioning
+and the design doc follow. The PID survey needs no extra hardware — the same adapter does
+it.
 
 ---
 
