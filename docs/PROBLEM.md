@@ -11,6 +11,7 @@ The point of two users is the thesis: the same oil-change sticker says 5,000 mil
 both cars, and the cars disagree.
 
 ## The problem
+
 > Observable and costly: what goes wrong, how often, what it costs in money or worry.
 
 Maintenance intervals are generalizations. The sticker on the windshield knows nothing
@@ -18,15 +19,11 @@ about how this engine has actually been run — a commuter that never reaches op
 temperature and a highway car with the same odometer reading have not aged the same
 way. The consequence runs both directions and both are expensive: oil changed far
 earlier than it needed to be, or an engine run on oil that lost its pressure margin
-weeks ago. [Fill in a real number: cost of an oil change × frequency, or the cost of
-the failure you are trying to catch.]
-
-Meanwhile the car already measures everything needed to know the difference, and
-publishes it on a bus, continuously — and then throws it away. The check-engine light
-is the only thing that ever reads it, and it is a **threshold on a single value that
-fires after the damage.**
+weeks ago. While the sensors already present do a great job tracking all the need information,
+people just need a device to monitor and store this data to learn the car and predict failures before the check engine light of doom puts you on the hour long bus ride.
 
 ## Why a device
+
 > The 3 a.m. test: why must something be physically present and always awake? And why
 > doesn't a phone app already solve this?
 
@@ -44,9 +41,10 @@ And the data stays in the car. No account, no upload, no fleet telematics compan
 holding a log of everywhere this person drove.
 
 ## The sensors
+
 > Which two (or more) and how they **cooperate** rather than coexist.
 
-The vehicle's own sensors, read as raw CAN frames: oil pressure, coolant temperature,
+The vehicle's own sensors, read via the OBD2 port: oil pressure, coolant temperature,
 intake air temperature, MAP, O2 / fuel trims, RPM, engine load.
 
 They cooperate because **no one of them means anything alone.** Oil pressure is a
@@ -59,18 +57,18 @@ see.
 
 
 ## The mechanisms
-> First guess at two menu items, one sentence of justification each. May change by M2.
 
-**B — interrupt-driven input with a polling comparison.** At 500 kbit/s the MCP2515's
-two receive buffers overflow in milliseconds, so a poll loop either burns a core or
-loses frames; the `INT` line lets us service the controller only when it has something.
+> First guess at two menu items, one sentence of justification each. May change by M2.
 
 **D — custom append-only storage with crash consistency.** The power is cut mid-write
 every single time the key turns off, so the storage layer never gets a clean shutdown
 and must recover a torn tail on every boot.
 
+**E — multi-process architecture with a supervisor.** A recorder that dies silently has
+harmed its owner, who believes it is on duty; capture, storage and analysis run as
+separate processes so that a crash in the analysis cannot take the recording down with it.
+
 ## The risk
-> The single thing most likely to sink this project. Name it now.
 
 The primary risk, named honestly: the oil-life trend needs a real oil interval to develop,
 and that is calendar time we cannot buy back by working harder in Week 14. Baseline

@@ -5,19 +5,18 @@ set -euo pipefail
 
 echo "== packages =="
 sudo apt-get update
-sudo apt-get install -y build-essential can-utils valgrind git
+sudo apt-get install -y build-essential valgrind git screen
 
-echo "== SPI + MCP2515 overlay =="
-# TODO(M2): append to /boot/firmware/config.txt, with the CORRECT crystal frequency:
-#   dtparam=spi=on
-#   dtoverlay=mcp2515-can0,oscillator=<8000000|16000000>,interrupt=25
-#   dtoverlay=spi0-hw-cs
-# The crystal value is on the module's can and a wrong one produces a silently dead
-# bus. See docs/hardware/wiring.md.
+echo "== /dev/obd udev rule =="
+# TODO(M2): write /etc/udev/rules.d/99-obd.rules pinning the USB OBD2 adapter to a stable
+#           name, matched on the adapter's vendor/product ID (read them with `lsusb` once
+#           it arrives; record them in docs/hardware/wiring.md):
+#   SUBSYSTEM=="tty", ATTRS{idVendor}=="<vid>", ATTRS{idProduct}=="<pid>", SYMLINK+="obd", MODE="0660", GROUP="dialout"
+#           then: sudo udevadm control --reload && sudo udevadm trigger
+#           verify with: ls -l /dev/obd
 
-echo "== bring up can0 =="
-# TODO(M2): sudo ip link set can0 up type can bitrate 500000
-#           verify with: candump can0
+echo "== serial access =="
+# TODO(M2): sudo usermod -aG dialout "$USER"   (the daemon's user must open /dev/obd)
 
 echo "not implemented — M0 scaffold" >&2
 exit 1

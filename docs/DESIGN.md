@@ -14,15 +14,14 @@
 > they are what makes the mechanism justifications checkable.
 
 ```
-  OBD2 connector
-  pin 6 / pin 14
-        │ CAN 500 kbit/s
-        ▼
-  ┌──────────────┐  SPI0 @ [N] MHz     ┌────────────────┐
-  │ MCP2515 +    │────────────────────▶│   candaemon    │  [mech B]
-  │ TJA1050      │  INT ──▶ GPIO[N]    │  IRQ RX path   │
-  └──────────────┘  edge-triggered     └───────┬────────┘
-                                               │ SPSC ring, [N] frames/s  [mech F]
+  OBD2 port
+        │                          Pi power: car USB-C / 12 V socket, ≥ 5.1 V / 3 A,
+  ┌──────────────┐                 switched — cut, unannounced, at every key-off (D-011)
+  │ USB OBD2     │  USB tty /dev/obd   ┌────────────────┐
+  │ adapter      │◀───────────────────▶│      obdd      │  Mode 01 requests,
+  │ (D-015)      │  [N] baud           │  tty reader    │  [N] req/s, round-robin (D-012)
+  └──────────────┘                     └───────┬────────┘
+                                               │ SPSC ring, [N] samples/s  (mech F only with pisensor)
                                                │ shm, sequence-accounted
                     ┌──────────────────────────┼──────────────────────┐
                     ▼                          ▼                      ▼
@@ -31,13 +30,17 @@
             │ append-only   │◀────────│ features →     │────▶│ query CLI      │
             │ CRC, fsync    │  read   │ baseline →     │ UDS │ 5 verbs        │
             │   [mech D]    │         │ model → FSM    │     └────────────────┘
-            └───────────────┘         └────────────────┘
+            └───────────────┘         └───────┬────────┘     ┌────────────────┐
+                                              └─────────────▶│ status page    │──▶ phone
+                                                        UDS  │ read-only,     │  own Wi-Fi AP,
+                                                             │ status+verdicts│  no upstream
+                                                             └────────────────┘  (D-013)
                     ▲                          ▲
                     └──────────┬───────────────┘
                                │ spawn / heartbeat / restart-with-backoff
-                        ┌──────────────┐
-                        │  supervisor  │  [mech E]
-                        └──────────────┘
+                        ┌──────────────┐  GPIO17
+                        │  supervisor  │──────────▶ warning light (D-014)
+                        └──────────────┘  [mech E]  blink = alive; steady = not running
 ```
 
 **TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
@@ -48,15 +51,15 @@
 > Model the form on the handout's example: "the vibration analysis is meaningless above
 > 2 ms of sampling jitter, hence SCHED_FIFO."
 
-See `docs/decisions/D-002-mechanism-commitments.md` for the committed rationale; expand
-each here with the measured numbers that justify it.
+The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); expand each row here with
+the measured numbers that justify it.
 
 | Menu item | Component | Justification from requirements | How measured |
 |---|---|---|---|
-| B | `src/can/` | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
 | D | `src/store/` | | recovery after mid-write power cut, N trials |
 | E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
-| F | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
+| B *(only with `pisensor`)* | Pi-side sensor capture path | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
+| F *(only with `pisensor`)* | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
 
 ## 3. Failure-mode table
 > For each component: how it can fail, how the failure is **detected**, what the system
@@ -65,22 +68,26 @@ each here with the measured numbers that justify it.
 
 | Component | Failure | Detection | Response | Log line |
 |---|---|---|---|---|
-| MCP2515 | physically unplugged mid-drive | | degrade, do not restart-storm | |
-| MCP2515 | SPI transaction timeout | | | |
-| candaemon | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
+| OBD2 adapter | unplugged mid-drive (`/dev/obd` disappears) | read error / `ENODEV` on the tty | degrade, do not restart-storm; reopen when udev brings it back | |
+| OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | `ATZ` reset, then back off | |
+| ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
+| obdd | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
 | ring | consumer stalls, producer would overwrite | sequence gap accounting | | |
 | storaged | disk full | | | |
 | storaged | power cut mid-write | CRC mismatch on recovery scan | truncate torn tail | |
 | analyzed | model file missing or corrupt | | fall back to residuals only | |
-| supervisor | itself dies | systemd `Restart=always` | | |
+| supervisor | itself dies | systemd `Restart=always` | warning light freezes steady, which by design reads "not running" (D-014) | |
+| status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
 | clock | no RTC, time jumps at boot | | | |
+| power | USB port sags at crank; Pi undervolts but keeps running (D-011) | `vcgencmd get_throttled` polled by supervisor | | |
+| power | cut at key-off, every drive (D-011) | none possible in advance — recovery scan at next boot | | |
 
 ## 4. Storage and data
 > What is stored, at what rate, in what format, with what retention, and what happens to
 > it when the power dies mid-write.
 
 - **Record format:** [magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]
-- **Rates:** [fill]
+- **Rates:** [fill — Mode 01 request budget, and the per-PID rate it implies (D-012)]
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
 - **fsync discipline:** [fill — batch size, interval, and the argument for it]
 - **Crash story:** [fill — recovery scan, torn-tail truncation, what is lost and why
@@ -95,8 +102,10 @@ each here with the measured numbers that justify it.
 | Wanted | Using | What the substitution costs |
 |---|---|---|
 | Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
-| A year of failing engines | Induced faults on two healthy cars | Only three fault classes, and none of them is a real bearing failure |
+| A year of failing engines | Induced faults on one healthy car (D-016) | Only three fault classes, and none of them is a real bearing failure |
+| Raw CAN at the ECU's own publish rate | Mode 01 replies through a USB OBD2 adapter (D-015) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
 | 48h of live driving | [pending D-006] | |
+| Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
 
 ## 6. Evaluation plan
 > The measurements we will take, each with **method and committed target**. Numbers
@@ -104,8 +113,9 @@ each here with the measured numbers that justify it.
 
 | Measurement | Method | Target |
 |---|---|---|
-| CAN frame → stored, p50/p99 | timestamp at IRQ and at fsync | |
-| IRQ vs polling: latency + CPU | both paths, idle and `stress-ng` loaded | |
+| OBD reply → stored, p50/p99 | timestamp at tty read and at fsync | |
+| `kill -9` each child: detection + recovery time | N trials per child, from the log | |
+| IRQ vs polling: latency + CPU *(only with `pisensor`)* | both paths, idle and `stress-ng` loaded | |
 | Drop rate under contention | sequence accounting | zero |
 | RSS per process over 48h | hourly heartbeat, plotted | flat |
 | Detection: TPR / FPR per diagnostic | induced-fault fixtures | |
@@ -114,7 +124,7 @@ each here with the measured numbers that justify it.
 ## 7. Ownership map
 | Owner | Subsystems |
 |---|---|
-| Camden | `src/can/`, `src/capture/`, `src/ipc/`, `drivers/` |
+| Camden | `src/obd/`, `src/ipc/` |
 | Lance | `src/store/`, `src/analysis/`, `tools/train/` |
 | Shared | `src/supervisor/`, `src/interface/`, `src/common/`, docs |
 
@@ -124,12 +134,13 @@ Ownership means first authorship and answerability at the defense, not exclusivi
 > What we use Claude Code for, what we don't, and how the §3.3 boundary stays visible
 > in the repository.
 
-Used for: planning, explaining kernel and SPI mechanics, drafting test fixtures,
+Used for: planning, explaining kernel and serial-device mechanics, drafting test fixtures,
 adversarial review of diffs, documentation. Not used for: the analysis pipeline's
 design decisions, and never at runtime.
 
 The boundary is legible by inspection: `src/` contains no HTTP client and no network
-code except the LAN interface in `src/interface/`. `grep -r` for any network symbol
+code except the read-only status page server in `src/interface/`, which serves the
+device's own Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network symbol
 outside that directory returns nothing, and that check is in `make test`.
 
 ## 9. Changelog (added at M5)

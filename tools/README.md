@@ -17,7 +17,7 @@ product's runtime path.
 
 | Tool | Purpose | Board item |
 |---|---|---|
-| `cangen.py` | Bench rig: generate CAN traffic over a USB-to-CAN adapter for long-run rehearsal. Output is labeled `synth`. See **D-006**. | `twonode` |
+| `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty that answers Mode 01 requests from recorded captures, for soak rehearsal and testing. Output is labeled `synth`. See **D-006**. | `obdsim` |
 | `plot_soak.py` | RSS / CPU / event-count series from soak heartbeats → the figure docs/EVALUATION.md §3 requires. | `plots` |
 
 **The labeling rule is absolute.** Anything these tools produce carries

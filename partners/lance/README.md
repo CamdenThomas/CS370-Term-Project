@@ -5,11 +5,11 @@
 - `transcripts/` — **raw `.jsonl` session files**, copied from `~/.claude/projects/`.
   Not summarized. Not exported. Not retyped.
 
-## Copy-out, every milestone M1–M5
+## Copy-out, at the end of every session
 
-```sh
-cp ~/.claude/projects/*CS370*/*.jsonl partners/lance/transcripts/
-```
+The command, for Git Bash and for PowerShell, is in
+[`transcripts/README.md`](transcripts/README.md). Run it after every session, and never
+skip it at a milestone.
 
 Transcripts purge after 30 days by default and this project runs 15 weeks. Losing
 Week-5 transcripts in Week 15 is a *foreseeable* loss, and foreseeable losses are not

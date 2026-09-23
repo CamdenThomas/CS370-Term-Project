@@ -1,9 +1,11 @@
-/* Single-producer / single-consumer lock-free ring — mechanism F.
+/* Single-producer / single-consumer lock-free ring from capture to storage. It is the
+ * handoff mechanism E's process boundary needs, and mechanism F only if a Pi-side sensor
+ * gives it a high-rate stream (D-017).
  *
  * The no-drop guarantee is the point. A gap in the record is a gap in the diagnosis,
  * so a drop must be impossible to hide: every slot carries a sequence number and the
  * consumer accounts for every one of them. If the ring is full the producer must
- * report the overrun rather than silently overwrite an unread sample (D-002).
+ * report the overrun rather than silently overwrite an unread sample (DECISIONS B.3).
  *
  * Layout is fixed so the ring can live in shared memory across the process boundary
  * that mechanism E requires.
@@ -17,12 +19,12 @@
 #include <stdint.h>
 
 #define RING_CAPACITY 4096u   /* power of two — the mask depends on it */
-#define RING_PAYLOAD    16u   /* bytes; one CAN frame's data field fits with room */
+#define RING_PAYLOAD    16u   /* bytes; a Mode 01 reply's data (<= 4 bytes) fits with room */
 
 typedef struct {
     uint64_t seq;                    /* monotonic, never reused */
     uint64_t mono_ns;                /* CLOCK_MONOTONIC at capture */
-    uint32_t can_id;
+    uint32_t pid;                    /* (mode << 16) | PID — room for 16-bit Mode 22 PIDs */
     uint8_t  len;
     uint8_t  src;                    /* data_src_t — live | replay | synth */
     uint8_t  _pad[2];

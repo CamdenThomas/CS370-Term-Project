@@ -12,11 +12,11 @@
 
 | M | Deliverable | Week | Due | Team hrs | Progress |
 |---|---|---|---|---|---|
-| M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 2/8 |
-| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | ⬜ 0/7 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | ⬜ 0/18 |
-| M3 | Checkpoint demo: both sensors through the real pipeline into real storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/13 |
-| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | ⬜ 0/23 |
+| M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 3/8 |
+| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | ⬜ 0/9 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | ⬜ 0/20 |
+| M3 | Checkpoint demo: both sensors through the real pipeline into real storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/16 |
+| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | ⬜ 0/24 |
 | M5 | Final submission: system, soak logs, evaluation report, process artifacts, complete transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/8 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/3 |
 
@@ -44,12 +44,12 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [x] **Team registered** as Camden Thomas + Lance Baron — `team`
 - [ ] **Hardware ordered** — `order`, see `docs/hardware/BOM.md`. Shipping time is the
       most common silent schedule-killer; order the day this is read.
-- [ ] Lance's Honda year/model recorded — `honda` (**D-007**)
-- [ ] Email to Pallickara sent re: soak-on-synthetic-CAN — `soakq` (**D-006**,
-      `docs/professor-email-draft.md`)
-- [ ] Milestone dates verified against syllabus — `dates` (**D-008**)
-- [ ] `cleanupPeriodDays` raised on **both** partners' machines — `cleanup`
-- [ ] Branch protection set on `main` — `ghsetup` (web UI; the API cannot do it)
+- [x] Lance's Honda year/model recorded — `honda` (**D-007**)
+- [ ] Email to Pallickara sent re: soak on a fake OBD2 port — `soakq` (**D-006**; the
+      email text is in the item's body)
+- [x] Milestone dates verified against syllabus — `dates` (**D-008**)
+- [x] `cleanupPeriodDays` raised on **both** partners' machines — `cleanup`
+- [x] Branch protection set on `main` — `ghsetup` (web UI; the API cannot do it)
 
 ## M1 — exit criteria
 
@@ -57,26 +57,26 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] A **named** user and a **named** vehicle — not a persona
 - [ ] Risk named plainly
 - [ ] Both partners' transcripts copied to `partners/<name>/transcripts/`
-- [ ] Stretch: MCP2515 module physically talking to the Pi over SPI (`ip link` shows
-      the interface), even if no car is involved yet
+- [ ] Stretch: the USB OBD2 adapter answering the Pi as `/dev/obd` (`ATZ` returns its
+      version string), even if no car is involved yet
 
 ## M2 — exit criteria
 
 - [ ] `docs/DESIGN.md`: architecture diagram with rates on every arrow; mechanism mapping
-      justified *from user requirements*; failure-mode table; storage/retention/fsync
+      justified _from user requirements_; failure-mode table; storage/retention/fsync
       policy; constraints-and-substitutions section; evaluation plan with committed
       target numbers; ownership map; AI-use plan
-- [ ] Both sensors electrically alive — real frames from a real car, captured to a file
+- [ ] Both sensors alive — real Mode 01 replies from a real car, captured to a file
 - [ ] **Three-isolated-workers check passes** on `docs/DESIGN.md`: a design-only reviewer, a
       parts-only buyer who never sees the design, and a builder who only follows
       instructions must each succeed from their own section alone
-- [ ] Baseline data collection started on both vehicles — this is the long pole and it
+- [ ] Baseline data collection started on the CR-V — this is the long pole and it
       cannot be compressed later
 
 ## M3 — exit criteria
 
-- [ ] `candaemon` → ring → `storaged` → disk, end to end, on a real car
-- [ ] Mechanism **B** or **D** demonstrably working and instrumented
+- [ ] `obdd` → ring → `storaged` → disk, end to end, on a real car
+- [ ] Mechanism **D** or **E** demonstrably working and instrumented
 - [ ] Overnight soak-style runs already happening at small scale. Every leak found in
       Week 9 is a crisis avoided in Week 14.
 - [ ] Replay harness runs a recorded capture through the real pipeline
@@ -84,7 +84,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 ## M4 — exit criteria
 
 - [ ] Feature freeze. No new features after this line; bugs only.
-- [ ] All four committed mechanisms (B, D, E, F) implemented and measured
+- [ ] Mechanisms D and E implemented and measured — plus B and F if `pisensor` added them
 - [ ] Induced-fault captures recorded and labeled for all three diagnostics
 - [ ] `make asan` and `make memcheck` clean — ASan findings cap that component at 50%
 - [ ] 48-hour soak begins, with the injected fault planned and scripted
@@ -93,7 +93,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 - [ ] `docs/EVALUATION.md`: latency distributions idle + loaded, per-process CPU/RSS over
       the full soak (plotted from heartbeats), one domain metric, fault-injection
-      results with log excerpts, the B-mechanism interrupt-vs-polling experiment, and
+      results with log excerpts, the D and E mechanism experiments, and
       an honest limitations section
 - [ ] Raw unedited soak logs committed
 - [ ] `docs/DESIGN.md` updated to as-built with a changelog of what M2 got wrong
@@ -104,6 +104,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 ## M6 — demo day
 
 Rehearse all three movements:
+
 1. **Demonstration** — soaked build doing its job; they will unplug a sensor. Graded on
    graceful degradation, honest reporting through our own interface, and the log line
    proving the system noticed.

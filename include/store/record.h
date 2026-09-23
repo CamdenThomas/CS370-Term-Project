@@ -30,7 +30,7 @@ typedef struct {
 } rec_hdr_t;
 
 typedef enum {
-    REC_CAN_FRAME  = 1,
+    REC_OBD_RAW    = 1,   /* raw adapter reply line, kept for replay (D-015) */
     REC_SAMPLE     = 2,   /* decoded PID sample */
     REC_BASELINE   = 3,   /* persisted per-bin statistics — must survive power loss */
     REC_VERDICT    = 4,
