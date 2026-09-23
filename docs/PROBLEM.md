@@ -88,3 +88,5 @@ cars in Week 4 — before the design document, not after (**D-007**).
 Second risk, named honestly: the oil-life trend needs a real oil interval to develop,
 and that is calendar time we cannot buy back by working harder in Week 14. Baseline
 collection starts at M2 or it does not happen.
+
+Thirdly there lies another risk of how the OBD protocol works, were each car implements it differently, there being 4 different *data frames*, and even if we get past those worries, decoding the recieved signal may not be possible due it being proprietary to the manufacturer. The scale of the project is quite large, and we risk not completeing the project within one semester. 
