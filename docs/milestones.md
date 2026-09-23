@@ -63,7 +63,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #16 -->
 - [x] M1 docs: factor the plug-in product design through the repo `productform` @camden
       <!-- #86 -->
-- [ ] M1 docs: overhaul the repo for the USB-OBD2, one-car design `overhaul` @camden
+- [ ] M1 docs: overhaul the repo for the Bluetooth OBD2, one-car design `overhaul`
+      @camden
       <!-- #87 -->
 - [x] M1 process: the transcript copy-out glob also matches the HW1 project folder
       `txglob` @camden <!-- #99 -->
