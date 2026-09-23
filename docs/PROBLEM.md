@@ -1,15 +1,14 @@
 # Problem memo — carwatch (Camden Thomas, Lance Baron)
 
-> **STATUS: M1 DRAFT.** One page maximum. Its job is to survive being read by a
-> skeptical stranger. Bracketed items are unfilled.
 
 ## The user
 
-> Rubric: a person or place, **named or nameable**. "A cautious driver" is a persona and
-> will be returned for revision the same way "people who might want to monitor things"
-> would be. Name a human and a car.
+An average car owner who drives everyday to work, is vastly different from someone who
+works from home and does the yearly road trip, although the recommended maintenance is
+still the same. 
 
-The typical american drives a substantial amount, releying heavily on thier vihicle. Many people drive previosly own vihivles with a wide viriaty if wear. People everyday are forced to rely on a car they hardly undestand just hoping the average service milestone will keep you car getiing you to work each day
+The point of two users is the thesis: the same oil-change sticker says 5,000 miles to
+both cars, and the cars disagree.
 
 ## The problem
 
@@ -56,6 +55,7 @@ once ambient temperature and load have been accounted for. Every verdict this de
 produces requires at least two sensors to agree on something a single threshold cannot
 see.
 
+
 ## The mechanisms
 
 > First guess at two menu items, one sentence of justification each. May change by M2.
@@ -70,6 +70,8 @@ separate processes so that a crash in the analysis cannot take the recording dow
 
 ## The risk
 
-> The single thing most likely to sink this project. Name it now.
+The primary risk, named honestly: the oil-life trend needs a real oil interval to develop,
+and that is calendar time we cannot buy back by working harder in Week 14. Baseline
+collection starts at M2 or it does not happen.
 
-the trends such as oil life needs a real viscosisty interval to develop, and that is calendar time we cannot buy back by working harder in Week 14. While there will be clear structure for a data logger, the ML model likely will not be able to demonstrate any real worl predictions on the model car (2015, Honda, CRV). Likely a fake obd2 port will need to be made to provide constant data for both training the diagnostic ML model and to perform the full 48 hour soak test, as we can not drive a car or run a car for 48 hours
+Secondly there lies another risk of how the OBD protocol works, were each car implements it differently, there being 4 different *data frames*, and even if we get past those worries, decoding the recieved signal may not be possible due it being proprietary to the manufacturer. The scale of the project is quite large, and we risk not completeing the project within one semester. 
