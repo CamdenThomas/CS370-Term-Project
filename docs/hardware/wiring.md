@@ -3,7 +3,7 @@
 The device is three off-the-shelf connections and one LED (D-011, D-015). Nothing on the
 car is cut, spliced or pierced.
 
-```
+```text
   OBD2 port ──[USB OBD2 adapter]──USB──▶ Pi (/dev/obd)
   car USB-C port or 12 V socket adapter ──USB-C──▶ Pi power
   Pi GPIO17 ──330 Ω──▶ LED ──▶ GND          (warning light)

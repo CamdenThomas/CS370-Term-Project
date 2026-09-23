@@ -32,21 +32,21 @@
 
 <details><summary><code>make</code></summary>
 
-```
+```text
 ```
 
 </details>
 
 <details><summary><code>make test</code></summary>
 
-```
+```text
 ```
 
 </details>
 
 <details><summary><code>make asan</code></summary>
 
-```
+```text
 ```
 
 </details>

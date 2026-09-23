@@ -14,7 +14,7 @@
 > components, data flows, **and rates on every arrow**. The rates are not decoration —
 > they are what makes the mechanism justifications checkable.
 
-```
+```text
   OBD2 port
         │                          Pi power: car USB-C / 12 V socket, ≥ 5.1 V / 3 A,
   ┌──────────────┐                 switched — cut, unannounced, at every key-off (D-011)

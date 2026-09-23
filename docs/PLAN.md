@@ -30,7 +30,7 @@ Diagnostic #1 claims oil pressure degrades measurably across an oil-change inter
 claim needs a real interval to develop, and an interval is calendar time you cannot buy
 back by working harder.**
 
-```
+```text
 baseline collection starts ──── 5-7 weeks of driving ────▶ oil change ──── 2 weeks ────▶ trend is real
         M2 (mid-Oct)                                       (~mid-Nov)                     M4 (late Nov)
 ```
@@ -46,7 +46,7 @@ Board chain: `order` → `bench` → `firstcap` → **`baseline`** → `foil`, w
 
 ### Critical path B — hardware lead time
 
-```
+```text
 order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first live car capture ──▶ pipeline (M3)
 ```
 

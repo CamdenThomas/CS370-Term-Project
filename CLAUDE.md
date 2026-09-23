@@ -33,7 +33,7 @@ human yes.
 
 ## 1. Commands
 
-```
+```sh
 make              # build everything, -Wall -Wextra -Werror clean
 make test         # unit tests + the boundary check
 make asan         # build+run tests under AddressSanitizer + UBSan
@@ -223,7 +223,7 @@ answers two, split. If it answers half of one, you committed too early.
 
 ### 7.4 Commit message format
 
-```
+```text
 M<n> <area>: <imperative summary, ≤ 72 chars>
 
 WHAT:   One sentence. What changed, mechanically.
@@ -238,7 +238,7 @@ VERIFY: The exact commands run and their result.
 
 Real example:
 
-```
+```text
 M3 ipc: refuse push on full ring instead of overwriting
 
 WHAT:   ring_push now returns false and increments an overrun counter when

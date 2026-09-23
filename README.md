@@ -45,7 +45,7 @@ grade it** — this file is graded.
 
 ## Query interface
 
-```
+```sh
 obdctl status                        # liveness, per-process RSS, event counts
 obdctl verdicts [--since <when>]     # current and historical diagnoses
 obdctl series <pid> --from --to      # raw or binned history
@@ -59,7 +59,7 @@ deeper is `obdctl` (decision D-013).
 
 ## Repository layout
 
-```
+```text
 src/                systems core, C17, -Wall -Wextra -Werror clean
   obd/              capture daemon: Mode 01 requests over the OBD2 adapter tty
   ipc/              SPSC ring + Unix-socket protocol between processes   [mechanism E]

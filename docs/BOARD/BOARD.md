@@ -5,7 +5,7 @@ GitHub issues and the `carwatch` project board are *derived* from that file by
 `tools/board_sync.py`. Nothing is typed directly into the GitHub web UI except
 answers, discussion, and closing an issue.
 
-```
+```text
 docs/board.toml   ──▶  tools/board_sync.py  ──▶  GitHub issues + project board
 (source of truth)      (reconciler)              (derived)
 docs/board.lock.json   slug → issue number, committed so the mapping survives
