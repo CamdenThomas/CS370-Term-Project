@@ -1,11 +1,10 @@
 # Problem memo — carwatch (Camden Thomas, Lance Baron)
 
-
 ## The user
 
 An average car owner who drives everyday to work, is vastly different from someone who
 works from home and does the yearly road trip, although the recommended maintenance is
-still the same. 
+still the same.
 
 The point of two users is the thesis: the same oil-change sticker says 5,000 miles to
 both cars, and the cars disagree.
@@ -16,11 +15,12 @@ both cars, and the cars disagree.
 
 Maintenance intervals are generalizations. The sticker on the windshield knows nothing
 about how this engine has actually been run — a commuter that never reaches operating
-temperature and a highway car with the same odometer reading have not aged the same
-way. The consequence runs both directions and both are expensive: oil changed far
-earlier than it needed to be, or an engine run on oil that lost its pressure margin
-weeks ago. While the sensors already present do a great job tracking all the need information,
-people just need a device to monitor and store this data to learn the car and predict failures before the check engine light of doom puts you on the hour long bus ride.
+temperature and a highway car with the same odometer reading have not aged the same way.
+The consequence runs both directions and both are expensive: oil changed far earlier than
+it needed to be, or an engine run on oil that lost its pressure margin weeks ago. While
+the sensors already present do a great job tracking all the need information, people just
+need a device to monitor and store this data to learn the car and predict failures before
+the check engine light of doom puts you on the hour long bus ride.
 
 ## Why a device
 
@@ -55,7 +55,6 @@ once ambient temperature and load have been accounted for. Every verdict this de
 produces requires at least two sensors to agree on something a single threshold cannot
 see.
 
-
 ## The mechanisms
 
 > First guess at two menu items, one sentence of justification each. May change by M2.
@@ -74,4 +73,8 @@ The primary risk, named honestly: the oil-life trend needs a real oil interval t
 and that is calendar time we cannot buy back by working harder in Week 14. Baseline
 collection starts at M2 or it does not happen.
 
-Secondly there lies another risk of how the OBD protocol works, were each car implements it differently, there being 4 different *data frames*, and even if we get past those worries, decoding the recieved signal may not be possible due it being proprietary to the manufacturer. The scale of the project is quite large, and we risk not completeing the project within one semester. 
+Secondly there lies another risk of how the OBD protocol works, were each car implements
+it differently, there being 4 different *data frames*, and even if we get past those
+worries, decoding the recieved signal may not be possible due it being proprietary to the
+manufacturer. The scale of the project is quite large, and we risk not completeing the
+project within one semester.
