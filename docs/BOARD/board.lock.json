@@ -16,9 +16,17 @@
       "number": 49,
       "title": "M4 analysis: operating-point binning (RPM x load x coolant temp)"
     },
+    "boardmerge": {
+      "number": 102,
+      "title": "M1 tools: the 8e8c74a merge left board.toml and board.lock.json unparseable"
+    },
     "boardpath": {
       "number": 96,
       "title": "M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/"
+    },
+    "btpivot": {
+      "number": 105,
+      "title": "M1 docs: read OBD2 over a Bluetooth Classic (SPP) adapter instead of USB"
     },
     "canirq": {
       "number": 36,
@@ -31,6 +39,10 @@
     "canreq": {
       "number": 88,
       "title": "M3 obd: rate-limited Mode 01 requester on the adapter tty"
+    },
+    "claudeindex": {
+      "number": 106,
+      "title": "M1 docs: condense CLAUDE.md into a rules-only index over the source docs"
     },
     "cleanup": {
       "number": 9,
@@ -168,9 +180,17 @@
       "number": 52,
       "title": "M4 analysis: multivariate residual (Mahalanobis distance)"
     },
+    "mdlint": {
+      "number": 104,
+      "title": "M1 docs: markdownlint and cSpell configs, and a clean pass over every doc"
+    },
     "memo": {
       "number": 15,
       "title": "M1 docs: draft docs/PROBLEM.md, all six required headings"
+    },
+    "memopolish": {
+      "number": 103,
+      "title": "M1 docs: grammar, spelling and format pass over docs/PROBLEM.md"
     },
     "memorev": {
       "number": 16,
