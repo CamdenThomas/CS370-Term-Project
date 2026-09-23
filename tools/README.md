@@ -7,7 +7,7 @@ product's runtime path.
 **Present:**
 
 | Tool | Purpose |
-|---|---|
+| --- | --- |
 | `board_sync.py` | Reconciles `docs/board.toml` onto GitHub issues and the project board. Not a product tool at all — it is how the plan is maintained. See `docs/BOARD.md`. |
 | `replay.py` | Feed a labeled capture through the real pipeline at real or accelerated speed. A legitimate systems artifact (handout §5), not a workaround — but everything it produces is labeled `replay`. |
 | `pidscan.py` | Mode 01 supported-PID bitmap scan. Feeds `pid-survey.md`; the input to **D-007**. |
@@ -16,7 +16,7 @@ product's runtime path.
 **Planned — not written yet.** Listed so nobody looks for them:
 
 | Tool | Purpose | Board item |
-|---|---|---|
+| --- | --- | --- |
 | `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty that answers Mode 01 requests from recorded captures, for soak rehearsal and testing. Output is labeled `synth`. See **D-006**. | `obdsim` |
 | `plot_soak.py` | RSS / CPU / event-count series from soak heartbeats → the figure docs/EVALUATION.md §3 requires. | `plots` |
 

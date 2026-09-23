@@ -30,23 +30,24 @@ Diagnostic #1 claims oil pressure degrades measurably across an oil-change inter
 claim needs a real interval to develop, and an interval is calendar time you cannot buy
 back by working harder.**
 
-```
+```text
 baseline collection starts ──── 5-7 weeks of driving ────▶ oil change ──── 2 weeks ────▶ trend is real
         M2 (mid-Oct)                                       (~mid-Nov)                     M4 (late Nov)
 ```
 
-**Consequence:** logging must be running on the CR-V by the end of M2, even if the code
-is ugly, even if it is just raw adapter replies logged to a file. A crude capture that
-starts on time beats an elegant one that starts three weeks late. **If baseline collection has not started by the
-M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2 and #3 — decide that
-consciously, record it in `DECISIONS.md`, and narrow the claim in writing.
+**Consequence:** logging must be running on the CR-V by the end of M2, even if the code is
+ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts
+on time beats an elegant one that starts three weeks late. **If baseline collection has
+not started by the M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2
+and #3 — decide that consciously, record it in `DECISIONS.md`, and narrow the claim in
+writing.
 
 Board chain: `order` → `bench` → `firstcap` → **`baseline`** → `foil`, with `keyoff`
 (the USB-C supply proven) also gating `baseline`.
 
 ### Critical path B — hardware lead time
 
-```
+```text
 order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first live car capture ──▶ pipeline (M3)
 ```
 
@@ -71,7 +72,7 @@ feeds `oilq`, which is where the answer gets recorded.
 ## 2. Phase structure
 
 | Phase | Weeks | Theme | The thing that must be true at the end |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **M0** | 4 | Commit and order | Parts ordered, questions asked, board live |
 | **M1** | 5 | Know the problem | A named user, a named risk, and PID survey results |
 | **M2** | 6–7 | Argue on paper | Design settled, **logging running on the CR-V** |

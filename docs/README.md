@@ -6,7 +6,7 @@ fact appears in two documents, the one marked **source** wins and the other is s
 ## Graded deliverables
 
 | Document | Answers | Owner | Due |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | [`PROBLEM.md`](PROBLEM.md) | Who is this for, what goes wrong without it, and why must it be a device? | Camden | M1 |
 | [`DESIGN.md`](DESIGN.md) | How is it built, which mechanisms, how does it fail, what will we measure? | shared | M2, as-built at M5 |
 | [`EVALUATION.md`](EVALUATION.md) | What did we measure, and what are the limits? | shared | M5 |
@@ -14,7 +14,7 @@ fact appears in two documents, the one marked **source** wins and the other is s
 ## How the project is run
 
 | Document | Answers | Kind |
-|---|---|---|
+| --- | --- | --- |
 | [`DECISIONS.md`](DECISIONS.md) | What is settled, why, and what still needs a human signature? | **source** for decisions |
 | [`board.toml`](board.toml) | What work, questions and decisions are open, owned by whom, blocked by what? | **source** for all open work; GitHub is derived |
 | [`BOARD.md`](BOARD.md) | How does `board.toml` become the GitHub board? | how-to |
@@ -26,7 +26,7 @@ fact appears in two documents, the one marked **source** wins and the other is s
 ## Hardware
 
 | Document | Answers | Owner |
-|---|---|---|
+| --- | --- | --- |
 | [`hardware/BOM.md`](hardware/BOM.md) | What do we buy? | Camden |
 | [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? | Camden |
 | [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does the CR-V actually publish? | Lance's car, either partner |
@@ -35,7 +35,7 @@ fact appears in two documents, the one marked **source** wins and the other is s
 ## Outside `docs/`
 
 | Path | What |
-|---|---|
+| --- | --- |
 | [`../CLAUDE.md`](../CLAUDE.md) | Team rules, read by both partners and by Claude every session |
 | [`../README.md`](../README.md) | What carwatch is, and how a TA gets it running on a clean Pi |
 | [`../partners/`](../partners/) | Each partner's PROMPTLOG, REFLECTION and raw `.jsonl` transcripts |

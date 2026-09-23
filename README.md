@@ -14,7 +14,7 @@ University.
 ## What it does
 
 | Diagnostic | Sensors that cooperate | Why a threshold can't do it |
-|---|---|---|
+| --- | --- | --- |
 | Oil pressure degradation across oil life | oil pressure + RPM + coolant temp | Oil pressure is a function of RPM and oil temperature. The signal is the *residual* after normalizing for both, trended over weeks. |
 | Cooling system anomaly | coolant temp + ambient/intake temp + engine load | A short-cycling thermostat has a period and amplitude. A single temperature reading has neither. |
 | Mixture drift (vacuum leak / failing O2 / dirty MAF) | short+long term fuel trim + MAP + RPM | Trim values are only meaningful relative to load; the diagnosis is which way trims move *as load changes*. |
@@ -45,7 +45,7 @@ grade it** — this file is graded.
 
 ## Query interface
 
-```
+```sh
 obdctl status                        # liveness, per-process RSS, event counts
 obdctl verdicts [--since <when>]     # current and historical diagnoses
 obdctl series <pid> --from --to      # raw or binned history
@@ -59,7 +59,7 @@ deeper is `obdctl` (decision D-013).
 
 ## Repository layout
 
-```
+```text
 src/                systems core, C17, -Wall -Wextra -Werror clean
   obd/              capture daemon: Mode 01 requests over the OBD2 adapter tty
   ipc/              SPSC ring + Unix-socket protocol between processes   [mechanism E]

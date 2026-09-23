@@ -9,11 +9,12 @@
 > instructions must each succeed from their own section alone.
 
 ## 1. Architecture
+>
 > A diagram in the spirit of the handout's Figure 1: processes, threads, kernel
 > components, data flows, **and rates on every arrow**. The rates are not decoration —
 > they are what makes the mechanism justifications checkable.
 
-```
+```text
   OBD2 port
         │                          Pi power: car USB-C / 12 V socket, ≥ 5.1 V / 3 A,
   ┌──────────────┐                 switched — cut, unannounced, at every key-off (D-011)
@@ -46,6 +47,7 @@
 **TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
 
 ## 2. Mechanism mapping
+>
 > For each chosen menu item: which component implements it, and a justification **from
 > the user's requirements**. The defense will test the justification, not the choice.
 > Model the form on the handout's example: "the vibration analysis is meaningless above
@@ -55,19 +57,20 @@ The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); expand each row he
 the measured numbers that justify it.
 
 | Menu item | Component | Justification from requirements | How measured |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | D | `src/store/` | | recovery after mid-write power cut, N trials |
 | E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
 | B *(only with `pisensor`)* | Pi-side sensor capture path | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
 | F *(only with `pisensor`)* | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
 
 ## 3. Failure-mode table
+>
 > For each component: how it can fail, how the failure is **detected**, what the system
 > **does**, and what the **log will show**. The soak test grades this table's honesty —
 > so write the modes you are afraid of, not the ones you have already handled.
 
 | Component | Failure | Detection | Response | Log line |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | OBD2 adapter | unplugged mid-drive (`/dev/obd` disappears) | read error / `ENODEV` on the tty | degrade, do not restart-storm; reopen when udev brings it back | |
 | OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | `ATZ` reset, then back off | |
 | ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
@@ -83,10 +86,11 @@ the measured numbers that justify it.
 | power | cut at key-off, every drive (D-011) | none possible in advance — recovery scan at next boot | | |
 
 ## 4. Storage and data
+>
 > What is stored, at what rate, in what format, with what retention, and what happens to
 > it when the power dies mid-write.
 
-- **Record format:** [magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]
+- **Record format:** `[magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]`
 - **Rates:** [fill — Mode 01 request budget, and the per-PID rate it implies (D-012)]
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
 - **fsync discipline:** [fill — batch size, interval, and the argument for it]
@@ -96,11 +100,12 @@ the measured numbers that justify it.
   the requirement that made mechanism D non-optional.
 
 ## 5. Constraints and substitutions
+>
 > What the ideal build would use, what we are actually using, and what the gap costs.
 > "A design document with nothing to report here has usually not met its hardware yet."
 
 | Wanted | Using | What the substitution costs |
-|---|---|---|
+| --- | --- | --- |
 | Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
 | A year of failing engines | Induced faults on one healthy car (D-016) | Only three fault classes, and none of them is a real bearing failure |
 | Raw CAN at the ECU's own publish rate | Mode 01 replies through a USB OBD2 adapter (D-015) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
@@ -108,11 +113,12 @@ the measured numbers that justify it.
 | Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
 
 ## 6. Evaluation plan
+>
 > The measurements we will take, each with **method and committed target**. Numbers
 > committed now are twice as credible when hit later, and instructive either way.
 
 | Measurement | Method | Target |
-|---|---|---|
+| --- | --- | --- |
 | OBD reply → stored, p50/p99 | timestamp at tty read and at fsync | |
 | `kill -9` each child: detection + recovery time | N trials per child, from the log | |
 | IRQ vs polling: latency + CPU *(only with `pisensor`)* | both paths, idle and `stress-ng` loaded | |
@@ -122,8 +128,9 @@ the measured numbers that justify it.
 | Recovery after mid-write power cut | N pull-the-plug trials | 100% |
 
 ## 7. Ownership map
+
 | Owner | Subsystems |
-|---|---|
+| --- | --- |
 | Camden | `src/obd/`, `src/ipc/` |
 | Lance | `src/store/`, `src/analysis/`, `tools/train/` |
 | Shared | `src/supervisor/`, `src/interface/`, `src/common/`, docs |
@@ -131,6 +138,7 @@ the measured numbers that justify it.
 Ownership means first authorship and answerability at the defense, not exclusivity.
 
 ## 8. AI-use plan
+>
 > What we use Claude Code for, what we don't, and how the §3.3 boundary stays visible
 > in the repository.
 
@@ -138,10 +146,11 @@ Used for: planning, explaining kernel and serial-device mechanics, drafting test
 adversarial review of diffs, documentation. Not used for: the analysis pipeline's
 design decisions, and never at runtime.
 
-The boundary is legible by inspection: `src/` contains no HTTP client and no network
-code except the read-only status page server in `src/interface/`, which serves the
-device's own Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network symbol
-outside that directory returns nothing, and that check is in `make test`.
+The boundary is legible by inspection: `src/` contains no HTTP client and no network code
+except the read-only status page server in `src/interface/`, which serves the device's own
+Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network
+symbol outside that directory returns nothing, and that check is in `make test`.
 
 ## 9. Changelog (added at M5)
+>
 > What M2's version got wrong. This section is graded and an empty one is not credible.

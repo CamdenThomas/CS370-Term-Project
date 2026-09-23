@@ -1,10 +1,10 @@
+<!-- markdownlint-disable-file MD041 -- GitHub supplies the PR title as the heading. -->
 <!-- Every section is mandatory. A PR with an unfilled section is not ready for review.
      One PR = one reviewable claim (CLAUDE.md 7.5). Past ~10 commits or ~600 changed
      lines, re-apply the claim test — and if it survives, say in the body why. -->
 
 ## What this changes
 <!-- One paragraph, plain language. What is different after this merges? -->
-
 
 ## Why
 <!-- Tie it to a requirement, a decision ID from docs/DECISIONS.md, or a measurement.
@@ -14,16 +14,13 @@
 **Milestone:** M
 **Mechanism affected (B / D / E / F / none):**
 
-
 ## Review this hardest
 <!-- Point the reviewer at the part most likely to be wrong. Be specific:
      a function, a memory ordering, an error path, a lifetime. -->
 
-
 ## What I am least sure about
 <!-- Must not be empty. If everything is certain, the diff has not been thought about
      hard enough. -->
-
 
 ## Commit-by-commit
 <!-- One line per commit, in order. The reviewer should be able to read this list and
@@ -31,31 +28,32 @@
 1.
 2.
 
-
 ## Verification — paste real output, do not summarize
 
 <details><summary><code>make</code></summary>
 
+```text
 ```
-```
+
 </details>
 
 <details><summary><code>make test</code></summary>
 
+```text
 ```
-```
+
 </details>
 
 <details><summary><code>make asan</code></summary>
 
+```text
 ```
-```
+
 </details>
 
 <!-- Hardware changes also require real evidence: dmesg verbatim, raw adapter replies,
      vcgencmd get_throttled, timing capture. No fixes argued from a verbal
      description of the symptom. -->
-
 
 ## Reviewer checklist
 <!-- The reviewer ticks these. Anything unticked blocks the merge. -->

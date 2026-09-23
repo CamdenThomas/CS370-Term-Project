@@ -20,8 +20,10 @@
 
 ## Episode template
 
-### E-00 — <short title>
-**Milestone:** M?  **Date:**  **Category:** plan / rejected diff / hardware loop / partner review
+### E-00 — (short title)
+
+**Milestone:** M?  **Date:**
+**Category:** plan / rejected diff / hardware loop / partner review
 
 **Context.** What I was trying to do and what I already knew.
 
@@ -90,7 +92,7 @@ Items absent from the manifest are never touched.
 
 **My judgment.**
 
-> *(mine to write — the questions worth answering here:)*
+> *(Mine to write.)* The questions worth answering here:
 >
 > - I accepted the rewrite rather than the five bug fixes. Was that the right call, or was
 >   it scope creep dressed up as architecture? What would I say to someone who argued the
@@ -104,18 +106,17 @@ Items absent from the manifest are never touched.
 
 **Outcome.** Commits: *(fill in)*. What I would do differently: *(fill in)*.
 
-
-
-### E-02 — Avoid Overcomplications with CAN
+### E-02 — Avoid Overcomplicating CAN
 
 **Milestone:** 1?  **Date:9/21/2026**  **Category:** plan change
 
-**Context.** 
+**Context.**
 
 **What I asked.** The actual prompt, or its substance. Include the evidence I pasted.
 
 **What came back.** Summarized, with the part that mattered quoted.
 
-**My judgment.** I had been digging around into ways to make accessign CAN simple for far to long before even begining the dreded goal of untangling the cars CAN messages.
+**My judgment.** I had been digging around into ways to make accessing CAN simple for far
+too long before even beginning the dreaded goal of untangling the car's CAN messages.
 
 **Outcome.** Commit(s), and what I would do differently.

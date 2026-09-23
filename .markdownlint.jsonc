@@ -1,0 +1,25 @@
+// markdownlint rules for every .md in the repo (D-018, docs/DECISIONS.md §F.4).
+// Read by the VS Code markdownlint extension and by markdownlint-cli2.
+{
+  "default": true,
+
+  // The docs were written to a 90-column wrap. Tables, code and headings cannot
+  // wrap, so they are exempt.
+  "MD013": {
+    "line_length": 90,
+    "code_blocks": false,
+    "tables": false,
+    "headings": false
+  },
+
+  // HTML we use on purpose: collapsible PR sections and the small print under
+  // generated tables.
+  "MD033": {
+    "allowed_elements": ["details", "summary", "code", "sub", "br"]
+  },
+
+  // One table style everywhere: `| a | b |` over `| --- | --- |`.
+  "MD060": {
+    "style": "compact"
+  }
+}
