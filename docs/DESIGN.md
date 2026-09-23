@@ -132,8 +132,8 @@ the measured numbers that justify it.
 | Owner | Subsystems |
 | --- | --- |
 | Camden | `src/obd/`, `src/ipc/` |
-| Lance | `src/store/`, `src/analysis/`, `tools/train/` |
-| Shared | `src/supervisor/`, `src/interface/`, `src/common/`, docs |
+| Lance | `src/store/`, `src/analysis/`, `tools/train/`, `electricalDrawing/` |
+| Shared | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
 
 Ownership means first authorship and answerability at the defense, not exclusivity.
 

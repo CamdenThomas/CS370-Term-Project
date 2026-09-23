@@ -1,8 +1,7 @@
 # Milestones
 
-> **⚠ VERIFY THESE DATES.** They assume a semester start of Mon 2026-08-24, which puts
-> us at the end of Week 3 on 2026-09-11. Check the syllabus — decision **D-008**, board
-> item `dates`.
+> **Dates verified** against the syllabus by Camden on 2026-09-21 (decision **D-008**,
+> board item `dates`), from a semester start of Mon 2026-08-24.
 >
 > **The table below is generated.** Correct the dates in `docs/BOARD/board.toml` and run
 > `python tools/board_sync.py`; this table, the GitHub milestone due dates and the board
