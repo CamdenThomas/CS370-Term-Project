@@ -21,7 +21,7 @@ You (Claude) are required in our **workflow** and forbidden in our **product**
 1. Read this file.
 2. Read `docs/milestones.md` — where we are and what the exit criteria are.
 3. Read `docs/DECISIONS.md` — what is already settled, and what is awaiting review.
-4. Read `docs/BOARD.md`, then run `python tools/board_sync.py --status` — what is Ready,
+4. Read `docs/BOARD/BOARD.md`, then run `python tools/board_sync.py --status` — what is Ready,
    what is holding up the critical path, and how long each open question has been open.
 5. State whose session this is. Do not edit outside that owner's area without being told.
 6. `git status` must be clean. Create the branch **before** the first edit.
@@ -47,7 +47,7 @@ make clean
 
 python tools/board_sync.py --status    # what is Ready, what is stuck, who owns it
 python tools/board_sync.py --check     # has the board drifted? (exit 1 if yes)
-python tools/board_sync.py             # reconcile docs/board.toml onto GitHub
+python tools/board_sync.py             # reconcile docs/BOARD/board.toml onto GitHub
 ```
 
 **A change is DONE only when `make`, `make test`, and `make asan` all pass, and you have
@@ -365,9 +365,9 @@ visible position in the queue.
 
 #### The board is generated, not hand-maintained
 
-**`docs/board.toml` is the source of truth. GitHub is derived from it.**
-`tools/board_sync.py` reconciles the two. Full contract in `docs/BOARD.md`; the part that
-binds this section:
+**`docs/BOARD/board.toml` is the source of truth. GitHub is derived from it.**
+`tools/board_sync.py` reconciles the two. Full contract in `docs/BOARD/BOARD.md`; the part
+that binds this section:
 
 > **Never create, retitle, relabel, re-milestone or re-assign an issue with `gh` or in
 > the web UI.** Edit the `[[item]]` and re-run sync. An issue created by hand is invisible
@@ -395,7 +395,7 @@ an honor system.
 
 #### Claude's standing instructions
 
-- **When you would stop and emit a blocker (§7.8), add an `[[item]]` to `docs/board.toml`
+- **When you would stop and emit a blocker (§7.8), add an `[[item]]` to `docs/BOARD/board.toml`
   instead**, run sync, and continue with whatever else is unblocked. Link the issue number
   in the session summary.
 - Title: `M<n> <area>: <what>` — same convention as commits.
@@ -405,8 +405,8 @@ an honor system.
 - Set `owner`. Unassigned issues are nobody's.
 - Set `milestone` (`M0`–`M6`) so the board sorts by deadline.
 - Give it a `slug` that will still make sense in Week 14. Slugs are permanent identity —
-  **never rename or reuse one**; the slug→issue mapping in `docs/board.lock.json` is what
-  survives between sessions.
+  **never rename or reuse one**; the slug→issue mapping in `docs/BOARD/board.lock.json` is
+  what survives between sessions.
 - If the item exists because of a decision, set `decision = "D-###"`. Sync renders the link
   into the issue and warns if that ID is not in `docs/DECISIONS.md`.
 
@@ -450,8 +450,8 @@ a run with nothing to do makes zero writes. **A board that lies is worse than no
 and the only way it can lie now is if you skipped this step.
 
 CI enforces it: `.github/workflows/board.yml` runs `--check --no-board` on every push and
-pull request and fails on drift, and `make test` validates `docs/board.toml` itself through
-`tools/test_board.py`. So a forgotten sync is a red build, not a quiet lie.
+pull request and fails on drift, and `make test` validates `docs/BOARD/board.toml` itself
+through `tools/test_board.py`. So a forgotten sync is a red build, not a quiet lie.
 
 #### What this is worth at the defense
 
@@ -564,4 +564,4 @@ open is tracked in two places, so nothing open can go stale in one of them.
 ---
 
 *Last updated: M0 — §0, §7.11 and §11 rewritten when the board moved to
-`docs/board.toml` + `tools/board_sync.py`. Both partners maintain this file.*
+`docs/BOARD/board.toml` + `tools/board_sync.py`. Both partners maintain this file.*

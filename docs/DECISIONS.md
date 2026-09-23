@@ -635,9 +635,9 @@ guarantees one.
 · **Answered:** 2026-09-21, by Camden · **Reviewed:** Camden ⬜ / Lance ⬜
 
 **Answer.** Camden verified the milestone dates against the syllabus (checked off in
-`docs/milestones.md`, 2026-09-21): the `[[milestone]]` dates in `docs/board.toml` stand as
-written, M0 2026-09-20 through M6 2026-12-18. Recorded by Claude from that check-off;
-Camden marks it LOCKED in his own commit.
+`docs/milestones.md`, 2026-09-21): the `[[milestone]]` dates in `docs/BOARD/board.toml`
+stand as written, M0 2026-09-20 through M6 2026-12-18. Recorded by Claude from that
+check-off; Camden marks it LOCKED in his own commit.
 
 **Why it mattered.** The handout gives weeks, not dates; a one-week error would have moved
 the M4 soak start, and M4 already lands on Thanksgiving week.

@@ -1,21 +1,21 @@
 # carwatch — full project plan
 
-**This file is the *why*. `docs/board.toml` is the *what*.**
+**This file is the *why*. `docs/BOARD/board.toml` is the *what*.**
 
 The work breakdown that used to live here — 80 numbered tasks with owners and blocked-by
-lists — moved to `docs/board.toml`, which `tools/board_sync.py` reconciles onto GitHub
+lists — moved to `docs/BOARD/board.toml`, which `tools/board_sync.py` reconciles onto GitHub
 issues and the `carwatch` project board. Keeping a second copy here would guarantee the two
 disagreed by Week 9, and nothing would have told us which one was wrong.
 
 So: read **this** for why the plan is shaped this way and what to sacrifice when it slips.
-Read **the board** for what to do next. See `docs/BOARD.md` for how the board works.
+Read **the board** for what to do next. See `docs/BOARD/BOARD.md` for how the board works.
 
 - Decisions already made: `docs/DECISIONS.md`
 - Milestone exit criteria: `docs/milestones.md`
 - The rubric itself: `docs/handout/CS370-TermProject.md`
 
 Items are named below by their board **slug**, which is permanent. Issue numbers are not
-written into any document — they live only in `docs/board.lock.json`, which sync maintains.
+written into any document — they live only in `docs/BOARD/board.lock.json`, which sync maintains.
 
 ---
 

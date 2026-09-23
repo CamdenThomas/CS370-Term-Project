@@ -1,14 +1,14 @@
 # The board: how work is tracked
 
-Every task, question and decision in this project lives in **`docs/board.toml`**.
+Every task, question and decision in this project lives in **`docs/BOARD/board.toml`**.
 GitHub issues and the `carwatch` project board are *derived* from that file by
 `tools/board_sync.py`. Nothing is typed directly into the GitHub web UI except
 answers, discussion, and closing an issue.
 
 ```text
-docs/board.toml   ──▶  tools/board_sync.py  ──▶  GitHub issues + project board
+docs/BOARD/board.toml   ──▶  tools/board_sync.py  ──▶  GitHub issues + project board
 (source of truth)      (reconciler)              (derived)
-docs/board.lock.json   slug → issue number, committed so the mapping survives
+docs/BOARD/board.lock.json   slug → issue number, committed so the mapping survives
 ```
 
 ## Running it
@@ -56,7 +56,7 @@ Three things derive from `board.toml` and must never be hand-edited:
 | --- | --- | --- |
 | Issue bodies' blocked-by list and decision link | GitHub | `<!-- board-sync:deps -->` |
 | The milestone table | `docs/milestones.md` | `<!-- board-sync:milestones -->` |
-| slug → issue number | `docs/board.lock.json` | (whole file) |
+| slug → issue number | `docs/BOARD/board.lock.json` | (whole file) |
 
 **Milestone dates are written in exactly one place**: the `[[milestone]]` blocks here.
 Sync patches the GitHub due dates *and* regenerates the table in `docs/milestones.md`
