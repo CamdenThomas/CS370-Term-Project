@@ -106,8 +106,8 @@ the measured numbers that justify it.
 
 | Wanted | Using | What the substitution costs |
 | --- | --- | --- |
-| Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
-| A year of failing engines | Induced faults on one healthy car (D-016) | Only three fault classes, and none of them is a real bearing failure |
+| Every engine sensor, direct | Whatever Mode 01 PIDs the ECU publishes (D-007) | The model sees only what the CR-V reports; oil pressure, for one, is probably absent |
+| A year of failing engines | Induced faults on one healthy car (D-016, D-021) | A handful of fault areas, all reversible; no real wear-out failure is ever seen |
 | Raw CAN at the ECU's own publish rate | Mode 01 replies from a Bluetooth OBD2 adapter (D-019) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
 | 48h of live driving | [pending D-006] | |
 | Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
