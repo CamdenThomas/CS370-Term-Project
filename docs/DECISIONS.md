@@ -47,7 +47,7 @@ Decisions currently awaiting a human signature:
 | D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
 | D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
-| D-018 | Markdown linted with markdownlint at a 90-column wrap; handout exempt (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
+| D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -622,6 +622,10 @@ and headings exempt), `<details>`, `<summary>`, `<code>`, `<sub>` and `<br>` all
 inline HTML, and tables in the compact `| a | b |` / `| --- | --- |` style.
 `.markdownlintignore` excludes `docs/handout/`, which is a transcription of the
 instructor's PDF.
+
+Spelling is **American English**, checked by the VS Code Code Spell Checker (cSpell).
+`cspell.json` holds the project dictionary: our jargon, command names and board slugs.
+Add a word there when it is a real term; fix it when it is a typo.
 
 **Why 90, not the default 80.** The docs were already wrapped at about 90: at 80 the repo
 raised 1,184 line-length warnings, and at 90 it raised 24. Rewrapping everything to 80
