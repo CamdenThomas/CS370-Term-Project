@@ -13,14 +13,14 @@ terminal at the repository root:
 **Git Bash / macOS / Linux**
 
 ```sh
-cp ~/.claude/projects/*CS370*/*.jsonl partners/lance/transcripts/
+cp ~/.claude/projects/*CS370-Term-Project*/*.jsonl partners/lance/transcripts/
 git add partners/lance/transcripts/*.jsonl
 ```
 
 **PowerShell**
 
 ```powershell
-Copy-Item "$env:USERPROFILE\.claude\projects\*CS370*\*.jsonl" partners\lance\transcripts\
+Copy-Item "$env:USERPROFILE\.claude\projects\*CS370-Term-Project*\*.jsonl" partners\lance\transcripts\
 git add partners/lance/transcripts/*.jsonl
 ```
 
@@ -32,6 +32,14 @@ git commit -m "M<n> process: copy out Lance's Claude Code transcripts"
 
 Copying again is safe: a session file only ever grows, so a newer copy replaces an older,
 shorter one of the same session.
+
+**Match `*CS370-Term-Project*`, not `*CS370*`.** The wider pattern also matches the HW1
+rbtree-lab project folder, and would copy another assignment's sessions into this one's
+graded deliverable. Check what you are about to copy before you copy it:
+
+```sh
+ls -d ~/.claude/projects/*CS370-Term-Project*/
+```
 
 **If nothing is copied**, the project folder has a different name on this machine — list
 `~/.claude/projects/` and use the folder whose name contains this repository's path.

@@ -491,7 +491,7 @@ labels = ["task"]
 title = "M1 process: transcript copy-out, both partners"
 body = '''
     mkdir -p partners/<name>/transcripts
-    cp ~/.claude/projects/*CS370*/*.jsonl partners/<name>/transcripts/
+    cp ~/.claude/projects/*CS370-Term-Project*/*.jsonl partners/<name>/transcripts/
 
 Raw. Not summarized, not exported, not retyped. Both partners, separately.
 '''
