@@ -348,6 +348,10 @@
       "number": 71,
       "title": "M4 process: transcript copy-out"
     },
+    "txglob": {
+      "number": 99,
+      "title": "M1 process: the transcript copy-out glob also matches the HW1 project folder"
+    },
     "welford": {
       "number": 50,
       "title": "M4 analysis: per-bin running mean and variance (Welford)"
