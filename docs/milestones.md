@@ -13,7 +13,7 @@
 | M | Deliverable | Week | Due | Team hrs | Progress |
 |---|---|---|---|---|---|
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 3/8 |
-| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | ⬜ 0/9 |
+| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 1/11 |
 | M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | ⬜ 0/20 |
 | M3 | Checkpoint demo: both sensors through the real pipeline into real storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/16 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | ⬜ 0/24 |
