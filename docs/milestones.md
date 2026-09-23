@@ -15,7 +15,7 @@ short name other docs cite.
 | M | Deliverable | Week | Due | Team hrs | Progress |
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
-| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 16/23 |
+| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
 | M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 2/22 |
 | M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/17 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/26 |
@@ -63,7 +63,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #16 -->
 - [x] M1 docs: factor the plug-in product design through the repo `productform` @camden
       <!-- #86 -->
-- [ ] M1 docs: overhaul the repo for the Bluetooth OBD2, one-car design `overhaul`
+- [x] M1 docs: overhaul the repo for the Bluetooth OBD2, one-car design `overhaul`
       @camden
       <!-- #87 -->
 - [x] M1 process: the transcript copy-out glob also matches the HW1 project folder
@@ -84,7 +84,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `claudeindex` @camden <!-- #106 -->
 - [x] M1 tools: make docs/milestones.md the board; retire board.toml (D-020) `boardlist`
       @camden <!-- #120 -->
-- [ ] M1 docs: reframe the repo as a one-car monitor that names the fault area (D-021)
+- [x] M1 docs: reframe the repo as a one-car monitor that names the fault area (D-021)
       `reframe` @camden <!-- #127 -->
 - [ ] M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2
       `ownmap` @lance <!-- #112 -->
