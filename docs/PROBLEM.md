@@ -1,16 +1,11 @@
 # Problem memo — carwatch (Camden Thomas, Lance Baron)
 
-> **STATUS: M1 DRAFT.** One page maximum. Its job is to survive being read by a
-> skeptical stranger. Bracketed items are unfilled.
 
 ## The user
-> Rubric: a person or place, **named or nameable**. "A cautious driver" is a persona and
-> will be returned for revision the same way "people who might want to monitor things"
-> would be. Name a human and a car.
 
-[NAME], who drives a [YEAR MAKE MODEL] and [does X with it — commutes N miles, tows,
-short-trips it in winter]. And [NAME 2], whose [YEAR MAKE MODEL] does something
-measurably different with its miles.
+An average car owner who drives everyday to work, is vastly different from someone who
+works from home and does the yearly road trip, although the recommended maintenance is
+still the same. 
 
 The point of two users is the thesis: the same oil-change sticker says 5,000 miles to
 both cars, and the cars disagree.
@@ -62,9 +57,6 @@ once ambient temperature and load have been accounted for. Every verdict this de
 produces requires at least two sensors to agree on something a single threshold cannot
 see.
 
-[If D-006 resolves to adding physical sensors: an MPU-6050 on the engine mount and a
-DS18B20 temperature probe, with the vibration spectrum order-tracked against CAN-derived
-crank speed — a measurement the ECU itself cannot make.]
 
 ## The mechanisms
 > First guess at two menu items, one sentence of justification each. May change by M2.
@@ -80,13 +72,8 @@ and must recover a torn tail on every boot.
 ## The risk
 > The single thing most likely to sink this project. Name it now.
 
-**That neither testbed publishes analog oil pressure on the bus.** Many consumer
-vehicles expose only a binary low-pressure switch, which would delete our headline
-diagnostic and leave us with two. The mitigation is a $0 supported-PID scan on both
-cars in Week 4 — before the design document, not after (**D-007**).
-
-Second risk, named honestly: the oil-life trend needs a real oil interval to develop,
+The primary risk, named honestly: the oil-life trend needs a real oil interval to develop,
 and that is calendar time we cannot buy back by working harder in Week 14. Baseline
 collection starts at M2 or it does not happen.
 
-Thirdly there lies another risk of how the OBD protocol works, were each car implements it differently, there being 4 different *data frames*, and even if we get past those worries, decoding the recieved signal may not be possible due it being proprietary to the manufacturer. The scale of the project is quite large, and we risk not completeing the project within one semester. 
+Secondly there lies another risk of how the OBD protocol works, were each car implements it differently, there being 4 different *data frames*, and even if we get past those worries, decoding the recieved signal may not be possible due it being proprietary to the manufacturer. The scale of the project is quite large, and we risk not completeing the project within one semester. 
