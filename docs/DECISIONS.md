@@ -48,6 +48,7 @@ Decisions currently awaiting a human signature:
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
+| D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -664,6 +665,37 @@ would bury every file's history in reflow for no reader benefit.
 
 **Why a config at all.** Without one, each editor shows over 1,500 warnings, and a real
 problem (a broken heading tree, a list that does not render) is invisible in the noise.
+
+### F.5 — The milestone checklist is the board; board.toml is retired ⚠️ UNREVIEWED
+
+`D-020` · Decided M1, 2026-09-23 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** `docs/milestones.md` is the single source of truth for all work. Every
+checkbox under a `## M<n>` heading is one GitHub issue, linked by a hidden `<!-- #n -->`
+tag that `tools/board_sync.py` writes. Tick a box and sync: the issue closes and the card
+moves to Done. Add a line and sync: a new issue appears. Bold lines are the milestone's
+exit criteria; plain lines are the tasks under them. `docs/BOARD/board.toml` and
+`board.lock.json` are retired; every one of their 99 issues became a line, and nothing
+was closed or deleted to get there.
+
+**Why.** Camden's call: 99 items with bodies, dependencies and labels in a TOML file was
+more board than two people can follow, and it duplicated the exit criteria kept in
+`milestones.md`. A checklist is what we already read; making it the board removes the
+second copy.
+
+**What changed with it.**
+
+- Issue **bodies** are no longer generated. GitHub owns them; the old text stays there.
+- **Dependencies** (`blocked_by`) and the auto-applied `blocked` label are gone. Order
+  within a milestone is the plan.
+- The `--close-questions` flag is gone. Ticking a box is the human act, so **Claude
+  never ticks a question, decision or hardware line** (CLAUDE.md §7.11).
+- Milestone due dates are edited in the `milestones.md` table itself.
+
+**Cost.** Less structure: no enforced dependency order, and a closed issue explains
+itself only through its body and comments. If the board grows unwieldy again, the
+fix is fewer lines, not more tooling.
 
 ---
 
