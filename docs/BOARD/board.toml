@@ -451,7 +451,7 @@ slug = "productform"
 milestone = "M1"
 labels = ["task"]
 owner = "camden"
-status = "in-review"
+status = "done"
 decision = "D-011"
 title = "M1 docs: factor the plug-in product design through the repo"
 body = '''
@@ -488,6 +488,7 @@ Makefile rename (src/can -> src/obd) follows separately, once it can be built.
 slug = "tx1"
 milestone = "M1"
 labels = ["task"]
+status = "done"
 title = "M1 process: transcript copy-out, both partners"
 body = '''
     mkdir -p partners/<name>/transcripts
@@ -501,6 +502,7 @@ slug = "txglob"
 milestone = "M1"
 labels = ["bug"]
 owner = "camden"
+status = "done"
 title = "M1 process: the transcript copy-out glob also matches the HW1 project folder"
 body = '''
 The copy-out command in both partners' transcripts/README.md, and in `tx1`'s own
@@ -527,10 +529,14 @@ Narrow the glob to `*CS370-Term-Project*` in all five places:
     partners/lance/transcripts/README.md   (sh and PowerShell)
 
 Found while doing tx1 (#17). See the copy-out PR for the full session inventory.
+'''
+
+[[item]]
 slug = "boardpath"
 milestone = "M1"
 labels = ["bug", "critical-path"]
 owner = "camden"
+status = "done"
 title = "M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/"
 body = '''
 `make test` and `make asan` are RED on main, and have been since the board files
@@ -622,6 +628,85 @@ Use `*CS370-Term-Project*`, not the `*CS370*` written in tx1 and in
 partners/camden/transcripts/README.md. `*CS370*` also matches the HW1 rbtree-lab
 project folder and would drag seven HW1 sessions into this project's graded
 transcript folder. See the `txglob` note in the copy-out PR.
+'''
+
+[[item]]
+slug = "boardmerge"
+milestone = "M1"
+labels = ["bug", "critical-path"]
+owner = "camden"
+title = "M1 tools: the 8e8c74a merge left board.toml and board.lock.json unparseable"
+body = '''
+Merging main into camden/m1/txglob (8e8c74a) dropped three lines: the closing triple quote of
+txglob's body and the [[item]] header of boardpath in board.toml, and the }, after
+txglob in board.lock.json. Neither file parses, so `board_sync.py --status`,
+`tools/test_board.py` and `make test` all fail on main.
+
+Done when: both files parse and `python tools/test_board.py` passes on main.
+'''
+
+[[item]]
+slug = "memopolish"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+title = "M1 docs: grammar, spelling and format pass over docs/PROBLEM.md"
+body = '''
+Format-only commit (markdownlint), then a wording commit: grammar, transitions,
+American spelling. No claims change except "predict failures" -> "flags a developing
+fault", to match the defended claim in CLAUDE.md 3.
+
+Lance reviews against `memorev`. Open content questions are left for the humans:
+the "two users" framing vs one testbed (D-016), and the four-data-frames claim.
+'''
+
+[[item]]
+slug = "mdlint"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+decision = "D-018"
+title = "M1 docs: markdownlint and cSpell configs, and a clean pass over every doc"
+body = '''
+The editor showed ~1,560 markdownlint and ~520 cSpell warnings. D-018 sets a
+90-column wrap, compact tables, allowed inline HTML and an en-US project dictionary;
+the rest are mechanical fixes, one commit per kind. Also fixed two real rendering
+bugs (a hidden `<short title>` placeholder and two H1s per file).
+
+Done when: 0 markdownlint findings outside docs/handout/ and partners/lance/.
+'''
+
+[[item]]
+slug = "btpivot"
+milestone = "M1"
+labels = ["task", "critical-path"]
+owner = "camden"
+decision = "D-019"
+title = "M1 docs: read OBD2 over a Bluetooth Classic (SPP) adapter instead of USB"
+body = '''
+Camden's call, 2026-09-23: an OBDLink LX (STN chip, Bluetooth Classic SPP, not BLE)
+in the OBD2 port; the Pi, powered from the car's USB, reads it over RFCOMM with its
+built-in radio. Supersedes D-015; the USB adapter stays documented as the fallback.
+
+Records D-019 and rewrites every live doc, scaffold and open board item that assumes
+a USB data cable. `/dev/obd` stays the device name (rfcomm bind + udev symlink).
+'''
+
+[[item]]
+slug = "claudeindex"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+blocked_by = ["btpivot"]
+title = "M1 docs: condense CLAUDE.md into a rules-only index over the source docs"
+body = '''
+CLAUDE.md is ~28 KB and loads every session. It repeats the session checklist three
+times, the board workflow four times and the ownership map three times, and several
+copies disagree (board paths, transcript cadence, banned commit messages).
+
+Keep the rules and the section numbers (other files cite them); move rationale to
+docs/PROCESS.md and detail to the one doc that owns it; rebuild docs/README.md as the
+topic index. Target: about 70% smaller.
 '''
 
 # =============================================================== M2 items
