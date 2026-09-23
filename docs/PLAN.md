@@ -35,39 +35,36 @@ baseline collection starts ──── 5-7 weeks of driving ────▶ oil
         M2 (mid-Oct)                                       (~mid-Nov)                     M4 (late Nov)
 ```
 
-**Consequence:** logging must be running on both cars by the end of M2, even if the code
-is ugly, even if it is just `candump` to a file. A crude capture that starts on time beats
-an elegant one that starts three weeks late. **If baseline collection has not started by the
+**Consequence:** logging must be running on the CR-V by the end of M2, even if the code
+is ugly, even if it is just raw adapter replies logged to a file. A crude capture that
+starts on time beats an elegant one that starts three weeks late. **If baseline collection has not started by the
 M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2 and #3 — decide that
 consciously, record it in `DECISIONS.md`, and narrow the claim in writing.
 
-Board chain: `order` → `bench` → `twonode` → `firstcap` → **`baseline`** → `foil`.
+Board chain: `order` → `bench` → `firstcap` → **`baseline`** → `foil`, with `keyoff`
+(the USB-C supply proven) also gating `baseline`.
 
 ### Critical path B — hardware lead time
 
 ```
-order (M0) ──▶ arrives ──▶ bench bring-up ──▶ two-node bench bus ──▶ first live car capture ──▶ pipeline (M3)
+order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first live car capture ──▶ pipeline (M3)
 ```
 
 Nothing downstream of "arrives" can start early. The handout names shipping time as the most
-common silent schedule-killer, twice. **Order on the day you read this**, and order the $12
-ELM327 in the same cart — it unblocks the PID survey weeks before the MCP2515 matters.
+common silent schedule-killer, twice. **Order on the day you read this.** The USB OBD2
+adapter (D-015) is the whole data path — the same part runs the PID survey, the bench
+bring-up and every capture after it.
 
-Board chain: `order` blocks `pidsub`, `pidhonda`, `bench` and `meterv` — five of the eight
-M0/M1 items and everything physical after them.
+Board chain: `order` blocks the PID survey, `bench` and `keyoff`, and everything physical
+after them.
 
 ### The one cheap experiment that de-risks everything
 
-**The PID survey (`pidsub` on the Outback, `pidhonda` on the Honda).** Ten minutes per car,
-$12, no custom hardware. It answers the project's named risk: *does either testbed actually
-publish analog oil pressure?* If the answer is no, we find out in Week 4 with the whole
-design still soft, instead of Week 11 with the analysis engine half-written around a value
-that does not exist. Both feed `oilq`, which is where the answer gets recorded.
-
-The same ten minutes answers a second question for free: a 60 s `ATMA` capture says whether
-the port carries broadcast traffic or only answers our requests (D-012). That decides
-whether mechanism B's buffer-overflow argument holds on each car — worth knowing before
-the design document argues it.
+**The PID survey (`pidhonda`).** Ten minutes, no custom hardware — just the adapter. It
+answers the project's named risk: *does the CR-V actually publish analog oil pressure?*
+If the answer is no, we find out in Week 5 with the whole design still soft, instead of
+Week 11 with the analysis engine half-written around a value that does not exist. It
+feeds `oilq`, which is where the answer gets recorded.
 
 ---
 
@@ -77,8 +74,8 @@ the design document argues it.
 |---|---|---|---|
 | **M0** | 4 | Commit and order | Parts ordered, questions asked, board live |
 | **M1** | 5 | Know the problem | A named user, a named risk, and PID survey results |
-| **M2** | 6–7 | Argue on paper | Design settled, **logging running on both cars** |
-| **M3** | 8–10 | Build the spine | Frames → ring → disk, supervised, on a real car |
+| **M2** | 6–7 | Argue on paper | Design settled, **logging running on the CR-V** |
+| **M3** | 8–10 | Build the spine | Samples → ring → disk, supervised, on a real car |
 | **M4** | 11–14 | Make it smart, then prove it | Analysis done, experiments measured, soak passed |
 | **M5** | 15 | Account for it honestly | Report written, limits named, history clean |
 | **M6** | 15–16 | Defend it | Both partners fluent in both halves |
@@ -90,23 +87,20 @@ the design document argues it.
 The device shipped in Week 15 will be smaller than the one planned in Week 4. Decide the
 order now, while it is cheap, so the decision is not made at 2 a.m. in Week 13:
 
-1. **The second vehicle** — `pidhonda`, and the Honda half of `fvac` / `fcool` / `foil`.
-   Halves the decode and baseline work. Costs the strongest five seconds of the demo, but
-   not the grade.
-2. **Diagnostic #1 (oil)** if critical path A slips — `foil`, and the oil claim in
+1. **Diagnostic #1 (oil)** if critical path A slips — `foil`, and the oil claim in
    `docs/PROBLEM.md`. Fall back to #2 and #3, narrow the claim in writing, and say so in the
    limitations section.
-3. **The trained classifier** — `train`, `infer`. The features are the intelligence;
+2. **The trained classifier** — `train`, `infer`. The features are the intelligence;
    residuals and trends still produce verdicts without it. Say so at the defense.
-4. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
+3. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
    reporting through your own interface"; the page is the product's face, not a graded
    mechanism (D-013). Cut it before any `obdctl` verb.
-5. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
+4. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
 
-**Never cut, in any circumstance:** the soak (`soak1`), the mechanism comparison
-experiments (`expirq`, `expdrop`, `expcrash`), the limitations section (`evalreport`), or
-the transcript copy-outs (`tx1`–`tx4`). Those are graded directly, and three of them cannot
-be reconstructed after the fact.
+**Never cut, in any circumstance:** the soak (`soak1`), the committed mechanism
+experiments (`expcrash`, `expkill` — plus `expirq` and `expdrop` if `pisensor` commits B
+and F), the limitations section (`evalreport`), or the transcript copy-outs (`tx1`–`tx4`).
+Those are graded directly, and three of them cannot be reconstructed after the fact.
 
 **How to cut, mechanically.** Do not delete the `[[item]]` — a deleted item leaves an open
 issue behind that sync no longer manages, and the decision to cut disappears with it.

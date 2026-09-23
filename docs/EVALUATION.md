@@ -14,7 +14,7 @@ how many trials. Enough for a TA to re-measure.
 ## 2. Latency / timing
 > Distributions, not just means. Under both idle and loaded CPU.
 
-- CAN frame arrival → durable in the log: p50 / p95 / p99 / max, idle and loaded
+- OBD reply arrival (tty read) → durable in the log: p50 / p95 / p99 / max, idle and loaded
 - Histogram, not a table of means. [figure]
 
 ## 3. Resource footprint
@@ -40,7 +40,7 @@ separately because a monitor that cries wolf twice gets unplugged.
 | Injected | Expected | Observed | Warning light (D-014) | Log excerpt |
 |---|---|---|---|---|
 | Sensor unplugged 10 min | | | | |
-| `kill -9 candaemon` | | | | |
+| `kill -9 obdd` | | | | |
 | `kill -9 supervisor` | | | | |
 | Power cut mid-write | | | | |
 | Disk full | | | | |
@@ -48,15 +48,19 @@ separately because a monitor that cries wolf twice gets unplugged.
 ## 6. Mechanism comparisons
 > Required by our menu choices. Present as experiments: method, data, conclusion.
 
-### 6.1 Interrupt-driven vs. polling (mechanism B)
+### 6.1 Crash consistency (mechanism D)
+N power-cut trials, recovery outcome each time, bytes lost per trial.
+
+### 6.2 Supervision (mechanism E)
+`kill -9` each child N times: time to detection, time to recovery, what degraded in the
+meantime, and proof that no file descriptor leaked across the restart.
+
+### 6.3 Interrupt-driven vs. polling (mechanism B — only with `pisensor`)
 Method · data · conclusion. Include the CPU cost of the polling design at the rate
 needed to match the interrupt design's drop rate — that comparison is the point.
 
-### 6.2 No-drop ring under contention (mechanism F)
+### 6.4 No-drop ring under contention (mechanism F — only with `pisensor`)
 Sustained rate with sequence accounting proving zero drops, under `stress-ng`.
-
-### 6.3 Crash consistency (mechanism D)
-N power-cut trials, recovery outcome each time, bytes lost per trial.
 
 ## 7. Limitations
 > Plainly. Closes the loop on the constraints and substitutions declared in docs/DESIGN.md §5.
@@ -64,6 +68,6 @@ N power-cut trials, recovery outcome each time, bytes lost per trial.
 "An honest limitations section is worth more at the defense than a suspiciously perfect
 results section, and we notice which one we are reading."
 
-Name at minimum: the fault classes we could not induce, what two vehicles cannot tell
-us about a third, how long a baseline our window actually covers versus what the oil
+Name at minimum: the fault classes we could not induce, what one vehicle cannot tell
+us about a second, how long a baseline our window actually covers versus what the oil
 trend deserves, and every place a number came from replay rather than live driving.

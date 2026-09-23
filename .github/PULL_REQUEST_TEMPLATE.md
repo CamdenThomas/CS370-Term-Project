@@ -1,5 +1,6 @@
 <!-- Every section is mandatory. A PR with an unfilled section is not ready for review.
-     Caps: <= 500 changed lines, <= 10 commits. Over either? Split it. -->
+     One PR = one reviewable claim (CLAUDE.md 7.5). Past ~10 commits or ~600 changed
+     lines, re-apply the claim test — and if it survives, say in the body why. -->
 
 ## What this changes
 <!-- One paragraph, plain language. What is different after this merges? -->
@@ -51,8 +52,8 @@
 ```
 </details>
 
-<!-- Hardware changes also require real evidence: dmesg verbatim, /proc/interrupts
-     before and after, timing capture, candump excerpt. No fixes argued from a verbal
+<!-- Hardware changes also require real evidence: dmesg verbatim, raw adapter replies,
+     vcgencmd get_throttled, timing capture. No fixes argued from a verbal
      description of the symptom. -->
 
 

@@ -166,14 +166,15 @@ slug = "order"
 milestone = "M0"
 labels = ["hardware", "critical-path"]
 owner = "camden"
-title = "M0 hardware: order the core BOM (and the ELM327 in the same cart)"
+title = "M0 hardware: order the core BOM, USB OBD2 adapter first"
 body = '''
-See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, MCP2515+TJA1050, OBD2
-pass-through Y-splitter, 12V-socket USB-C adapter (>= 5.1V / 3A) + cable, jumpers.
-~$100. No buck converter: power is the car's USB-C (D-011).
+See docs/hardware/BOM.md — Pi 4, 32GB A2 microSD x2, a USB OBD2 adapter with an STN
+chip (e.g. OBDLink SX, D-015), a 12V-socket USB-C adapter (>= 5.1V / 3A) + cable, the
+LED and resistor. ~$125.
 
-**Also order the $12 ELM327 now.** It unblocks the PID survey weeks before the
-MCP2515 matters, and the PID survey answers the project's named risk.
+**The OBD2 adapter is the whole data path.** The PID survey, the bench bring-up and
+every capture after them run on it, and the PID survey answers the project's named
+risk.
 
 Critical path B. The handout names shipping time as the most common silent
 schedule-killer, twice. Blocks every piece of physical work in the project.
@@ -189,7 +190,7 @@ owner = "lance"
 decision = "D-007"
 title = "M0 question: confirm the Honda's year, model, engine and transmission"
 body = '''
-Blocks the PID survey (and therefore diagnostic #1) and the CAN bitrate choice.
+Blocks the PID survey (and therefore diagnostic #1).
 
 Need: year, model, engine, transmission.
 
@@ -215,6 +216,10 @@ already lands on Thanksgiving week.
 
 Answer: paste the real milestone dates. Then correct docs/milestones.md and the
 [[milestone]] due dates in docs/board.toml, and re-run board_sync. Decision D-008.
+
+**Answered 2026-09-21 (Camden, milestones.md check-off):** the dates in board.toml
+are correct as written. Camden: mark D-008 LOCKED in your own commit, then close this
+issue (question label — needs `--close-questions`).
 '''
 
 [[item]]
@@ -223,15 +228,43 @@ milestone = "M0"
 labels = ["decision", "critical-path"]
 owner = "camden"
 decision = "D-006"
-title = "M0 decision: 48-hour soak on a synthesized CAN source — ask Pallickara"
+title = "M0 decision: 48-hour soak on a fake OBD2 port — ask Pallickara"
 body = '''
 Handout §5: 'The 48-hour soak and the live demonstration run on live sensors.'
-Our PC-side CAN generator is synthesized data by that definition.
+A soak on our fake OBD2 port (`obdsim`) is synthesized data by that definition.
+Options (a) exception, (b) live Pi-side sensor + synth OBD, (c) parked car on the
+live port — DECISIONS.md §E.3.
 
-Draft email ready at docs/professor-email-draft.md with all three options.
+**Build as if the answer is no.** Fallback is (b), which `pisensor` decides.
 
-**Build as if the answer is no.** Fallback is adding an MPU-6050 + DS18B20 (~$8)
-so the soak runs on live sensors while CAN is replayed and labeled.
+**Email — edit into your own voice, send from Camden with Lance cc'd:**
+
+> Subject: CS370 term project — 48-hour soak against a simulated OBD2 port
+>
+> Professor Pallickara,
+>
+> Camden Thomas and Lance Baron. Our term project is an in-vehicle diagnostic
+> recorder: a Pi reading a 2015 Honda CR-V's own sensors through a USB OBD2
+> adapter and learning that car's normal, so it can flag developing faults that a
+> fixed maintenance interval misses.
+>
+> A car cannot run for 48 continuous hours, so we are building a simulated OBD2
+> port that answers the same requests the car does, from recorded drives. §5 says
+> the soak runs on live sensors, and we read a simulated port as synthesized data.
+> Every record it produces is labeled synth. Three ways we could go:
+>
+> 1. Soak against the simulated port, labeled synth throughout the logs, report
+>    and demo.
+> 2. Add a sensor to the Pi itself (an accelerometer and a temperature probe) that
+>    runs live for all 48 hours while the OBD side is simulated and labeled.
+> 3. Soak in the parked car on the live port with a battery tender.
+>
+> We are building toward option 2 by default. If option 1 is acceptable it saves
+> hardware time we would rather spend on the analysis and the evaluation; if you
+> prefer option 3 we would like to know now, while the design is cheap to change.
+>
+> Thank you,
+> Camden Thomas & Lance Baron
 
 Decision D-006. Must close before M4.
 '''
@@ -276,6 +309,7 @@ slug = "cleanup"
 milestone = "M0"
 labels = ["task"]
 owner = "camden"
+status = "done"
 title = "M0 admin: raise cleanupPeriodDays on both machines"
 body = '''
 Transcripts purge after 30 days by default; this project runs 15 weeks.
@@ -295,7 +329,7 @@ labels = ["task"]
 owner = "lance"
 title = "M0 review: Lance reads and signs the decision log"
 body = '''
-docs/DECISIONS.md — at minimum §A.1 (MCP2515 over Bluetooth), §B.1 (mechanism
+docs/DECISIONS.md — at minimum §A.1 (USB OBD2 adapter, D-015), §B.1 (mechanism
 commitments), §C.1 (append-only storage) and §D.1 (self-trained model).
 Those four bind your subsystems.
 
@@ -310,19 +344,18 @@ slug = "pidsub"
 milestone = "M1"
 labels = ["hardware", "critical-path"]
 owner = "camden"
+status = "done"
 blocked_by = ["order"]
 title = "M1 hardware: supported-PID survey on the Outback"
 body = '''
+**Cut 2026-09-21 (D-016).** The Outback is no longer a testbed; the CR-V survey
+(`pidhonda`) is the only one.
+
 Mode 01 PIDs 0x00 / 0x20 / 0x40 / 0x60 return bitmaps of supported PIDs.
-Ten minutes with the ELM327. No custom hardware needed.
+Ten minutes with the USB OBD2 adapter (D-015). No custom hardware needed.
 
 **Most important question: is oil pressure published as an analog value, or only
 as a binary low-pressure switch?**
-
-**Second question, same session (D-012):** run `ATMA` at the port for 60 s with the
-engine running. Constant traffic (or BUFFER FULL) = broadcast present. Silence until
-you send a request = request/response only, which weakens mechanism B's
-justification for this car.
 
 Record results in docs/hardware/pid-survey.md.
 '''
@@ -335,8 +368,12 @@ owner = "lance"
 blocked_by = ["order", "honda"]
 title = "M1 hardware: supported-PID survey on the Honda"
 body = '''
-Same procedure as the Outback survey, on the 2015 CR-V EX-L (D-007). Record in
-docs/hardware/pid-survey.md.
+Mode 01 PIDs 0x00 / 0x20 / 0x40 / 0x60 return bitmaps of supported PIDs. Ten
+minutes with the USB OBD2 adapter (D-015) on the 2015 CR-V EX-L (D-007, D-016) —
+procedure in docs/hardware/pid-survey.md, which is also where the results go.
+
+**Most important question: is oil pressure published as an analog value, or only
+as a binary low-pressure switch?**
 
 Expect oil pressure to be a switch only — that is inference from Honda practice, not
 evidence. This survey is the evidence.
@@ -346,13 +383,13 @@ evidence. This survey is the evidence.
 slug = "oilq"
 milestone = "M1"
 labels = ["decision", "critical-path"]
-blocked_by = ["pidsub", "pidhonda"]
+blocked_by = ["pidhonda"]
 title = "M1 decision: is analog oil pressure available? If not, what replaces diagnostic #1?"
 body = '''
 This is the project's named risk (docs/PROBLEM.md).
 
-If neither vehicle publishes analog oil pressure, options in preference order:
-  1. Sniff manufacturer-specific frames for a pressure value
+If the CR-V does not publish analog oil pressure, options in preference order:
+  1. Query manufacturer (Mode 22) PIDs through the same USB adapter (D-015)
   2. Add a physical sender at the sender port (real work on a daily driver —
      do not commit to this after Week 10)
   3. Replace diagnostic #1 with an oil-temperature thermal-load metric, and
@@ -371,9 +408,9 @@ body = '''
 The handout rejects personas: 'people who might want to monitor things' is not a
 user, and neither is 'a cautious driver'.
 
-Need a real person and a real car — ideally two, one work truck and one commuter,
-since that contrast IS the thesis: the same sticker says 5,000 miles to both cars
-and the cars disagree.
+Need a real person and a real car. The car is settled (D-016): Lance's 2015 CR-V
+EX-L. The person is the one who drives it and can say what its sticker and its
+Maintenance Minder claim versus what the engine is actually doing.
 
 Memos that fail this are returned for revision, costing a week.
 '''
@@ -429,11 +466,31 @@ in docs/DECISIONS.md. Must merge before the M1 memo is written, since the memo's
 '''
 
 [[item]]
+slug = "overhaul"
+milestone = "M1"
+labels = ["task"]
+owner = "camden"
+status = "in-review"
+decision = "D-015"
+title = "M1 docs: overhaul the repo for the USB-OBD2, one-car design"
+body = '''
+Camden's M1 memo and his answers on 2026-09-21 moved the project to a USB OBD2
+adapter (raw CAN is a stretch goal, D-015), one testbed (the 2015 CR-V, D-016), and
+mechanisms D + E with B and F conditional on a Pi-side sensor (D-017). The soak
+question was reframed around a fake OBD2 port (D-006).
+
+This item tracks the pass that removes stale information and empty staging
+directories across the repo, and adds docs/README.md as the index. The C and
+Makefile rename (src/can -> src/obd) follows separately, once it can be built.
+'''
+
+[[item]]
 slug = "tx1"
 milestone = "M1"
 labels = ["task"]
 title = "M1 process: transcript copy-out, both partners"
 body = '''
+    mkdir -p partners/<name>/transcripts
     cp ~/.claude/projects/*CS370*/*.jsonl partners/<name>/transcripts/
 
 Raw. Not summarized, not exported, not retyped. Both partners, separately.
@@ -447,15 +504,15 @@ milestone = "M2"
 labels = ["hardware", "critical-path"]
 owner = "camden"
 blocked_by = ["order"]
-title = "M2 hardware: MCP2515 bench bring-up on the Pi, no car"
+decision = "D-015"
+title = "M2 hardware: USB OBD2 adapter bring-up on the Pi, no car"
 body = '''
-1. Meter the module VCC and MISO with the Pi DISCONNECTED — many cheap boards
-   drive 5V onto MISO and will silently kill the Pi.
-2. Note the crystal: 8 MHz vs 16 MHz changes the overlay and a wrong value
-   produces a silently dead bus.
-3. dtoverlay + dtparam in config.txt, reboot, 'ip link show can0'.
+1. Plug the adapter in; `lsusb` for its vendor/product ID; record both and the
+   adapter's baud in docs/hardware/wiring.md.
+2. Install the /dev/obd udev rule (scripts/provision_pi.sh); `ls -l /dev/obd`.
+3. `screen /dev/obd <baud>`, send `ATZ` — the adapter answers with its version.
 
-See docs/hardware/wiring.md. Wire with the board powered off.
+Originally the MCP2515 bring-up; rewritten when D-015 made raw CAN a stretch goal.
 '''
 
 [[item]]
@@ -463,9 +520,13 @@ slug = "twonode"
 milestone = "M2"
 labels = ["hardware"]
 owner = "camden"
+status = "done"
 blocked_by = ["bench"]
 title = "M2 hardware: two-node bench CAN bus — prove frames move before a car is attached"
 body = '''
+**Cut 2026-09-21 (D-015).** Raw CAN became a stretch goal; with a USB OBD2 adapter
+there is no bus of ours to prove on the bench. Reopen only with the CAN stretch goal.
+
 MCP2515 module + USB-to-CAN adapter on the same bench bus.
 
 Do not skip this. Debugging a silent bus with a car attached is debugging two
@@ -477,12 +538,13 @@ slug = "firstcap"
 milestone = "M2"
 labels = ["hardware", "critical-path"]
 owner = "camden"
-blocked_by = ["twonode"]
+blocked_by = ["bench"]
 title = "M2 hardware: first live capture from a real car"
 body = '''
-Key to accessory first, then running. 'candump can0 > capture.log'.
+Key to run, engine off: `0100` returns the supported-PID bitmap. Then engine running:
+log raw replies to a file, labeled src=live. Crude is fine — `screen -L` is fine.
 
-This is the M2 exit criterion: both sensors electrically alive.
+This is the M2 exit criterion: real Mode 01 replies from a real car, captured.
 '''
 
 [[item]]
@@ -490,7 +552,7 @@ slug = "baseline"
 milestone = "M2"
 labels = ["task", "critical-path"]
 blocked_by = ["firstcap", "keyoff"]
-title = "M2 CRITICAL PATH: start baseline collection on BOTH vehicles"
+title = "M2 CRITICAL PATH: start baseline collection on the CR-V"
 body = '''
 **This is the single most schedule-critical task in the project.**
 
@@ -498,7 +560,7 @@ Diagnostic #1 claims oil pressure degrades measurably across an oil-change
 interval. That needs a real interval to develop — 5-7 weeks of driving — and
 calendar time cannot be bought back by working harder in Week 14.
 
-Crude is fine. 'candump' to a file on a timer is fine. **On time is not optional.**
+Crude is fine. Raw adapter replies to a file on a timer is fine. **On time is not optional.**
 A crude capture that starts now beats an elegant one that starts three weeks late.
 
 If this has not started by the M2 deadline, diagnostic #1 is dead — decide that
@@ -663,9 +725,13 @@ slug = "meterv"
 milestone = "M2"
 labels = ["hardware", "critical-path"]
 owner = "camden"
+status = "done"
 blocked_by = ["order"]
 title = "M2 hw: measure MCP2515 module VCC and MISO with the Pi DISCONNECTED"
 body = '''
+**Cut 2026-09-21 (D-015).** No MCP2515 is ordered; the USB OBD2 adapter never touches
+the Pi's GPIO. Reopen only with the CAN stretch goal.
+
 Cheap MCP2515 breakouts vary. Some run the TJA1050 at 5V and level-shift the
 controller side; some do not, and those drive **5V onto MISO**, which kills a Pi
 silently — sometimes taking the whole SoC with it.
@@ -706,11 +772,16 @@ slug = "canirq"
 milestone = "M3"
 labels = ["task"]
 owner = "camden"
-blocked_by = ["firstcap", "designdoc"]
-title = "M3 can: SocketCAN open + epoll on the interrupt-driven RX path"
+decision = "D-017"
+blocked_by = ["pisensor", "designdoc"]
+title = "M3 capture: interrupt-driven read path for the Pi-side sensor"
 body = '''
-Mechanism B. Instrument arrival->push latency into a histogram from the start —
-retrofitting measurement is how evaluations end up with means and no distributions.
+**Only if `pisensor` adds an MPU-6050** (D-017); cut this item otherwise. Originally
+the SocketCAN RX path, retargeted when D-015 made raw CAN a stretch goal.
+
+Mechanism B. The MPU-6050's INT pin on a GPIO, watched with epoll on the gpio chardev.
+Instrument arrival->push latency into a histogram from the start — retrofitting
+measurement is how evaluations end up with means and no distributions.
 '''
 
 [[item]]
@@ -719,9 +790,9 @@ milestone = "M3"
 labels = ["task"]
 owner = "camden"
 blocked_by = ["canirq"]
-title = "M3 can: --poll variant behind a flag for the mechanism-B comparison"
+title = "M3 capture: --poll variant behind a flag for the mechanism-B comparison"
 body = '''
-A flag, not a rewrite. The head-to-head comparison is a graded deliverable, so the
+Only if `pisensor` adds an MPU-6050 (D-017). A flag, not a rewrite. The head-to-head comparison is a graded deliverable, so the
 two paths must be switchable at runtime on identical hardware.
 '''
 
@@ -732,17 +803,14 @@ labels = ["task"]
 owner = "camden"
 decision = "D-012"
 blocked_by = ["firstcap", "designdoc"]
-title = "M3 can: rate-limited Mode 01 requester with a --listen-only flag"
+title = "M3 obd: rate-limited Mode 01 requester on the adapter tty"
 body = '''
-Primary data path (D-012). Round-robin the PID list at the request budget set in
-docs/DESIGN.md §4, one request outstanding at a time, functional ID 0x7DF,
-responses 0x7E8-0x7EF.
+Primary data path (D-012, D-015). Open /dev/obd, initialise the adapter (ATZ, ATE0,
+ATSP0), then round-robin the PID list at the request budget set in docs/DESIGN.md §4,
+one request outstanding at a time. Parse each reply into a ring slot.
 
 Must log every timeout and every unanswered PID — a PID the car stops answering is
 a sensor fault the analysis must see, not a gap it silently fills.
-
---listen-only puts the MCP2515 in listen-only mode and sends nothing, for either
-owner who objects to the device transmitting on their car.
 '''
 
 [[item]]
@@ -848,6 +916,32 @@ more extensible at the live-modification station on demo day.
 '''
 
 [[item]]
+slug = "obdsim"
+milestone = "M3"
+labels = ["task"]
+owner = "camden"
+decision = "D-006"
+blocked_by = ["firstcap"]
+title = "M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth"
+body = '''
+Camden's memo (PROBLEM.md, risk): a car cannot run for 48 hours, so something must
+answer Mode 01 requests continuously for soak rehearsal and testing.
+
+tools/obdsim.py opens a pseudo-terminal and answers AT and Mode 01 requests the way
+the adapter does, from recorded live captures (`firstcap`) at real or accelerated
+speed. The capture daemon opens it exactly like /dev/obd, so the real pipeline runs
+unmodified. **Everything it produces is `src=synth`** — CLAUDE.md §2.7, no exceptions.
+
+**Training caution.** A model trained on the fake port learns our generator, not the
+car. Train on labeled live captures and induced faults; use synth only where it is
+labeled as such in the evaluation (handout §5: ten labeled recordings you made beat
+ten thousand samples you did not).
+
+A hardware OBD2 simulator board, which would exercise the real adapter and USB path,
+is optional — only if D-006 requires the soak to include them.
+'''
+
+[[item]]
 slug = "replay"
 milestone = "M3"
 labels = ["task"]
@@ -879,7 +973,7 @@ system cannot survive an hour.
 slug = "m3demo"
 milestone = "M3"
 labels = ["task"]
-blocked_by = ["canirq", "canreq", "storewrite", "heartbeat"]
+blocked_by = ["canreq", "storewrite", "heartbeat"]
 title = "M3 demo: checkpoint demonstration rehearsal (graded live, 10 points)"
 body = '''
 Both sensors through the real pipeline into real storage, with at least one menu
@@ -1028,7 +1122,8 @@ owner = "camden"
 blocked_by = ["canpoll"]
 title = "M4 experiment: interrupt vs polling — latency distribution and CPU, idle and loaded"
 body = '''
-**Required by mechanism B. Cannot be cut.** Present as an experiment: method,
+**Required by mechanism B, if `pisensor` commits it (D-017)** — cut together with
+`canirq` otherwise. Present as an experiment: method,
 data, conclusion. Include the CPU cost of the polling design at the rate needed to
 match the interrupt design's drop rate — that comparison is the point.
 '''
@@ -1041,7 +1136,25 @@ owner = "camden"
 blocked_by = ["ringshm"]
 title = "M4 experiment: no-drop under CPU contention, proven by sequence accounting"
 body = '''
-**Required by mechanism F.** Sustained rate, zero drops, under stress-ng.
+**Required by mechanism F, if `pisensor` commits it (D-017)** — cut otherwise.
+Sustained rate, zero drops, under stress-ng, at the MPU-6050's sample rate.
+'''
+
+[[item]]
+slug = "expkill"
+milestone = "M4"
+labels = ["task", "critical-path"]
+decision = "D-017"
+blocked_by = ["supbackoff"]
+title = "M4 experiment: supervision — kill -9 each child, time detection and recovery"
+body = '''
+**Required by mechanism E. Cannot be cut** — E is one of only two committed
+mechanisms (D-017).
+
+For each child, N trials of `kill -9` at random moments: time to detection, time to
+recovery, what degraded in between, and `ls /proc/<pid>/fd` before and after to prove
+no descriptor leaked across the restart. Present as an experiment: method, data,
+conclusion (docs/EVALUATION.md §6.2).
 '''
 
 [[item]]
@@ -1057,6 +1170,36 @@ outcome and bytes lost per trial.
 '''
 
 [[item]]
+slug = "pisensor"
+milestone = "M2"
+labels = ["decision", "critical-path"]
+owner = "camden"
+decision = "D-017"
+blocked_by = ["order"]
+title = "M2 decision: add a sensor on the Pi itself — MPU-6050, DS18B20, both, or neither?"
+body = '''
+With the USB OBD2 adapter (D-015) as the only data source, three things weaken at once:
+
+1. **Mechanisms.** Only D and E stand (D-017). Two is the floor, with nothing in reserve.
+2. **Handout §3.1, two physically distinct sensors.** The car's sensors are distinct, but
+   all arrive through one USB device at one rate — a grader may call that one sensor.
+3. **The soak.** "The 48-hour soak runs on live sensors" (handout §5); a parked car on a
+   fake OBD2 port is not live (D-006, `soakq`).
+
+Options:
+- **MPU-6050** ($4, I2C, INT pin, kHz FIFO): restores B and F, gives the soak a live
+  high-rate sensor, adds vibration the ECU cannot see.
+- **DS18B20** ($4, 1-Wire, kernel driver): an ambient/under-hood temperature the cooling
+  diagnostic (#2) gates on, and a live soak sensor — but restores neither B nor F.
+- **Both** ($8). **Neither**: D + E only, and accept the §3.1 and soak risk.
+
+**Recommendation: both.** Cheapest insurance in the project.
+
+**Answer that unblocks it:** one word — MPU-6050 / DS18B20 / both / neither. If yes,
+add the part to the order; `canirq`, `canpoll`, `expirq` and `expdrop` follow the answer.
+'''
+
+[[item]]
 slug = "keyoff"
 milestone = "M2"
 labels = ["hardware", "critical-path"]
@@ -1065,12 +1208,13 @@ decision = "D-011"
 blocked_by = ["order"]
 title = "M2 hardware: prove the USB-C supply — switched, and no brown-out at crank"
 body = '''
-Originally "measure key-off current draw" on OBD2 pin 16. Under D-011 the device is
+Originally "measure key-off current draw" on OBD2 pin 16. Under D-011 the Pi is
 powered from the car's USB-C port instead, so the questions changed:
 
-1. Is the port switched? Meter key off / ACC / run, on both cars.
+1. Is the port switched? Meter key off / ACC / run.
 2. Does the Pi survive a cold crank? `vcgencmd get_throttled` must read 0x0 after.
-3. Ground offset between Pi GND and OBD2 pin 5, engine running.
+3. The USB OBD2 adapter still draws from pin 16, live with the key off (D-015).
+   Measure its key-off current before leaving it plugged in overnight.
 
 Record every number in docs/hardware/wiring.md and docs/EVALUATION.md.
 '''
@@ -1080,7 +1224,7 @@ slug = "fvac"
 milestone = "M4"
 labels = ["hardware"]
 blocked_by = ["bin"]
-title = "M4 ground truth: induce and label a vacuum leak, both vehicles"
+title = "M4 ground truth: induce and label a vacuum leak on the CR-V"
 body = '''
 Briefly disconnect a small vacuum line. Reversible, safe, moves LTFT within a
 minute. Label the recording with exactly what was done and when.
@@ -1117,7 +1261,7 @@ slug = "foil"
 milestone = "M4"
 labels = ["hardware", "critical-path"]
 blocked_by = ["baseline"]
-title = "M4 CRITICAL PATH: capture across a real oil change on both vehicles"
+title = "M4 CRITICAL PATH: capture across a real oil change on the CR-V"
 body = '''
 Critical path A. This is the one that cannot be faked and cannot be rushed.
 Depends entirely on baseline collection having started at M2.
@@ -1138,7 +1282,7 @@ The handout is explicit that a food container is an acceptable enclosure.
 slug = "freeze"
 milestone = "M4"
 labels = ["task", "critical-path"]
-blocked_by = ["infer", "obdrest", "phoneview", "expirq", "expdrop", "expcrash"]
+blocked_by = ["infer", "obdrest", "phoneview", "expirq", "expdrop", "expcrash", "expkill"]
 title = "M4 process: FEATURE FREEZE — no new features after this line"
 body = '''
 No new features after this line. Bugs only.
@@ -1212,7 +1356,7 @@ whole point.
 slug = "evalreport"
 milestone = "M5"
 labels = ["task", "critical-path"]
-blocked_by = ["plots", "expirq", "expdrop", "expcrash", "fvac", "fcool"]
+blocked_by = ["plots", "expirq", "expdrop", "expcrash", "expkill", "fvac", "fcool"]
 title = "M5 docs: write docs/EVALUATION.md"
 body = '''
 Latency distributions (idle + loaded), per-process CPU/RSS over the full soak, one

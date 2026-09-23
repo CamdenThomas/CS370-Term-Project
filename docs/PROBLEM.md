@@ -4,18 +4,15 @@
 > skeptical stranger. Bracketed items are unfilled.
 
 ## The user
+
 > Rubric: a person or place, **named or nameable**. "A cautious driver" is a persona and
 > will be returned for revision the same way "people who might want to monitor things"
 > would be. Name a human and a car.
 
-[NAME], who drives a [YEAR MAKE MODEL] and [does X with it — commutes N miles, tows,
-short-trips it in winter]. And [NAME 2], whose [YEAR MAKE MODEL] does something
-measurably different with its miles.
-
-The point of two users is the thesis: the same oil-change sticker says 5,000 miles to
-both cars, and the cars disagree.
+The typical american drives a substantial amount, releying heavily on thier vihicle. Many people drive previosly own vihivles with a wide viriaty if wear. People everyday are forced to rely on a car they hardly undestand just hoping the average service milestone will keep you car getiing you to work each day
 
 ## The problem
+
 > Observable and costly: what goes wrong, how often, what it costs in money or worry.
 
 Maintenance intervals are generalizations. The sticker on the windshield knows nothing
@@ -23,15 +20,11 @@ about how this engine has actually been run — a commuter that never reaches op
 temperature and a highway car with the same odometer reading have not aged the same
 way. The consequence runs both directions and both are expensive: oil changed far
 earlier than it needed to be, or an engine run on oil that lost its pressure margin
-weeks ago. [Fill in a real number: cost of an oil change × frequency, or the cost of
-the failure you are trying to catch.]
-
-Meanwhile the car already measures everything needed to know the difference, and
-publishes it on a bus, continuously — and then throws it away. The check-engine light
-is the only thing that ever reads it, and it is a **threshold on a single value that
-fires after the damage.**
+weeks ago. While the sensors already present do a great job tracking all the need information,
+people just need a device to monitor and store this data to learn the car and predict failures before the check engine light of doom puts you on the hour long bus ride.
 
 ## Why a device
+
 > The 3 a.m. test: why must something be physically present and always awake? And why
 > doesn't a phone app already solve this?
 
@@ -49,9 +42,10 @@ And the data stays in the car. No account, no upload, no fleet telematics compan
 holding a log of everywhere this person drove.
 
 ## The sensors
+
 > Which two (or more) and how they **cooperate** rather than coexist.
 
-The vehicle's own sensors, read as raw CAN frames: oil pressure, coolant temperature,
+The vehicle's own sensors, read via the OBD2 port: oil pressure, coolant temperature,
 intake air temperature, MAP, O2 / fuel trims, RPM, engine load.
 
 They cooperate because **no one of them means anything alone.** Oil pressure is a
@@ -62,29 +56,20 @@ once ambient temperature and load have been accounted for. Every verdict this de
 produces requires at least two sensors to agree on something a single threshold cannot
 see.
 
-[If D-006 resolves to adding physical sensors: an MPU-6050 on the engine mount and a
-DS18B20 temperature probe, with the vibration spectrum order-tracked against CAN-derived
-crank speed — a measurement the ECU itself cannot make.]
-
 ## The mechanisms
-> First guess at two menu items, one sentence of justification each. May change by M2.
 
-**B — interrupt-driven input with a polling comparison.** At 500 kbit/s the MCP2515's
-two receive buffers overflow in milliseconds, so a poll loop either burns a core or
-loses frames; the `INT` line lets us service the controller only when it has something.
+> First guess at two menu items, one sentence of justification each. May change by M2.
 
 **D — custom append-only storage with crash consistency.** The power is cut mid-write
 every single time the key turns off, so the storage layer never gets a clean shutdown
 and must recover a torn tail on every boot.
 
+**E — multi-process architecture with a supervisor.** A recorder that dies silently has
+harmed its owner, who believes it is on duty; capture, storage and analysis run as
+separate processes so that a crash in the analysis cannot take the recording down with it.
+
 ## The risk
+
 > The single thing most likely to sink this project. Name it now.
 
-**That neither testbed publishes analog oil pressure on the bus.** Many consumer
-vehicles expose only a binary low-pressure switch, which would delete our headline
-diagnostic and leave us with two. The mitigation is a $0 supported-PID scan on both
-cars in Week 4 — before the design document, not after (**D-007**).
-
-Second risk, named honestly: the oil-life trend needs a real oil interval to develop,
-and that is calendar time we cannot buy back by working harder in Week 14. Baseline
-collection starts at M2 or it does not happen.
+the trends such as oil life needs a real viscosisty interval to develop, and that is calendar time we cannot buy back by working harder in Week 14. While there will be clear structure for a data logger, the ML model likely will not be able to demonstrate any real worl predictions on the model car (2015, Honda, CRV). Likely a fake obd2 port will need to be made to provide constant data for both training the diagnostic ML model and to perform the full 48 hour soak test, as we can not drive a car or run a car for 48 hours

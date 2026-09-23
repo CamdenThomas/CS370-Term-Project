@@ -20,8 +20,8 @@ The schematic is worth the time anyway, because three graded artifacts depend on
 - The **three-isolated-workers test** needs a parts-only buyer who can order from the BOM
   without ever seeing the design
 
-`electricalDrawing/electricalDrawing.kicad_pcb` stays in the repo, empty, on purpose — the
-same way `src/capture/` does. Its emptiness is a recorded position, not an oversight.
+`electricalDrawing/electricalDrawing.kicad_pcb` stays in the repo, empty, on purpose. Its
+emptiness is a recorded position, not an oversight.
 
 ## Sheet structure
 

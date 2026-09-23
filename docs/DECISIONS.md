@@ -39,58 +39,71 @@ Decisions currently awaiting a human signature:
 | ID | Decision | Made by | Session date | Reviewer needed |
 |---|---|---|---|---|
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
-| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power and CAN schematic blocks |
-| D-012 | Rate-limited Mode 01 requests are the primary data path; broadcast is a bonus (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
+| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power schematic block |
+| D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
+| D-015 | The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal (§A.1, supersedes D-001) | Camden + Claude | 2026-09-21 | Lance — reopens a LOCKED decision; changes every data rate you design against |
+| D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
+| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
+| D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 
-> All decisions below were made with Camden in the conversation and are marked LOCKED
-> accordingly. **Lance has not reviewed any of them yet** — Lance, read at minimum
-> §A.1, §B.1, §C.1 and §D.1, since those bind your subsystems.
+> Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
+> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
+> subsystems.
 
 ---
 
 # A. Hardware and interfaces
 
-## A.1 — CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🔒
-`D-001` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+## A.1 — The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal ⚠️ UNREVIEWED
+`D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-001 (§G.1)
 
-**Decision.** The Pi reads raw CAN frames through an MCP2515 + TJA1050 module on SPI0,
-with the controller's `INT` line on a GPIO for edge-triggered receive. Not a Bluetooth
-ELM327 dongle.
+**Decision.** A USB OBD2 adapter with an ELM327-compatible chip plugs into the OBD2 port
+and appears on the Pi as a serial device, pinned to `/dev/obd` by a udev rule. Our C daemon
+sends Mode 01 requests over it and parses the replies. Prefer an STN-chip adapter (e.g.
+OBDLink SX) over a clone ELM327. No MCP2515, no SPI, no CAN wiring.
 
-**Why.** A Bluetooth ELM327 hands us parsed ASCII over a userspace socket at a few
-samples per second. With no interrupt line, no SPI transaction and no bus-level timing,
-mechanisms **A, B, C and F all become unavailable** — and the handout requires at least
-two mechanisms implemented by us, below the application layer. The MCP2515 path keeps
-the kernel boundary inside our repository, where it is graded. It is also better for the
-user: raw bus access sees frames the ELM327 protocol never exposes, at the rate the ECU
-publishes them rather than the rate a request/response dongle can poll.
+**Raw CAN is a stretch goal** — an MCP2515 on SPI, taken up only after mechanisms D and E
+are implemented *and measured*.
 
-**Cost.** More wiring, a 3.3 V/5 V level question to get right, one-time decode work per
-vehicle. Accepted.
+**Why.** Camden's call (PROMPTLOG E-02): time spent making raw CAN access work was time
+not spent on the problem. The adapter speaks every OBD2 protocol for us, which is exactly
+what a plug-in product (D-011) needs, and it removes a class of hardware risk — 5 V on
+MISO, crystal frequency, bus termination — that could kill a Pi or disturb a daily
+driver's bus.
 
-**Consequences.** `src/can/` owns SPI transactions and the IRQ path (Camden). The
-interrupt-vs-polling comparison is a first-class deliverable, not an afterthought. A
-Bluetooth ELM327 may appear in `tools/` as a cross-check; it may never be the product's
-path.
+**Cost — the reason D-001 existed, still true.** An adapter hands us parsed ASCII at
+roughly 10–20 PID replies per second, with no interrupt line and no bus timing. That
+takes most of the mechanism menu away from the OBD data path; **D-017** records what
+survives. Clone ELM327s are also unreliable (truncated buffers, fake firmware), which is
+why the STN chip is preferred.
 
-## A.2 — Testbeds: Subaru Outback and Lance's Honda 🔒
-`D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+**Consequences.** The capture daemon becomes a serial reader. Wiring, BOM, provisioning
+and the design doc follow. The PID survey needs no extra hardware — the same adapter does
+it.
 
-**Decision.** Two daily-driven vehicles — Camden's Subaru Outback and Lance's Honda.
+## A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
+`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-005 (§G.2)
 
-**Why.** The product's thesis is that a generic maintenance interval is a generalization
-and your car is not generic. One vehicle cannot demonstrate that; two with different duty
-cycles can, and the comparison is the demo's strongest five seconds. Two also gives each
-partner a vehicle they can instrument on their own schedule.
+**Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
 
-**Cost.** Roughly doubles decode and baseline-collection work, and the baseline window is
-the one thing that cannot be compressed by working harder in Week 14. Mitigation: start
-on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
+**Why.** Camden's call, 2026-09-21. D-005 itself named the second vehicle as the first
+thing to cut when the schedule slipped, and the CAN detour (PROMPTLOG E-02) spent that
+slack. One car halves the survey, baseline and ground-truth work, and the baseline window
+is the one thing that cannot be compressed by working harder in Week 14.
 
-**Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
-mechanism, and not the evaluation. Record it here if it happens.
+**Cost.**
+- The two-car contrast — *"the same sticker says 5,000 miles to both cars, and the cars
+  disagree"* — was the thesis's strongest demonstration, and it is gone. The thesis is now
+  argued within one car: its measured condition against its own sticker and its own
+  Maintenance Minder estimate (D-007).
+- If the CR-V publishes only an oil-pressure switch, diagnostic #1 has no second car to
+  fall back on (`oilq`).
+- Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
+  schedule; Camden owns the capture code but not the car.
 
 ## A.3 — Honda year/model/engine ⚠️ UNREVIEWED
 `D-007` · **Owner:** Lance · **Tracked as:** GitHub issue `honda` (label `question`)
@@ -107,26 +120,24 @@ confirms against the VIN or the door-jamb sticker, then closes the issue.
   lane-keep camera connector to tap. The OBD2 port is the tap point (**D-011**).
 - **Oil pressure is expected to be a switch, not a sender.** This is inference from
   Honda practice, not a service-manual reading; `pidhonda` confirms it. If true, diagnostic
-  #1 cannot run on the Honda from any tap point and rests on the Outback alone (`oilq`).
+  #1 cannot run from any tap point and must be replaced or dropped (`oilq`).
 - **The Honda has Maintenance Minder** — an oil-life percentage estimated from how the
   engine has been run. For this car the "generic 5,000-mile sticker" framing is false, and
   `docs/PROBLEM.md` must answer the skeptic's version instead: *the car already estimates
   this.* The answer is that the Minder is an open-loop estimate from a usage model; it
   never measures the engine's condition. Ours measures.
 
-We still need, from the car itself: which Mode 01 PIDs the ECU actually supports, whether
-oil pressure is published as an analog value or only as an idiot-light bit, and the bus
-bitrate.
+We still need, from the car itself: which Mode 01 PIDs the ECU actually supports, and
+whether oil pressure is published as an analog value or only as an idiot-light bit.
 
 **Why it is urgent.** A large fraction of consumer vehicles publish only a binary
-low-oil-pressure switch. If neither testbed publishes analog oil pressure, **diagnostic
-#1 is not implementable from the bus** and we must substitute a physical sender (real
+low-oil-pressure switch. If the CR-V does not publish analog oil pressure, **diagnostic
+#1 is not implementable from the port** and we must substitute a physical sender (real
 automotive work on a daily driver) or replace the diagnostic. This is the project's named
 risk in `docs/PROBLEM.md`.
 
-**Action.** Run a supported-PID scan on both vehicles with a $12 ELM327 — a $0, ten-minute
-experiment that does not need the MCP2515 to have arrived. Record in
-`docs/hardware/pid-survey.md`.
+**Action.** Run a supported-PID scan on the CR-V with the USB OBD2 adapter (D-015) —
+a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
 ## A.4 — Capture the schematic in KiCad; do not fabricate a PCB 🔒
 `D-009` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
@@ -175,13 +186,15 @@ it; populate it as parts are drawn.
 ## A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
 `D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
+*Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
+became a USB OBD2 adapter.*
+
 **Decision.** The device is a box anyone could install without tools:
-- **Data:** a Y-splitter (pass-through) cable at the OBD2 port — CAN_H pin 6, CAN_L pin 14,
-  signal ground pin 5 — into the MCP2515 module. The port stays usable for a scan tool
-  or an emissions inspection.
+- **Data:** the USB OBD2 adapter (D-015) plugs into the OBD2 port; one USB cable runs to
+  the Pi.
 - **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
-  **OBD2 pin 16 is not used.** The 12 V→5 V buck converter leaves the BOM.
-- **Nothing is cut, spliced, pierced or clamped** on either car.
+  No buck converter.
+- **Nothing is cut, spliced, pierced or clamped** on the car.
 
 **Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
 prototype is built the way the product would be installed. We are building the model to
@@ -190,50 +203,40 @@ harness surgery proves a different, less interesting idea. Switched USB power al
 no battery drain while parked, and it makes mechanism D's defining constraint literally
 true: power is cut, unannounced, at every key-off.
 
-**Alternatives rejected** (discussed 2026-09-21):
-- *Splice CAN_H/CAN_L behind the OBD2 port.* The wires behind the port are the same
-  conductors as pins 6 and 14 — same traffic, plus a cut harness on a daily driver. If a
-  gateway were filtering the port, a splice there would not get past it either.
-- *In-line harness at the forward camera.* Not available: the 2015 CR-V EX-L has no Honda
-  Sensing camera (D-007).
-- *Contactless (inductive) CAN clamp.* Receive-only, a black box between the bus and our
-  code, and it needs a wiring diagram to find the pair.
-- *OBD2 pin 16 + our own buck converter.* Live with the key off (battery drain), and more
-  hardware to build and defend.
+**Alternatives rejected** (discussed 2026-09-21): splicing the bus behind the OBD2 port
+(the same conductors as the port pins, plus a cut harness on a daily driver); an in-line
+harness at the forward camera (the 2015 CR-V EX-L has none, D-007); a contactless bus
+clamp (receive-only, a black box); powering the Pi from OBD2 pin 16 through our own buck
+converter (live with the key off, and more hardware to build and defend).
 
-**Rules this imposes** (also in `docs/hardware/wiring.md`):
-1. **Remove the module's 120 Ω termination jumper.** The car's bus is already terminated;
-   ours would drop it to ~40 Ω.
-2. **Keep the stub short** — the Y-cable plus module leads under ~0.3 m at 500 kbit/s.
-3. **The Pi must not brown out at crank.** Adapter rated ≥ 5.1 V / 3 A (Pi 4). Proven by
-   `vcgencmd get_throttled` after a cold start, not by the adapter's label.
+**Rule this imposes:** **the Pi must not brown out at crank.** The USB-C supply is rated
+≥ 5.1 V / 3 A (Pi 4), and is proven by `vcgencmd get_throttled` after a cold start, not
+by its label (`docs/hardware/wiring.md`).
 
 **Cost.**
 - No recording while the key is off — nothing happens then worth recording, but the device
   also cannot run overnight in a parked car.
+- **The OBD2 adapter itself draws from pin 16, which is live with the key off.** Its
+  key-off current must be measured before it is left plugged in overnight.
 - D-006 option (c), the parked-car soak, now requires a socket that stays live in
   accessory plus a battery tender.
-- USB ground and OBD2 signal ground both reach chassis by different paths. Expected to be
-  harmless; **measure before trusting it** (CLAUDE.md §8.4).
-- The CAN side still needs a physical cable to the port; the product is "one box, two
-  cables", not "one dongle".
+- The product is "one box, two cables", not "one dongle".
 
 ## A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 `D-012` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-**Decision.** `candaemon` gets its signals by sending **standard OBD2 Mode 01 requests** at
-a fixed, rate-limited schedule (functional request ID `0x7DF`, responses `0x7E8`–`0x7EF`,
-one request outstanding at a time). Manufacturer broadcast frames are recorded when the
-port carries them and used where decoded, but **nothing depends on them.** A
-`--listen-only` build flag puts the MCP2515 in listen-only mode and sends nothing.
+*Revised 2026-09-21 by D-015, before any review: the CAN-level detail (arbitration IDs,
+broadcast frames, a listen-only flag, the port-traffic check) went with the MCP2515.*
+
+**Decision.** The capture daemon gets its signals by sending **standard OBD2 Mode 01
+requests** through the USB adapter (D-015) on a fixed, rate-limited, round-robin schedule,
+one request outstanding at a time. Every timeout and every unanswered PID is logged.
 
 **Why.** D-011 makes this a plug-in device, and the thing that makes a plug-in device work
-on a car it has never seen is the part of the protocol every car must speak. Mode 01 over
-CAN is mandatory on US cars from model year 2008; manufacturer frames differ per make, per
-model, often per year. This also matches D-005's existing mitigation — "start on standard
-Mode 01 PIDs only". *"Learns this car's normal"* is precisely what lets one device serve
-different cars without per-model decode work: it never needs to know what normal *is*
-ahead of time.
+on a car it has never seen is the part of the protocol every car must speak: Mode 01 is
+mandatory on US cars from model year 1996. *"Learns this car's normal"* is precisely what
+lets one device serve different cars without per-model decode work: it never needs to
+know what normal *is* ahead of time.
 
 **Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
 (request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
@@ -241,55 +244,60 @@ ahead of time.
 fuel trim against load) and must be stated in `docs/DESIGN.md` §4. The request budget itself
 is a design-doc number to justify, not a constant to pick.
 
-**Consequence for mechanism B — to check, not assumed.** D-002's case for interrupts is a
-busy 500 kbit/s bus overflowing the MCP2515's two buffers in milliseconds. That holds only
-if the port carries **broadcast** traffic. If a car's port is silent except for our own
-responses, B's *commitment* stands but its *justification* on that car does not. The PID
-survey now includes a 60 s `ATMA` capture at the port for exactly this
-(`docs/hardware/pid-survey.md`). If both ports are quiet, B.1's justification is reopened
-with a human — not quietly rewritten.
-
-**Cost.** The device now transmits on a daily driver's bus. Kept safe by the rate limit,
-one outstanding request, and only standard requests; the listen-only flag is the fallback
-if either owner objects.
+**Cost.** The device sends requests to the car's ECU. Kept safe by the rate limit, one
+outstanding request, and only standard read-only Mode 01 requests — the same thing every
+scan tool does.
 
 **Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
-still E.1: three faults, two cars, measured error rates.
+still E.1: three faults, one car, measured error rates.
 
 ---
 
 # B. Systems architecture and mechanisms
 
-## B.1 — Mechanism commitments: B, D, E, F 🔒
-`D-002` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+## B.1 — Mechanism commitments: D and E; B and F only with a Pi-side sensor ⚠️ UNREVIEWED
+`D-017` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-002 (§G.3)
 
-The handout requires two. We commit four and will measure all of them.
+The handout requires two, implemented by us and measured.
 
-**B — interrupt-driven input with a polling comparison.** `src/can/`. At 500 kbit/s a busy
-bus delivers a frame roughly every 230 µs; the MCP2515's two receive buffers overflow in
-milliseconds. A poll loop either burns a core or drops frames. Measured as event-latency
-distribution and CPU, both ways, idle and loaded.
+| Mechanism | Status | Where |
+|---|---|---|
+| **D** — custom append-only storage, crash-consistent | **committed** | `src/store/` |
+| **E** — multi-process with a supervisor | **committed** | `src/supervisor/`, `src/ipc/` |
+| **B** — interrupt-driven input with a polling comparison | only if `pisensor` adds an MPU-6050 | capture path for that sensor |
+| **F** — high-rate no-drop SPSC ring | only if `pisensor` adds an MPU-6050 | `src/ipc/ring.c` |
+| **A**, **C**, raw CAN | stretch, after D and E are measured | — |
 
-**D — custom append-only storage, crash-consistent.** `src/store/`. *The defining
-constraint: power is cut mid-write every time the key turns off.* We never get a clean
-shutdown. Measured by pulling power mid-write, repeatedly, and proving recovery.
+**D.** *The defining constraint: power is cut mid-write every time the key turns off*
+(D-011). We never get a clean shutdown. Measured by pulling power mid-write, repeatedly,
+and proving recovery (`expcrash`).
 
-**E — multi-process with a supervisor.** `src/supervisor/`, `src/ipc/`. A recorder that
-dies silently has actively harmed its user, who believes it is on duty. Any child may be
-`kill -9`'d; the system degrades, logs, recovers.
+**E.** A recorder that dies silently has actively harmed its user, who believes it is on
+duty. Any child may be `kill -9`'d; the system degrades, logs, recovers. Measured by killing
+each child repeatedly and timing detection and recovery (`expkill`).
 
-**F — no-drop SPSC ring, sequence-accounted.** `src/ipc/ring.c`. Key-on produces a burst;
-a gap in the record is a gap in the diagnosis. Measured as sustained rate with zero drops
-under contention.
+**Why B and F left the OBD data path (D-015).** B needs an interrupt that *our* design
+services. The USB adapter's interrupts belong to the kernel's USB-serial driver; our process
+only blocks on a tty, and at ~10–20 replies/s a poll loop keeps up trivially — the
+comparison would measure the tty layer, not a design of ours. F needs a *high-rate* stream;
+~10–20 samples/s never stresses a ring, so "zero drops under contention" would be true and
+meaningless.
 
-**Stretch, M4+ only:** **A** (character driver for the MCP2515) and **C** (`SCHED_FIFO` on
-the capture path). Do not start either until B, D, E and F are implemented *and measured*.
-A half-finished kernel module is worth zero points and costs two weeks.
+**What brings them back.** An MPU-6050 on the Pi's I2C, its `INT` pin on a GPIO: kHz
+samples from a hardware FIFO give a real interrupt-vs-polling comparison (B) and a rate
+that stresses the ring (F). That is board item `pisensor`, due at M2.
+
+**The ring stays regardless.** It is how capture hands samples to storage across the
+process boundary E requires, and B.3 still binds it.
+
+**Risk.** D and E alone meet the floor exactly. If either measurement fails, nothing is in
+reserve — which is why `pisensor` is on the critical path.
 
 ## B.2 — Four processes, not one 🔒
 `D-002` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-`candaemon`, `storaged`, `analyzed` and `supervisor` are separate processes with separate
+`obdd`, `storaged`, `analyzed` and `supervisor` are separate processes with separate
 address spaces, communicating over a shared-memory ring and Unix domain sockets.
 
 **Why.** Fault isolation is the product requirement, not an architectural preference: the
@@ -351,7 +359,7 @@ pattern*:
 
 | Light | Meaning | Priority |
 |---|---|---|
-| fast blink (~4 Hz) | **degraded** — a child is down, CAN silent while the engine runs, storage failing, or undervoltage | highest |
+| fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
 | double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
 | slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
 | **steady on or steady off** | **the device is not running.** Never a valid state. | — |
@@ -363,7 +371,7 @@ visible from across the room when a sensor is unplugged.
 **Why every live state blinks.** A GPIO keeps its last level after the process driving it
 dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
 alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
-either kind can only mean *not running*. This is D-002's principle — a recorder that dies
+either kind can only mean *not running*. This is mechanism E's principle — a recorder that dies
 silently has harmed its user — applied to the one output a driver actually sees.
 
 **Why the supervisor, not `analyzed`.** The supervisor already knows every child's
@@ -470,8 +478,9 @@ diagnostic** — this is checked at the defense.
 ## E.1 — Three induced-and-measured diagnostics, and no more 🔒
 `D-003` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-The claim we defend is: *"detects the three faults we can induce on these two vehicles,
-with these error rates."* Not "predicts failure." Not "generalizes to any post-1996 car."
+The claim we defend is: *"detects the three faults we can induce on this vehicle, with
+these error rates."* Not "predicts failure." Not "generalizes to any post-1996 car."
+*(Narrowed from "these two vehicles" by D-016, 2026-09-21.)*
 
 1. **Oil pressure degradation across oil life** — residual after normalizing for RPM and
    temperature, trended across an interval.
@@ -492,31 +501,35 @@ We cannot wait a semester for a failure, so we provoke conditions and label the 
   within a minute.
 - **Cooling** — partially block radiator airflow with cardboard.
 - **Sensor fault** — unplug a sensor. Also demo day's injected fault, so it gets rehearsed.
-- **Oil** — log continuously across a real oil change on both vehicles. Cannot be faked
+- **Oil** — log continuously across a real oil change on the CR-V. Cannot be faked
   and cannot be rushed, which is why baseline collection starts at M2.
 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
 
-## E.3 — 48-hour soak: live sensors vs. synthetic CAN ❓ OPEN
-`D-006` · **Owner:** Camden · **Tracked as:** GitHub issue (label `decision`, milestone M4)
+## E.3 — 48-hour soak: live sensors vs. a fake OBD2 port ❓ OPEN
+`D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
 · **Must close before M4** · Blocks nothing before M3
 
-**The conflict.** Our PC-side rig generating CAN traffic is a good idea and we are building
-it regardless — handout §5 explicitly endorses a replay harness as "a legitimate systems
+**The conflict.** A car cannot run for 48 hours, so Camden's memo (PROBLEM.md, risk)
+proposes a **fake OBD2 port** that answers Mode 01 requests continuously — board item
+`obdsim`. Handout §5 endorses exactly this kind of harness as "a legitimate systems
 artifact." But the same paragraph says: *"The 48-hour soak and the live demonstration run
-on live sensors; everything else may run on honest replay."* A soak on generated traffic is
-synthesized data by definition.
+on live sensors; everything else may run on honest replay."* A soak on the fake port is
+synthesized data by definition, and is labeled `src=synth` everywhere regardless.
 
-**Options.** (a) Written exception from Pallickara — email drafted at
-`docs/professor-email-draft.md`. (b) Add MPU-6050 + DS18B20 (~$8) so the soak runs on
-genuinely live sensors while CAN is replayed and labeled; bonus is vibration order-tracked
-against CAN RPM, which no dongle can produce. (c) Soak in the parked car on live CAN with a
-battery tender.
+**Options.**
+- **(a)** A written exception from Pallickara for a soak on the fake port. The email text
+  is in the body of board item `soakq`.
+- **(b)** A sensor on the Pi itself (`pisensor`: MPU-6050 and/or DS18B20, ~$8) runs live
+  for all 48 hours while the OBD side comes from the fake port, labeled `synth`.
+- **(c)** The parked CR-V, key in accessory, on the live port with a battery tender. Fully
+  live, but engine-off values barely move, the socket must stay live in accessory (D-011),
+  and it ties up Lance's car for two days.
 
-**Posture.** Build as if (a) is refused. (b) is the default fallback and the tree is already
-shaped for it — `src/capture/` exists and is empty on purpose. The `src=` field is in the
-record format regardless.
+**Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
+reason `pisensor` is on the critical path. The `src=` field is in the record format
+regardless.
 
 ---
 
@@ -529,8 +542,11 @@ The binding ruleset lives in **`CLAUDE.md` §7**, because that is the file the a
 every session. Summary of the load-bearing parts:
 
 - Claude never commits to `main`, never merges, never force-pushes, never `git add -A`.
-- One commit = one idea. **≤ 150 changed lines and ≤ 3 files**, default one file.
-- One PR = one reviewable claim. **≤ 500 changed lines, ≤ 10 commits.**
+- One commit = one responsibility, sized by what it is responsible for — not by line
+  count. *(The original ≤ 150-line / ≤ 3-file and ≤ 500-line PR caps were replaced by the
+  responsibility test in `CLAUDE.md` §7.3 and §7.5 during M0; CLAUDE.md is the binding
+  text.)*
+- One PR = one reviewable claim.
 - **If the reviewer does not understand a line, the PR does not merge.** The remedy is
   explanation or a smaller commit, never trust.
 - Every commit builds and passes tests on its own.
@@ -545,7 +561,7 @@ Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 
 | Owner | Subsystems |
 |---|---|
-| **Camden** | `src/can/`, `src/capture/`, `src/ipc/`, `drivers/` |
+| **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
 
@@ -553,22 +569,95 @@ Ownership means **first authorship and answerability at the defense**, not exclu
 Each partner must still be able to answer one question from across the boundary — demo day
 guarantees one.
 
-## F.3 — Milestone dates ❓ OPEN
-`D-008` · **Owner:** Camden · **Tracked as:** GitHub issue (label `question`, milestone M0)
-· **Close this week**
+## F.3 — Milestone dates ⚠️ UNREVIEWED
+`D-008` · **Owner:** Camden · **Tracked as:** board item `dates` (label `question`)
+· **Answered:** 2026-09-21, by Camden · **Reviewed:** Camden ⬜ / Lance ⬜
 
-`docs/milestones.md` assumes a semester start of Mon 2026-08-24, placing 2026-09-11 at the
-end of Week 3 — meaning **M0 is due next week**. The handout gives weeks, not dates. If the
-assumption is off by one week the M4 soak start moves, and M4 already lands on Thanksgiving
-week. Verify against the syllabus and mark LOCKED.
+**Answer.** Camden verified the milestone dates against the syllabus (checked off in
+`docs/milestones.md`, 2026-09-21): the `[[milestone]]` dates in `docs/board.toml` stand as
+written, M0 2026-09-20 through M6 2026-12-18. Recorded by Claude from that check-off;
+Camden marks it LOCKED in his own commit.
+
+**Why it mattered.** The handout gives weeks, not dates; a one-week error would have moved
+the M4 soak start, and M4 already lands on Thanksgiving week.
 
 ---
 
 # G. Superseded
 
-*(none yet — when a decision is replaced, move it here with a pointer to its replacement.
-Never delete one. The reasoning is evidence, and "what M2 got wrong" is a graded section of
-`docs/DESIGN.md`.)*
+When a decision is replaced, it moves here with a pointer to its replacement. Never delete
+one: the reasoning is evidence, and "what M2 got wrong" is a graded section of
+`docs/DESIGN.md`.
+
+## G.1 — (was A.1) CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🗑
+`D-001` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-21 by D-015 (§A.1)** — raw CAN became a stretch goal.
+
+**Decision.** The Pi reads raw CAN frames through an MCP2515 + TJA1050 module on SPI0,
+with the controller's `INT` line on a GPIO for edge-triggered receive. Not a Bluetooth
+ELM327 dongle.
+
+**Why.** A Bluetooth ELM327 hands us parsed ASCII over a userspace socket at a few
+samples per second. With no interrupt line, no SPI transaction and no bus-level timing,
+mechanisms **A, B, C and F all become unavailable** — and the handout requires at least
+two mechanisms implemented by us, below the application layer. The MCP2515 path keeps
+the kernel boundary inside our repository, where it is graded. It is also better for the
+user: raw bus access sees frames the ELM327 protocol never exposes, at the rate the ECU
+publishes them rather than the rate a request/response dongle can poll.
+
+**Cost.** More wiring, a 3.3 V/5 V level question to get right, one-time decode work per
+vehicle. Accepted.
+
+**What replaced it, and what that cost.** D-015 accepts the mechanism loss this entry
+warned about, in exchange for hardware that works on day one; D-017 records which
+mechanisms survive.
+
+## G.2 — (was A.2) Testbeds: Subaru Outback and Lance's Honda 🗑
+`D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-21 by D-016 (§A.2)** — the second vehicle was cut, as this entry
+said it would be first.
+
+**Decision.** Two daily-driven vehicles — Camden's Subaru Outback and Lance's Honda.
+
+**Why.** The product's thesis is that a generic maintenance interval is a generalization
+and your car is not generic. One vehicle cannot demonstrate that; two with different duty
+cycles can, and the comparison is the demo's strongest five seconds. Two also gives each
+partner a vehicle they can instrument on their own schedule.
+
+**Cost.** Roughly doubles decode and baseline-collection work, and the baseline window is
+the one thing that cannot be compressed by working harder in Week 14. Mitigation: start
+on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
+
+**Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
+mechanism, and not the evaluation. Record it here if it happens.
+
+## G.3 — (was B.1) Mechanism commitments: B, D, E, F 🗑
+`D-002` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-21 by D-017 (§B.1)** — with raw CAN a stretch goal (D-015), B and F
+lost their data source.
+
+The handout requires two. We commit four and will measure all of them.
+
+**B — interrupt-driven input with a polling comparison.** `src/can/`. At 500 kbit/s a busy
+bus delivers a frame roughly every 230 µs; the MCP2515's two receive buffers overflow in
+milliseconds. A poll loop either burns a core or drops frames. Measured as event-latency
+distribution and CPU, both ways, idle and loaded.
+
+**D — custom append-only storage, crash-consistent.** `src/store/`. *The defining
+constraint: power is cut mid-write every time the key turns off.* We never get a clean
+shutdown. Measured by pulling power mid-write, repeatedly, and proving recovery.
+
+**E — multi-process with a supervisor.** `src/supervisor/`, `src/ipc/`. A recorder that
+dies silently has actively harmed its user, who believes it is on duty. Any child may be
+`kill -9`'d; the system degrades, logs, recovers.
+
+**F — no-drop SPSC ring, sequence-accounted.** `src/ipc/ring.c`. Key-on produces a burst;
+a gap in the record is a gap in the diagnosis. Measured as sustained rate with zero drops
+under contention.
+
+**Stretch, M4+ only:** **A** (character driver for the MCP2515) and **C** (`SCHED_FIFO` on
+the capture path). Do not start either until B, D, E and F are implemented *and measured*.
+A half-finished kernel module is worth zero points and costs two weeks.
 
 ---
 
