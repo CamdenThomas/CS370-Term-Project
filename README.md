@@ -1,8 +1,9 @@
 # carwatch
 
-An always-on in-vehicle diagnostic recorder. It reads a car's own sensors through the
-OBD2 port, learns what *that specific car* looks like at each operating point, and reports
-developing faults that a mileage sticker and a check-engine light both miss.
+A plug-in engine monitor for one car. It reads the car's own sensors through a Bluetooth
+OBD2 adapter, learns what *that specific car* looks like at each operating point, and
+flags behavior that leaves its normal, naming the likely fault area, before a
+check-engine light would. A rough first draft of the idea: one car, one adapter, one Pi.
 
 CS 370 Operating Systems term project — Camden Thomas & Lance Baron, Colorado State
 University.
@@ -13,11 +14,19 @@ University.
 
 ## What it does
 
-| Diagnostic | Sensors that cooperate | Why a threshold can't do it |
+It learns how all the engine sensors normally move *together* at each operating point, and
+flags a broken partnership that no single threshold could see (decision D-021). When it
+flags something, it names the likely fault area:
+
+| Fault area | Sensors that cooperate | Why a threshold can't do it |
 | --- | --- | --- |
-| Oil pressure degradation across oil life | oil pressure + RPM + coolant temp | Oil pressure is a function of RPM and oil temperature. The signal is the *residual* after normalizing for both, trended over weeks. |
-| Cooling system anomaly | coolant temp + ambient/intake temp + engine load | A short-cycling thermostat has a period and amplitude. A single temperature reading has neither. |
-| Mixture drift (vacuum leak / failing O2 / dirty MAF) | short+long term fuel trim + MAP + RPM | Trim values are only meaningful relative to load; the diagnosis is which way trims move *as load changes*. |
+| Cooling | coolant temp + intake temp + engine load | A lazy or short-cycling thermostat shows up in *how* temperature moves with load, not in any single reading. |
+| Air/fuel mixture (vacuum leak, MAF, O2) | short+long term fuel trim + MAP + RPM | Trim is only meaningful relative to load; the fault is which way trims move *as load changes*. |
+| Sensor or electrical | any sensor against its usual partners | A dead or unplugged sensor reads a plausible value that no longer agrees with the others. |
+| Unusual, area unknown | all of them | Behavior outside the learned normal that matches no known area is still worth a flag. |
+
+We measure how often it catches faults we induce on the CR-V (a vacuum leak, a cooling
+restriction, an unplugged sensor) and how often it false-alarms.
 
 ## Hardware
 

@@ -1,6 +1,6 @@
 # Supported-PID survey
 
-**Blocks D-007 and the whole of diagnostic #1. Run this before M2.**
+**Sets the model's input list (D-007, D-021). Run this before M2.**
 
 Method: with the OBD2 adapter (D-019) paired and bound as `/dev/obd`, open it in a
 terminal (`screen /dev/obd`; the baud is ignored over Bluetooth) and send `ATZ`, `ATE0`,
@@ -22,19 +22,13 @@ to be confirmed from the VIN).
 | 0x0B | MAP | | |
 | 0x06/0x07 | Short/long term fuel trim B1 | | |
 | 0x5C | Engine oil temp | | |
-| **—** | **Oil pressure** | | **Usually NOT a standard PID.** Try manufacturer (Mode 22) PIDs through the same adapter, or accept that only a binary low-pressure switch exists. |
+| — | Oil pressure | | Usually not a standard PID; the CR-V likely has only a switch. Nothing depends on it (D-021). |
 | 0x2F | Fuel level | | |
-| 0x31 | Distance since codes cleared | | odometer proxy for oil-age trending |
+| 0x31 | Distance since codes cleared | | odometer proxy |
 
-## If oil pressure is unavailable
+## After the survey
 
-Options, in order of preference:
-
-1. Query manufacturer-specific (Mode 22) PIDs through the same adapter for an analog
-   pressure value. Support varies by make and is undocumented; try it, record what answers.
-2. Add a physical pressure sender with a T-fitting at the sender port. Real automotive
-   work on a daily driver — do not commit to this after Week 10.
-3. Replace diagnostic #1 with an oil-*temperature*-based thermal-load metric and say so
-   plainly in docs/DESIGN.md §5 as a declared substitution.
-
-Record the outcome here and in `docs/DECISIONS.md` §E.1 (D-003), through board item `oilq`.
+Every supported PID in the table above becomes an input to the model. Record which ones the
+CR-V answers, with the raw replies, and update the sensor list in `docs/DESIGN.md` §4.
+Manufacturer (Mode 22) PIDs are a stretch: try them only if a fault area has too few
+sensors to call.

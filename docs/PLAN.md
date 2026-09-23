@@ -25,26 +25,24 @@ line in `docs/milestones.md`.
 Everything else has slack. These two do not, and they are the only reasons this project
 fails in Week 14.
 
-### Critical path A — calendar, not effort: the oil interval
+### Critical path A — calendar, not effort: learning the car's normal
 
-Diagnostic #1 claims oil pressure degrades measurably across an oil-change interval. **That
-claim needs a real interval to develop, and an interval is calendar time you cannot buy
-back by working harder.**
+The model knows nothing until it has seen the CR-V's normal driving: cold starts, short
+trips and long pulls, across weeks. **That is calendar time you cannot buy back by working
+harder** (D-021).
 
 ```text
-baseline collection starts ──── 5-7 weeks of driving ────▶ oil change ──── 2 weeks ────▶ trend is real
-        M2 (mid-Oct)                                       (~mid-Nov)                     M4 (late Nov)
+baseline collection starts ──── weeks of normal driving ────▶ induced faults ────▶ measured
+        M2 (mid-Oct)                                               M4                  M5
 ```
 
 **Consequence:** logging must be running on the CR-V by the end of M2, even if the code is
 ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts
-on time beats an elegant one that starts three weeks late. **If baseline collection has
-not started by the M2 deadline, diagnostic #1 is dead** and we fall back to diagnostics #2
-and #3 — decide that consciously, record it in `DECISIONS.md`, and narrow the claim in
-writing.
+on time beats an elegant one that starts three weeks late. Every week it slips is a week
+less of normal to learn from, and a weaker catch rate at M5.
 
-Board chain: `order` → `bench` → `firstcap` → **`baseline`** → `foil`, with `keyoff`
-(the USB-C supply proven) also gating `baseline`.
+Board chain: `order` → `bench` → `firstcap` → **`baseline`**, with `keyoff` (the USB-C
+supply proven) also gating `baseline`.
 
 ### Critical path B — hardware lead time
 
@@ -63,10 +61,9 @@ after them.
 ### The one cheap experiment that de-risks everything
 
 **The PID survey (`pidhonda`).** Ten minutes, no custom hardware — just the adapter. It
-answers the project's named risk: *does the CR-V actually publish analog oil pressure?*
-If the answer is no, we find out in Week 5 with the whole design still soft, instead of
-Week 11 with the analysis engine half-written around a value that does not exist. It
-feeds `oilq`, which is where the answer gets recorded.
+answers *which engine sensors does the CR-V actually publish?*, which is the model's input
+list. Better to learn in Week 5, with the design still soft, than in Week 11 with the
+analysis half-written around a sensor that does not exist.
 
 ---
 
@@ -89,15 +86,14 @@ feeds `oilq`, which is where the answer gets recorded.
 The device shipped in Week 15 will be smaller than the one planned in Week 4. Decide the
 order now, while it is cheap, so the decision is not made at 2 a.m. in Week 13:
 
-1. **Diagnostic #1 (oil)** if critical path A slips — `foil`, and the oil claim in
-   `docs/PROBLEM.md`. Fall back to #2 and #3, narrow the claim in writing, and say so in the
-   limitations section.
-2. **The trained classifier** — `train`, `infer`. The features are the intelligence;
-   residuals and trends still produce verdicts without it. Say so at the defense.
-3. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
+1. **Fault-area naming** — the trained classifier, `train` and `infer`. The features are
+   the intelligence: residuals and trends still *flag* strange behavior without it, they
+   just stop naming the area. Narrow the claim to flag-only in writing, and say so at the
+   defense.
+2. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
    reporting through your own interface"; the page is the product's face, not a graded
    mechanism (D-013). Cut it before any `obdctl` verb.
-4. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
+3. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
 
 **Never cut, in any circumstance:** the soak (`soak1`), the committed mechanism
 experiments (`expcrash`, `expkill` — plus `expirq` and `expdrop` if `pisensor` commits B

@@ -48,6 +48,7 @@ Decisions currently awaiting a human signature:
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
+| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation you own now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -122,12 +123,9 @@ is the one thing that cannot be compressed by working harder in Week 14.
 
 **Cost.**
 
-- The two-car contrast — *"the same sticker says 5,000 miles to both cars, and the cars
-  disagree"* — was the thesis's strongest demonstration, and it is gone. The thesis is now
-  argued within one car: its measured condition against its own sticker and its own
-  Maintenance Minder estimate (D-007).
-- If the CR-V publishes only an oil-pressure switch, diagnostic #1 has no second car to
-  fall back on (`oilq`).
+- The two-car contrast was the old thesis's strongest demonstration, and it is gone. The
+  thesis is now argued within one car: what it does against its own learned normal
+  (D-021).
 - Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
   schedule; Camden owns the capture code but not the car.
 
@@ -135,7 +133,7 @@ is the one thing that cannot be compressed by working harder in Week 14.
 
 `D-007` · **Owner:** Lance · **Tracked as:** GitHub issue `honda` (label `question`)
 · **Answered:** 2026-09-21, by Camden in session · **Reviewed:** Camden ✅ / Lance ⬜
-· **Blocks:** the PID survey, and therefore diagnostic #1
+· **Blocks:** the PID survey, which sets the sensor list
 
 **Answer.** **2015 Honda CR-V EX-L.** By model year that is the 2015 refresh: 2.4 L
 direct-injected four-cylinder (K24W) with a CVT. FWD or AWD is not yet recorded. The
@@ -146,23 +144,14 @@ confirms against the VIN or the door-jamb sticker, then closes the issue.
 
 - **No Honda Sensing on the EX-L** (it was Touring-only in 2015), so there is no
   lane-keep camera connector to tap. The OBD2 port is the tap point (**D-011**).
-- **Oil pressure is expected to be a switch, not a sender.** This is inference from
-  Honda practice, not a service-manual reading; `pidhonda` confirms it. If true, diagnostic
-  #1 cannot run from any tap point and must be replaced or dropped (`oilq`).
-- **The Honda has Maintenance Minder** — an oil-life percentage estimated from how the
-  engine has been run. For this car the "generic 5,000-mile sticker" framing is false, and
-  `docs/PROBLEM.md` must answer the skeptic's version instead: *the car already estimates
-  this.* The answer is that the Minder is an open-loop estimate from a usage model; it
-  never measures the engine's condition. Ours measures.
+- **Oil pressure is expected to be a switch, not a sender** (inference from Honda
+  practice). Under D-021 that only removes one sensor from the list; nothing depends on it.
+- **The Honda has Maintenance Minder**, an oil-life estimate from how the engine has been
+  run. We do not compete with it: carwatch watches every engine sensor for behavior that
+  leaves this car's normal, which the Minder never measures.
 
-We still need, from the car itself: which Mode 01 PIDs the ECU actually supports, and
-whether oil pressure is published as an analog value or only as an idiot-light bit.
-
-**Why it is urgent.** A large fraction of consumer vehicles publish only a binary
-low-oil-pressure switch. If the CR-V does not publish analog oil pressure, **diagnostic #1
-is not implementable from the port** and we must substitute a physical sender (real
-automotive work on a daily driver) or replace the diagnostic. This is the project's named
-risk in `docs/PROBLEM.md`.
+We still need, from the car itself, which Mode 01 PIDs the ECU actually supports: that
+list is the model's input.
 
 **Action.** Run a supported-PID scan on the CR-V with the OBD2 adapter (D-019) —
 a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
@@ -277,8 +266,8 @@ know what normal *is* ahead of time.
 
 **Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
 (request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
-~8 PIDs. That is ample for what we diagnose (oil trend over weeks, warm-up over minutes,
-fuel trim against load) and must be stated in `docs/DESIGN.md` §4. The request budget itself
+~8 PIDs. That is ample for what we watch (warm-up over minutes, fuel trim against load,
+drift over days) and must be stated in `docs/DESIGN.md` §4. The request budget itself
 is a design-doc number to justify, not a constant to pick.
 
 **Cost.** The device sends requests to the car's ECU. Kept safe by the rate limit, one
@@ -286,7 +275,7 @@ outstanding request, and only standard read-only Mode 01 requests — the same t
 scan tool does.
 
 **Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
-still E.1: three faults, one car, measured error rates.
+E.1 (D-021): one car, a learned normal, fault areas named, measured error rates.
 
 ---
 
@@ -530,36 +519,49 @@ adding a diagnostic** — this is checked at the defense.
 
 ## E. Scope, claims and evaluation
 
-### E.1 — Three induced-and-measured diagnostics, and no more 🔒
+### E.1 — A one-car monitor that learns normal and names the fault area ⚠️ UNREVIEWED
 
-`D-003` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+`D-021` · Decided M1, 2026-09-23 · **By:** Camden, reopening 🔒 D-003 in session, + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜ · **Supersedes:** D-003 (§G.5)
 
-The claim we defend is: *"detects the three faults we can induce on this vehicle, with
-these error rates."* Not "predicts failure." Not "generalizes to any post-1996 car."
-*(Narrowed from "these two vehicles" by D-016, 2026-09-21.)*
+**Decision.** carwatch is a rough-draft demo of one idea: plug it into one car, let it learn
+that car's normal, and have it say when something acts strange. The claim we defend:
 
-1. **Oil pressure degradation across oil life** — residual after normalizing for RPM and
-   temperature, trended across an interval.
-2. **Cooling system anomaly** — thermostat short-cycling signature (period and amplitude)
-   and abnormal warm-up slope, gated on ambient temp and load.
-3. **Mixture drift** — long-term fuel trim divergence as a function of load.
+> *carwatch learns this CR-V's normal across its Mode 01 engine sensors, flags behavior
+> outside it, and names the likely fault area. We report how often it catches faults we
+> induce — a vacuum leak, a cooling restriction, an unplugged sensor — and how often it
+> false-alarms.*
 
-**Why.** Handout §5 says it directly: a narrow claim met and measured outscores a broad
-claim gestured at. Twelve vague diagnoses is the named failure mode for this project's
-seed.
+Not "predicts failure." Not "generalizes to any car." Not oil life.
 
-### E.2 — Induced ground truth 🔒
+**Fault areas (first draft, refined by the M2 design):** cooling; air/fuel mixture
+(vacuum leak, MAF, O2); sensor or electrical (a dead or unplugged sensor, supply voltage);
+and "unusual, area unknown" when behavior leaves normal without matching an area. Every
+area still needs two cooperating sensors to call (D.4).
 
-`D-003` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+**Why.** Camden, 2026-09-23: the build is one car, one Bluetooth OBD2 adapter and one
+USB-powered Pi with storage and our model, and the goal is the first attainable step of
+the idea, not a finished product. D-003 made oil-pressure degradation diagnostic #1, but
+the CR-V most likely publishes no analog oil pressure (D-007), and trending oil life
+needed a full oil interval of calendar time. A general monitor uses every sensor the car
+does publish, and still meets handout §5: a narrow, measured claim.
 
-We cannot wait a semester for a failure, so we provoke conditions and label the recordings:
+**What changed with it.** Oil is one sensor among many if the CR-V publishes it (PID 0x5C
+oil temperature), never a headline. Board items `oilq` and `foil` are cut. The analysis
+pipeline (§D.2), mechanisms D and E, and the two-sensor rule are unchanged.
 
-- **Vacuum leak** — briefly disconnect a small vacuum line. Reversible, safe, moves LTFT
+### E.2 — Induced ground truth ⚠️ UNREVIEWED
+
+`D-021` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** the D-003 corollary (§G.5)
+
+We cannot wait a semester for a failure, so we provoke one per fault area and label the
+recordings:
+
+- **Air/fuel** — briefly disconnect a small vacuum line. Reversible, safe, moves LTFT
   within a minute.
 - **Cooling** — partially block radiator airflow with cardboard.
-- **Sensor fault** — unplug a sensor. Also demo day's injected fault, so it gets rehearsed.
-- **Oil** — log continuously across a real oil change on the CR-V. Cannot be faked
-  and cannot be rushed, which is why baseline collection starts at M2.
+- **Sensor** — unplug a sensor. Also demo day's injected fault, so it gets rehearsed.
 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
@@ -810,6 +812,42 @@ why the STN chip is preferred.
 **Consequences.** The capture daemon becomes a serial reader. Wiring, BOM, provisioning
 and the design doc follow. The PID survey needs no extra hardware — the same adapter does
 it.
+
+### G.5 — (was E.1) Three induced-and-measured diagnostics, and no more 🗑
+
+`D-003` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-09-23 by D-021 (§E.1)**: reopened by Camden in session; oil life
+and the fixed three diagnostics gave way to a general monitor with fault areas.
+
+The claim we defend is: *"detects the three faults we can induce on this vehicle, with
+these error rates."* Not "predicts failure." Not "generalizes to any post-1996 car."
+*(Narrowed from "these two vehicles" by D-016, 2026-09-21.)*
+
+1. **Oil pressure degradation across oil life** — residual after normalizing for RPM and
+   temperature, trended across an interval.
+2. **Cooling system anomaly** — thermostat short-cycling signature (period and amplitude)
+   and abnormal warm-up slope, gated on ambient temp and load.
+3. **Mixture drift** — long-term fuel trim divergence as a function of load.
+
+**Why.** Handout §5 says it directly: a narrow claim met and measured outscores a broad
+claim gestured at. Twelve vague diagnoses is the named failure mode for this project's
+seed.
+
+#### (was E.2) Induced ground truth, D-003 corollary 🗑
+
+`D-003` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+We cannot wait a semester for a failure, so we provoke conditions and label the recordings:
+
+- **Vacuum leak** — briefly disconnect a small vacuum line. Reversible, safe, moves LTFT
+  within a minute.
+- **Cooling** — partially block radiator airflow with cardboard.
+- **Sensor fault** — unplug a sensor. Also demo day's injected fault, so it gets rehearsed.
+- **Oil** — log continuously across a real oil change on the CR-V. Cannot be faked
+  and cannot be rushed, which is why baseline collection starts at M2.
+
+Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
+know what ours mean — and we will be asked at the defense how we know.
 
 ---
 
