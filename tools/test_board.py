@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-test_board.py — validate docs/board.toml without touching the network.
+test_board.py — validate docs/BOARD/board.toml without touching the network.
 
-docs/board.toml is a graded artifact: it is where every task, question and
+docs/BOARD/board.toml is a graded artifact: it is where every task, question and
 decision in this project is written down, and a bad hand-edit to it is the
 failure mode most likely to happen at 1am in Week 11. So it is checked by the
 same gate as the C code — `make test` runs this.

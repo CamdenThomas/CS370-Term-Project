@@ -1,8 +1,8 @@
 ####
-# CI for the project board (CLAUDE.md 7.11, docs/BOARD.md).
+# CI for the project board (CLAUDE.md 7.11, docs/BOARD/BOARD.md).
 #
 # Two guarantees, one workflow:
-#   manifest - docs/board.toml is well-formed (offline, always fast)
+#   manifest - docs/BOARD/board.toml is well-formed (offline, always fast)
 #   drift    - GitHub actually matches it, i.e. nobody forgot to run sync
 #
 # plus a third, soft for now: every PR traces back to an issue.
@@ -61,6 +61,6 @@ jobs:
           if printf '%s' "$BODY" | grep -Eiq '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'; then
             echo "ok - PR closes an issue"
           else
-            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.11: every PR traces back to an issue; if there is no issue, add the [[item]] to docs/board.toml first."
+            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.11: every PR traces back to an issue; if there is no issue, add the [[item]] to docs/BOARD/board.toml first."
             exit 1
           fi

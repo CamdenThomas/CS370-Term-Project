@@ -10,8 +10,8 @@ board unless we take The Reach (handout §14).
 
 A custom PCB earns **zero points** — the rubric grades mechanisms, measurements and the
 soak — and adds fab turnaround on top of critical path B, which is already the thing most
-likely to delay M2. A breadboard plus an off-the-shelf MCP2515 module clears every
-guardrail, and the handout is explicit that the enclosure can be a food container.
+likely to delay M2. Off-the-shelf parts on a breadboard clear every guardrail, and the
+handout is explicit that the enclosure can be a food container.
 
 The schematic is worth the time anyway, because three graded artifacts depend on it:
 
@@ -31,9 +31,12 @@ architecture, which makes both documents easier to defend:
 | Block | Contains |
 | --- | --- |
 | **Power** | USB-C input from the car (switched, D-011) as an off-sheet connector, the Pi's 5 V rail, bulk and bypass caps. **No** OBD2 pin 16 and no buck converter. |
-| **CAN** | OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050 transceiver, MCP2515, crystal + load caps, termination jumper **drawn open** (D-011), `INT` to GPIO |
-| **Pi interface** | 40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, the warning-light LED + 330 Ω on GPIO17 (D-014), grounds |
+| **Pi interface** | 40-pin header, the warning-light LED + 330 Ω on GPIO17 (D-014), grounds |
+| **CAN** *(stretch only, D-019)* | OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050 transceiver, MCP2515, crystal + load caps, termination jumper **drawn open** (D-011), `INT` to GPIO, SPI0 (CE0/MISO/MOSI/SCLK) |
 | **Sensors** *(conditional, D-006)* | MPU-6050 on I2C with pull-ups; DS18B20 on 1-Wire with its 4.7 kΩ |
+
+The OBD2 adapter is not on the schematic: it plugs into the car and reaches the Pi over
+Bluetooth (D-019), so no wire of ours touches it.
 
 ## Rules
 
@@ -44,8 +47,9 @@ architecture, which makes both documents easier to defend:
    silently in Week 13.
 3. **Every IC gets its decoupling drawn**, even when the module already has it. The
    schematic documents what is *electrically true*, not what we happened to buy assembled.
-4. **The MCP2515 crystal frequency is a value field, not a comment** — 8 MHz vs 16 MHz
-   changes the device-tree overlay, and a wrong value produces a silently dead bus.
+4. *(CAN stretch only.)* **The MCP2515 crystal frequency is a value field, not a comment**
+   — 8 MHz vs 16 MHz changes the device-tree overlay, and a wrong value produces a
+   silently dead bus.
 5. **No `DNP`/`no-connect` without a reason in the field.** Floating inputs are an ERC
    violation for good reasons.
 6. **`make hwcheck` green before the PR.** ERC violations are build failures, exactly like
@@ -53,8 +57,9 @@ architecture, which makes both documents easier to defend:
 
 ## What must not be trusted to a datasheet alone
 
-The cheap MCP2515 breakout modules vary: some run the TJA1050 at 5 V and level-shift the
-controller side, and some do not — those drive **5 V onto MISO** and will kill a Pi.
+*Applies only if the CAN stretch goal is taken up.* The cheap MCP2515 breakout modules
+vary: some run the TJA1050 at 5 V and level-shift the controller side, and some do not —
+those drive **5 V onto MISO** and will kill a Pi.
 
 **Meter it. With the Pi disconnected. Before anything is plugged in.** This is the exact
 case `CLAUDE.md` §8.4 covers: no hardware conclusion from a verbal description or a

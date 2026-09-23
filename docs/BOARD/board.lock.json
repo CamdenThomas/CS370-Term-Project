@@ -10,7 +10,7 @@
     },
     "bench": {
       "number": 18,
-      "title": "M2 hardware: USB OBD2 adapter bring-up on the Pi, no car"
+      "title": "M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car"
     },
     "bin": {
       "number": 49,
@@ -23,6 +23,10 @@
     "boardpath": {
       "number": 96,
       "title": "M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/"
+    },
+    "btcoex": {
+      "number": 110,
+      "title": "M2 hardware: measure Bluetooth and Wi-Fi sharing the Pi 4's one radio"
     },
     "btpivot": {
       "number": 105,
@@ -160,6 +164,10 @@
       "number": 61,
       "title": "M2 hardware: prove the USB-C supply — switched, and no brown-out at crank"
     },
+    "kicadtrack": {
+      "number": 113,
+      "title": "M1 hw: stop tracking electricalDrawing/.kicad_prl and .history"
+    },
     "lancesign": {
       "number": 10,
       "title": "M0 review: Lance reads and signs the decision log"
@@ -226,11 +234,15 @@
     },
     "order": {
       "number": 4,
-      "title": "M0 hardware: order the core BOM, USB OBD2 adapter first"
+      "title": "M0 hardware: order the core BOM, Bluetooth OBD2 adapter first"
     },
     "overhaul": {
       "number": 87,
       "title": "M1 docs: overhaul the repo for the USB-OBD2, one-car design"
+    },
+    "ownmap": {
+      "number": 112,
+      "title": "M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2"
     },
     "persist": {
       "number": 51,

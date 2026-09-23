@@ -1,14 +1,14 @@
 # The board: how work is tracked
 
-Every task, question and decision in this project lives in **`docs/board.toml`**.
+Every task, question and decision in this project lives in **`docs/BOARD/board.toml`**.
 GitHub issues and the `carwatch` project board are *derived* from that file by
 `tools/board_sync.py`. Nothing is typed directly into the GitHub web UI except
 answers, discussion, and closing an issue.
 
 ```text
-docs/board.toml   ──▶  tools/board_sync.py  ──▶  GitHub issues + project board
+docs/BOARD/board.toml   ──▶  tools/board_sync.py  ──▶  GitHub issues + project board
 (source of truth)      (reconciler)              (derived)
-docs/board.lock.json   slug → issue number, committed so the mapping survives
+docs/BOARD/board.lock.json   slug → issue number, committed so the mapping survives
 ```
 
 ## Running it
@@ -56,7 +56,7 @@ Three things derive from `board.toml` and must never be hand-edited:
 | --- | --- | --- |
 | Issue bodies' blocked-by list and decision link | GitHub | `<!-- board-sync:deps -->` |
 | The milestone table | `docs/milestones.md` | `<!-- board-sync:milestones -->` |
-| slug → issue number | `docs/board.lock.json` | (whole file) |
+| slug → issue number | `docs/BOARD/board.lock.json` | (whole file) |
 
 **Milestone dates are written in exactly one place**: the `[[milestone]]` blocks here.
 Sync patches the GitHub due dates *and* regenerates the table in `docs/milestones.md`
@@ -84,6 +84,40 @@ label as blockers open and close.
    new tasks added, dead ones marked `status = "done"`, dependencies rewired.
 4. `python tools/board_sync.py` pushes exactly that delta.
 5. One commit contains the answer, its consequences, and the board move.
+
+## Labels, and who closes what
+
+| Label | Meaning | Who closes it |
+| --- | --- | --- |
+| `question` | Needs human judgment or knowledge Claude does not have | **Human only** |
+| `decision` | A design choice that must be made before work proceeds | **Human only** |
+| `task` | Work to be done; may be Claude's or a human's | PR merge, or owner |
+| `bug` | Something is wrong | PR merge |
+| `hardware` | Physical world: order it, wire it, measure it, drive it | **Human only** |
+| `blocked` | Waiting on a dependency (applied and removed by sync) | n/a |
+
+`board_sync.py` refuses to close a `question`, `decision` or `hardware` issue without the
+explicit `--close-questions` flag, which is a human typing it. That is the enforcement, not
+an honor system.
+
+## Writing an item
+
+When Claude would otherwise stop and emit a blocker (CLAUDE.md §7.8), it adds an
+`[[item]]` instead, runs sync, and carries on with whatever else is unblocked:
+
+- Title: `M<n> <area>: <what>` — same convention as commits.
+- Body must state: what is blocked, what you already tried or know, the options with their
+  costs, your recommendation, and **exactly what answer would unblock it**. A question a
+  human can answer in one line beats a question that needs a meeting.
+- Set `owner` (unassigned issues are nobody's) and `milestone` (`M0`–`M6`, so the board
+  sorts by deadline).
+- Give it a `slug` that will still make sense in Week 14. Slugs are permanent identity —
+  **never rename or reuse one**; the slug→issue mapping in `docs/BOARD/board.lock.json` is
+  what survives between sessions.
+- If the item exists because of a decision, set `decision = "D-###"`.
+- Every PR body contains `Closes #<n>`, so every PR traces back to an item. No item yet?
+  Add it first — it is the record of *why* the work existed. Handy chain:
+  `gh issue develop <n> --name <owner>/<mN>/<slug> --checkout`.
 
 ## Editing `board.toml`
 

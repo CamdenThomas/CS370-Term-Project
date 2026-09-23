@@ -69,7 +69,7 @@ boundary:
 		echo "BOUNDARY VIOLATION: network symbol outside src/interface/"; exit 1; \
 	else echo "boundary                     PASS"; fi
 
-# docs/board.toml is a graded artifact too - every task, question and decision
+# docs/BOARD/board.toml is a graded artifact too - every task, question and decision
 # in the project is written there. Validate it in the same gate as the C.
 boardcheck:
 	@$(PY) tools/test_board.py

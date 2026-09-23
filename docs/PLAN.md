@@ -1,21 +1,21 @@
 # carwatch — full project plan
 
-**This file is the *why*. `docs/board.toml` is the *what*.**
+**This file is the *why*. `docs/BOARD/board.toml` is the *what*.**
 
 The work breakdown that used to live here — 80 numbered tasks with owners and blocked-by
-lists — moved to `docs/board.toml`, which `tools/board_sync.py` reconciles onto GitHub
+lists — moved to `docs/BOARD/board.toml`, which `tools/board_sync.py` reconciles onto GitHub
 issues and the `carwatch` project board. Keeping a second copy here would guarantee the two
 disagreed by Week 9, and nothing would have told us which one was wrong.
 
 So: read **this** for why the plan is shaped this way and what to sacrifice when it slips.
-Read **the board** for what to do next. See `docs/BOARD.md` for how the board works.
+Read **the board** for what to do next. See `docs/BOARD/BOARD.md` for how the board works.
 
 - Decisions already made: `docs/DECISIONS.md`
 - Milestone exit criteria: `docs/milestones.md`
 - The rubric itself: `docs/handout/CS370-TermProject.md`
 
 Items are named below by their board **slug**, which is permanent. Issue numbers are not
-written into any document — they live only in `docs/board.lock.json`, which sync maintains.
+written into any document — they live only in `docs/BOARD/board.lock.json`, which sync maintains.
 
 ---
 
@@ -52,8 +52,8 @@ order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first li
 ```
 
 Nothing downstream of "arrives" can start early. The handout names shipping time as the most
-common silent schedule-killer, twice. **Order on the day you read this.** The USB OBD2
-adapter (D-015) is the whole data path — the same part runs the PID survey, the bench
+common silent schedule-killer, twice. **Order on the day you read this.** The Bluetooth
+OBD2 adapter (D-019) is the whole data path — the same part runs the PID survey, the bench
 bring-up and every capture after it.
 
 Board chain: `order` blocks the PID survey, `bench` and `keyoff`, and everything physical
@@ -113,12 +113,11 @@ was made deliberately rather than a task that quietly stopped being mentioned.
 
 ## 4. Standing weekly rhythm
 
+Every session starts and ends by `CLAUDE.md` §0: read the review queue, `--status`, sync
+and copy transcripts out at the end. On top of that:
+
 - **Monday:** `python tools/board_sync.py --check`, then work the **Ready** column. Cards
   move out of Backlog on their own as blockers close — what you are looking for is anything
   Ready that nobody has picked up, and anything still Backlog that should not be.
-- **Both partners, every session:** read the `DECISIONS.md` review queue and sign or contest.
 - **Friday:** cross-review at least one of the other's merged PRs, and log it in
   `PROMPTLOG.md` while it is fresh.
-- **Every milestone:** transcripts out, no exceptions, before anything else is submitted.
-- **End of every session:** `python tools/board_sync.py`. A run with nothing to do writes
-  nothing, so there is no excuse for skipping it.

@@ -7,11 +7,12 @@ REVIEW: What the reviewer should check hardest, and what I am least sure about.
 VERIFY: The exact commands run and their result.
 
 # area: obd | ipc | store | analysis | supervisor | interface |
-#       common | build | tests | tools | soak | docs
+#       common | build | tests | tools | soak | docs | process
 #
 # One responsibility per commit, sized by what it is responsible for, not by
 # line count (CLAUDE.md 7.3). The one-sentence test: if the summary needs "and",
 # it is two commits. Past ~400 changed lines, say in WHY why it is indivisible.
-# Banned: wip, fix, updates, misc, cleanup, changes, address feedback.
+# Banned: wip, fix, fixes, updates, misc, cleanup, changes, more work,
+#         address feedback.
 #
 # Enable with:  git config commit.template .gitmessage
