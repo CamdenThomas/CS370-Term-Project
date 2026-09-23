@@ -52,8 +52,8 @@ order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first li
 ```
 
 Nothing downstream of "arrives" can start early. The handout names shipping time as the most
-common silent schedule-killer, twice. **Order on the day you read this.** The USB OBD2
-adapter (D-015) is the whole data path — the same part runs the PID survey, the bench
+common silent schedule-killer, twice. **Order on the day you read this.** The Bluetooth
+OBD2 adapter (D-019) is the whole data path — the same part runs the PID survey, the bench
 bring-up and every capture after it.
 
 Board chain: `order` blocks the PID survey, `bench` and `keyoff`, and everything physical

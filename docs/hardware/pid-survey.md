@@ -2,8 +2,9 @@
 
 **Blocks D-007 and the whole of diagnostic #1. Run this before M2.**
 
-Method: with the USB OBD2 adapter (D-015) open in a terminal (`screen /dev/obd <baud>`),
-send `ATZ`, `ATE0`, `ATSP0`, then `0100`, `0120`, `0140`, `0160`. Each reply is a 32-bit
+Method: with the OBD2 adapter (D-019) paired and bound as `/dev/obd`, open it in a
+terminal (`screen /dev/obd`; the baud is ignored over Bluetooth) and send `ATZ`, `ATE0`,
+`ATSP0`, then `0100`, `0120`, `0140`, `0160`. Each reply is a 32-bit
 bitmap of which PIDs in the next block the ECU supports. Ten minutes; paste the raw
 replies below the table, dated.
 

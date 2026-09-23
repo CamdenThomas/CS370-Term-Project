@@ -18,9 +18,9 @@
   OBD2 port
         │                          Pi power: car USB-C / 12 V socket, ≥ 5.1 V / 3 A,
   ┌──────────────┐                 switched — cut, unannounced, at every key-off (D-011)
-  │ USB OBD2     │  USB tty /dev/obd   ┌────────────────┐
-  │ adapter      │◀───────────────────▶│      obdd      │  Mode 01 requests,
-  │ (D-015)      │  [N] baud           │  tty reader    │  [N] req/s, round-robin (D-012)
+  │ Bluetooth    │  RFCOMM tty         ┌────────────────┐
+  │ OBD2 adapter │◀ ~ ~ ~ ~ ~ ~ ~ ~ ~ ▶│      obdd      │  Mode 01 requests,
+  │ (D-019)      │  /dev/obd           │  tty reader    │  [N] req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
                                                │ SPSC ring, [N] samples/s  (mech F only with pisensor)
                                                │ shm, sequence-accounted
@@ -71,7 +71,7 @@ the measured numbers that justify it.
 
 | Component | Failure | Detection | Response | Log line |
 | --- | --- | --- | --- | --- |
-| OBD2 adapter | unplugged mid-drive (`/dev/obd` disappears) | read error / `ENODEV` on the tty | degrade, do not restart-storm; reopen when udev brings it back | |
+| OBD2 adapter | Bluetooth link drops mid-drive (out of range, adapter asleep, unplugged) | hangup on the tty: `read` returns 0 or `EIO`, `poll` reports `POLLHUP` | degrade, do not restart-storm; reopen `/dev/obd` with backoff until the link returns | |
 | OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | `ATZ` reset, then back off | |
 | ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
 | obdd | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
@@ -108,7 +108,7 @@ the measured numbers that justify it.
 | --- | --- | --- |
 | Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
 | A year of failing engines | Induced faults on one healthy car (D-016) | Only three fault classes, and none of them is a real bearing failure |
-| Raw CAN at the ECU's own publish rate | Mode 01 replies through a USB OBD2 adapter (D-015) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
+| Raw CAN at the ECU's own publish rate | Mode 01 replies from a Bluetooth OBD2 adapter (D-019) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
 | 48h of live driving | [pending D-006] | |
 | Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
 

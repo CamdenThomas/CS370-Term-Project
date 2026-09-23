@@ -58,8 +58,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] A **named** user and a **named** vehicle — not a persona
 - [ ] Risk named plainly
 - [ ] Both partners' transcripts copied to `partners/<name>/transcripts/`
-- [ ] Stretch: the USB OBD2 adapter answering the Pi as `/dev/obd` (`ATZ` returns its
-      version string), even if no car is involved yet
+- [ ] Stretch: the Bluetooth OBD2 adapter paired and answering the Pi as `/dev/obd`
+      (`ATZ` returns its version string), even if no car is involved yet
 
 ## M2 — exit criteria
 
