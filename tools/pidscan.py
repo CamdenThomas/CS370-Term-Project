@@ -2,8 +2,7 @@
 """Mode 01 supported-PID bitmap scan. Closes D-007.
 
 Run this on the CR-V before M2. Ten minutes through the Bluetooth OBD2 adapter
-(/dev/obd, D-019). The answer decides whether diagnostic #1 (oil pressure) is
-implementable at all, and that is the project's named risk.
+(/dev/obd, D-019). The supported PIDs become the model's input list (D-021).
 
 Record results in docs/hardware/pid-survey.md.
 """

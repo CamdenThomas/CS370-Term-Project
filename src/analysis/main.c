@@ -6,8 +6,8 @@
  *   operating-point bin (RPM x load x coolant temp)
  *     -> per-bin running mean/variance
  *     -> multivariate residual (Mahalanobis)
- *     -> robust trend (Theil-Sen) over oil age / fuel-trim drift
- *     -> classifier (our weights, our C inference)
+ *     -> robust trend (Theil-Sen) over each sensor's drift from normal
+ *     -> fault-area classifier (our weights, our C inference; D-021)
  *     -> state machine with hysteresis and dwell
  *
  * The restraint rule: a monitor that cries wolf twice gets unplugged, and an unplugged
