@@ -15,10 +15,10 @@ short name other docs cite.
 | M | Deliverable | Week | Due | Team hrs | Progress |
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
-| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 11/22 |
+| M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 16/23 |
 | M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 2/22 |
 | M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/17 |
-| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | ⬜ 0/26 |
+| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/26 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/3 |
 
@@ -69,7 +69,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `txglob` @camden <!-- #99 -->
 - [x] M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/
       `boardpath` @camden <!-- #96 -->
-- [ ] M1 process: recover Camden's M0 transcripts from the Windows machine before they
+- [x] M1 process: recover Camden's M0 transcripts from the Windows machine before they
       purge `txwin` @camden <!-- #97 -->
 - [x] M1 tools: the 8e8c74a merge left board.toml and board.lock.json unparseable
       `boardmerge` @camden <!-- #102 -->
@@ -77,14 +77,14 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #103 -->
 - [x] M1 docs: markdownlint and cSpell configs, and a clean pass over every doc `mdlint`
       @camden <!-- #104 -->
-- [ ] M1 docs: read OBD2 over a Bluetooth Classic (SPP) adapter instead of USB `btpivot`
+- [x] M1 docs: read OBD2 over a Bluetooth Classic (SPP) adapter instead of USB `btpivot`
       @camden <!-- #105 -->
-- [ ] M1 docs: condense CLAUDE.md into a rules-only index over the source docs
+- [x] M1 docs: condense CLAUDE.md into a rules-only index over the source docs
       `claudeindex` @camden <!-- #106 -->
-- [ ] M1 tools: make docs/milestones.md the board; retire board.toml (D-020) `boardlist`
+- [x] M1 tools: make docs/milestones.md the board; retire board.toml (D-020) `boardlist`
       @camden <!-- #120 -->
 - [ ] M1 docs: reframe the repo as a one-car monitor that names the fault area (D-021)
-      `reframe` @camden
+      `reframe` @camden <!-- #127 -->
 - [ ] M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2
       `ownmap` @lance <!-- #112 -->
 - [ ] M1 hw: stop tracking electricalDrawing/.kicad_prl and .history `kicadtrack` @lance
