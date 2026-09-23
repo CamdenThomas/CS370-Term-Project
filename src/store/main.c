@@ -1,6 +1,6 @@
 /* storaged — append-only, crash-consistent log. Mechanism D lives here.
  *
- * OWNER: Lance.  M3 target: frames from the ring durably on disk, recoverable after a
+ * OWNER: Lance.  M3 target: samples from the ring durably on disk, recoverable after a
  * power cut taken at an arbitrary instant.
  */
 #include "common/log.h"

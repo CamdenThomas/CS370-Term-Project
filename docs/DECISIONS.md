@@ -297,7 +297,7 @@ reserve — which is why `pisensor` is on the critical path.
 ## B.2 — Four processes, not one 🔒
 `D-002` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
-`candaemon`, `storaged`, `analyzed` and `supervisor` are separate processes with separate
+`obdd`, `storaged`, `analyzed` and `supervisor` are separate processes with separate
 address spaces, communicating over a shared-memory ring and Unix domain sockets.
 
 **Why.** Fault isolation is the product requirement, not an architectural preference: the
@@ -561,7 +561,7 @@ Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 
 | Owner | Subsystems |
 |---|---|
-| **Camden** | `src/can/`, `src/ipc/` |
+| **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
 
