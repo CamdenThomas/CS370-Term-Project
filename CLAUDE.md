@@ -81,7 +81,7 @@ shown me the output.** Not "should pass." Output, pasted.
 
 A Raspberry Pi riding in a daily-driven car. A USB OBD2 adapter in the car's OBD2 port
 gives it the car's own sensors (D-015); the car's USB-C port powers it — nothing is cut or
-spliced (D-011). Through standard Mode 01 requests (D-012) it reads oil temperature,
+spliced (D-011). Through standard Mode 01 requests (D-012) it reads oil pressure,
 coolant temp, MAP, O2 / fuel trims, RPM and load, and builds a statistical model of what
 normal looks like *for this car, at this operating point*. It then reports deviations
 that a mileage sticker and a check-engine light both miss. The owner reads it from their
