@@ -496,6 +496,104 @@ body = '''
 Raw. Not summarized, not exported, not retyped. Both partners, separately.
 '''
 
+[[item]]
+slug = "boardpath"
+milestone = "M1"
+labels = ["bug", "critical-path"]
+owner = "camden"
+title = "M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/"
+body = '''
+`make test` and `make asan` are RED on main, and have been since the board files
+moved. Every gate in CLAUDE.md 1 runs through this target, so nothing can be
+declared DONE until it is fixed.
+
+    $ make test
+    boundary                     PASS
+    board.toml                   FAIL
+      manifest not found: .../CS370-Term-Project/docs/board.toml
+    make: *** [Makefile:67: boardcheck] Error 1
+
+WHAT BROKE IT
+Commit e42b28d ("m1 touch up") moved the three board files into a subdirectory:
+
+    docs/board.toml       -> docs/BOARD/board.toml
+    docs/board.lock.json  -> docs/BOARD/board.lock.json
+    docs/BOARD.md         -> docs/BOARD/BOARD.md
+
+`tools/board_sync.py` still resolves the manifest as `<repo>/docs/board.toml`,
+so board_sync.py, test_board.py (through it), the boardcheck target and the
+board.yml CI workflow all fail. `python tools/board_sync.py --status` is dead
+too, which is the command CLAUDE.md 0 tells every session to start with.
+
+OPTIONS
+  1. Point the path constants in board_sync.py at docs/BOARD/. One-line fix,
+     keeps e42b28d's tidier layout.
+  2. Revert the move; put the three files back at docs/. Also one line, but
+     undoes a human's deliberate reorganisation.
+  RECOMMEND 1 — the move was intentional and the code is what is stale.
+
+WHAT UNBLOCKS IT
+Nothing: this is a task, not a question. It is filed rather than fixed inline
+because CLAUDE.md 7.2 forbids folding unrelated work into an open branch, and
+it was found while doing the M1 transcript copy-out (tx1 / #17).
+
+ALSO NOTE, same root cause
+`tools/test_board.py` needs Python 3.11+ for `tomllib`. The department machines
+default to `python3` = 3.9.25, so the target dies with ModuleNotFoundError
+before it ever reports the path problem. Either set `PY ?= python3.11` in the
+Makefile or fall back to `tomli`. Worth folding into the same fix.
+'''
+
+[[item]]
+slug = "txwin"
+milestone = "M1"
+labels = ["task", "critical-path"]
+owner = "camden"
+title = "M1 process: recover Camden's M0 transcripts from the Windows machine before they purge"
+body = '''
+Camden's M0 sessions are not in `partners/camden/transcripts/` and are not on
+the Linux department machine. They only ever existed on the Windows machine.
+
+WHAT IS ACTUALLY ARCHIVED (after this branch)
+  abd85d1e...jsonl   2026-09-22 02:18-04:12Z   Windows   the M1 doc/decision burst
+  012145fb...jsonl   2026-09-23 19:12Z-        Linux     this session
+
+WHAT IS MISSING
+The M0 scaffold sessions of 2026-09-11 — the ones that produced commits cdbcfb1
+through 970bda2, which is the single largest body of work in the repository:
+the Makefile, the ring, the record format, CLAUDE.md 7, board_sync.py and every
+M0 document. Roughly 40 commits with no transcript behind them.
+
+WHY THIS IS URGENT
+Claude Code purges session files after `cleanupPeriodDays`, default 30. Sessions
+dated 2026-09-11 therefore disappear around **2026-10-11**. After that the loss
+is permanent and, per CLAUDE.md 9, foreseeable and unexcused.
+
+THE M0 `cleanup` ITEM IS MARKED done BUT DOES NOT HOLD
+`cleanup` claims cleanupPeriodDays was raised on *both* machines. On the Linux
+department machine it was not — `~/.claude/settings.json` reads:
+
+    {"theme": "dark", "enabledPlugins": {"clangd-lsp@claude-plugins-official": true}}
+
+No `cleanupPeriodDays` key, so this machine is still on the 30-day default.
+The Windows machine has not been checked. Camden should re-verify both and
+correct the `cleanup` item's status himself — Claude does not un-mark a human's
+check-off.
+
+WHAT TO DO, ON THE WINDOWS MACHINE, BEFORE 2026-10-11
+  1. Add to %USERPROFILE%\.claude\settings.json:  {"cleanupPeriodDays": 180}
+  2. Copy-out, then commit on a branch:
+       Copy-Item "$env:USERPROFILE\.claude\projects\*CS370-Term-Project*\*.jsonl" `
+                 partners\camden\transcripts\
+  3. #17 (tx1) closes when that lands. It is deliberately left open until then.
+
+NOTE THE GLOB
+Use `*CS370-Term-Project*`, not the `*CS370*` written in tx1 and in
+partners/camden/transcripts/README.md. `*CS370*` also matches the HW1 rbtree-lab
+project folder and would drag seven HW1 sessions into this project's graded
+transcript folder. See the `txglob` note in the copy-out PR.
+'''
+
 # =============================================================== M2 items
 
 [[item]]
