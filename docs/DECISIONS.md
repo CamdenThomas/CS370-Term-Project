@@ -47,6 +47,7 @@ Decisions currently awaiting a human signature:
 | D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
 | D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
+| D-018 | Markdown linted with markdownlint at a 90-column wrap; handout exempt (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -580,6 +581,23 @@ Camden marks it LOCKED in his own commit.
 
 **Why it mattered.** The handout gives weeks, not dates; a one-week error would have moved
 the M4 soak start, and M4 already lands on Thanksgiving week.
+
+## F.4 — Markdown is linted with markdownlint, at a 90-column wrap ⚠️ UNREVIEWED
+`D-018` · **By:** Claude, in Camden's session 2026-09-23 · **Reviewed:** Camden ⬜ / Lance ⬜
+
+`.markdownlint.jsonc` at the repository root sets the rules the VS Code markdownlint
+extension enforces: every default rule on, lines wrapped at **90 columns** (tables, code
+and headings exempt), `<details>`, `<summary>`, `<sub>` and `<br>` allowed as inline
+HTML, and tables in the compact `| a | b |` / `| --- | --- |` style.
+`.markdownlintignore` excludes `docs/handout/`, which is a transcription of the
+instructor's PDF.
+
+**Why 90, not the default 80.** The docs were already wrapped at about 90: at 80 the repo
+raised 1,184 line-length warnings, and at 90 it raised 24. Rewrapping everything to 80
+would bury every file's history in reflow for no reader benefit.
+
+**Why a config at all.** Without one, each editor shows over 1,500 warnings, and a real
+problem (a broken heading tree, a list that does not render) is invisible in the noise.
 
 ---
 
