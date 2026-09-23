@@ -451,7 +451,7 @@ slug = "productform"
 milestone = "M1"
 labels = ["task"]
 owner = "camden"
-status = "in-review"
+status = "done"
 decision = "D-011"
 title = "M1 docs: factor the plug-in product design through the repo"
 body = '''
@@ -488,6 +488,7 @@ Makefile rename (src/can -> src/obd) follows separately, once it can be built.
 slug = "tx1"
 milestone = "M1"
 labels = ["task"]
+status = "done"
 title = "M1 process: transcript copy-out, both partners"
 body = '''
     mkdir -p partners/<name>/transcripts
@@ -501,6 +502,7 @@ slug = "txglob"
 milestone = "M1"
 labels = ["bug"]
 owner = "camden"
+status = "done"
 title = "M1 process: the transcript copy-out glob also matches the HW1 project folder"
 body = '''
 The copy-out command in both partners' transcripts/README.md, and in `tx1`'s own
@@ -534,6 +536,7 @@ slug = "boardpath"
 milestone = "M1"
 labels = ["bug", "critical-path"]
 owner = "camden"
+status = "done"
 title = "M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/"
 body = '''
 `make test` and `make asan` are RED on main, and have been since the board files
