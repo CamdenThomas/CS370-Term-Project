@@ -709,6 +709,41 @@ docs/PROCESS.md and detail to the one doc that owns it; rebuild docs/README.md a
 topic index. Target: about 70% smaller.
 '''
 
+[[item]]
+slug = "ownmap"
+milestone = "M1"
+labels = ["decision"]
+owner = "lance"
+title = "M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2"
+body = '''
+DECISIONS.md F.2 (LOCKED) lists Lance as `src/store/`, `src/analysis/`, `tools/train/`
+and Shared as "build, docs". CLAUDE.md 6 and DESIGN.md 7 also give Lance
+`electricalDrawing/` and name the `Makefile` as shared. Claude may not edit a LOCKED
+entry, so the three disagree until a human does.
+
+Options: (1) amend F.2 to match CLAUDE.md 6 (recommended: it is already how you both
+work); (2) drop `electricalDrawing/` from CLAUDE.md 6 and DESIGN.md 7 instead.
+
+Unblocks with: "amend F.2" or "revert the others", then the edit in your own commit.
+'''
+
+[[item]]
+slug = "kicadtrack"
+milestone = "M1"
+labels = ["task"]
+owner = "lance"
+title = "M1 hw: stop tracking electricalDrawing/.kicad_prl and .history"
+body = '''
+CLAUDE.md 7.12 says never commit `.kicad_prl` (per-user state) or `.history/`, and
+`.gitignore` ignores both, but both were committed before the ignore rule existed, so
+git keeps tracking them:
+
+    git rm --cached electricalDrawing/electricalDrawing.kicad_prl electricalDrawing/.history
+
+Lance's area, so filed rather than done. Done when `git ls-files electricalDrawing`
+lists neither.
+'''
+
 # =============================================================== M2 items
 
 [[item]]
