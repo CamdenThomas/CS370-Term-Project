@@ -21,6 +21,7 @@
 ## Episode template
 
 ### E-00 — <short title>
+
 **Milestone:** M?  **Date:**  **Category:** plan / rejected diff / hardware loop / partner review
 
 **Context.** What I was trying to do and what I already knew.
@@ -104,13 +105,11 @@ Items absent from the manifest are never touched.
 
 **Outcome.** Commits: *(fill in)*. What I would do differently: *(fill in)*.
 
-
-
 ### E-02 — Avoid Overcomplications with CAN
 
 **Milestone:** 1?  **Date:9/21/2026**  **Category:** plan change
 
-**Context.** 
+**Context.**
 
 **What I asked.** The actual prompt, or its substance. Include the evidence I pasted.
 

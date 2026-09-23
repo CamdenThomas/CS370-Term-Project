@@ -304,12 +304,14 @@ workflow** — it is 20 individual points, and the defense will find it.
 ### 7.7 Session start and session end
 
 **Start of session:**
+
 1. Read `CLAUDE.md`, `docs/milestones.md`, `docs/DECISIONS.md`.
 2. `python tools/board_sync.py --status` — pick work from **Ready**, nowhere else.
 3. State whose session this is.
 4. `git status` clean, `git pull` on `main`, create the branch.
 
 **End of session — mandatory, every time:**
+
 1. Nothing uncommitted. No stray files.
 2. PR opened or updated, template filled, build/test/asan output pasted.
 3. **Every decision made without a human present is appended to `docs/DECISIONS.md` as

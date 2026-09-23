@@ -9,6 +9,7 @@
 > instructions must each succeed from their own section alone.
 
 ## 1. Architecture
+>
 > A diagram in the spirit of the handout's Figure 1: processes, threads, kernel
 > components, data flows, **and rates on every arrow**. The rates are not decoration —
 > they are what makes the mechanism justifications checkable.
@@ -46,6 +47,7 @@
 **TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
 
 ## 2. Mechanism mapping
+>
 > For each chosen menu item: which component implements it, and a justification **from
 > the user's requirements**. The defense will test the justification, not the choice.
 > Model the form on the handout's example: "the vibration analysis is meaningless above
@@ -62,6 +64,7 @@ the measured numbers that justify it.
 | F *(only with `pisensor`)* | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
 
 ## 3. Failure-mode table
+>
 > For each component: how it can fail, how the failure is **detected**, what the system
 > **does**, and what the **log will show**. The soak test grades this table's honesty —
 > so write the modes you are afraid of, not the ones you have already handled.
@@ -83,6 +86,7 @@ the measured numbers that justify it.
 | power | cut at key-off, every drive (D-011) | none possible in advance — recovery scan at next boot | | |
 
 ## 4. Storage and data
+>
 > What is stored, at what rate, in what format, with what retention, and what happens to
 > it when the power dies mid-write.
 
@@ -96,6 +100,7 @@ the measured numbers that justify it.
   the requirement that made mechanism D non-optional.
 
 ## 5. Constraints and substitutions
+>
 > What the ideal build would use, what we are actually using, and what the gap costs.
 > "A design document with nothing to report here has usually not met its hardware yet."
 
@@ -108,6 +113,7 @@ the measured numbers that justify it.
 | Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
 
 ## 6. Evaluation plan
+>
 > The measurements we will take, each with **method and committed target**. Numbers
 > committed now are twice as credible when hit later, and instructive either way.
 
@@ -122,6 +128,7 @@ the measured numbers that justify it.
 | Recovery after mid-write power cut | N pull-the-plug trials | 100% |
 
 ## 7. Ownership map
+
 | Owner | Subsystems |
 |---|---|
 | Camden | `src/obd/`, `src/ipc/` |
@@ -131,6 +138,7 @@ the measured numbers that justify it.
 Ownership means first authorship and answerability at the defense, not exclusivity.
 
 ## 8. AI-use plan
+>
 > What we use Claude Code for, what we don't, and how the §3.3 boundary stays visible
 > in the repository.
 
@@ -144,4 +152,5 @@ device's own Wi-Fi access point and has no upstream connection (D-013). `grep -r
 outside that directory returns nothing, and that check is in `make test`.
 
 ## 9. Changelog (added at M5)
+>
 > What M2's version got wrong. This section is graded and an empty one is not credible.

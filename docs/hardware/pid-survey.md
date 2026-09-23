@@ -28,6 +28,7 @@ to be confirmed from the VIN).
 ## If oil pressure is unavailable
 
 Options, in order of preference:
+
 1. Query manufacturer-specific (Mode 22) PIDs through the same adapter for an analog
    pressure value. Support varies by make and is undocumented; try it, record what answers.
 2. Add a physical pressure sender with a T-fitting at the sender port. Real automotive
