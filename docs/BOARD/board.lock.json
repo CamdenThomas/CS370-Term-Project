@@ -164,6 +164,10 @@
       "number": 61,
       "title": "M2 hardware: prove the USB-C supply — switched, and no brown-out at crank"
     },
+    "kicadtrack": {
+      "number": 113,
+      "title": "M1 hw: stop tracking electricalDrawing/.kicad_prl and .history"
+    },
     "lancesign": {
       "number": 10,
       "title": "M0 review: Lance reads and signs the decision log"
@@ -235,6 +239,10 @@
     "overhaul": {
       "number": 87,
       "title": "M1 docs: overhaul the repo for the USB-OBD2, one-car design"
+    },
+    "ownmap": {
+      "number": 112,
+      "title": "M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2"
     },
     "persist": {
       "number": 51,
