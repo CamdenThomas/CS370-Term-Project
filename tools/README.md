@@ -8,7 +8,7 @@ product's runtime path.
 
 | Tool | Purpose |
 | --- | --- |
-| `board_sync.py` | Reconciles `docs/BOARD/board.toml` onto GitHub issues and the project board. Not a product tool at all — it is how the plan is maintained. See `docs/BOARD/BOARD.md`. |
+| `board_sync.py` | Mirrors the checklist in `docs/milestones.md` onto GitHub issues and the project board. Not a product tool at all — it is how the plan is maintained. See `docs/BOARD/BOARD.md`. |
 | `replay.py` | Feed a labeled capture through the real pipeline at real or accelerated speed. A legitimate systems artifact (handout §5), not a workaround — but everything it produces is labeled `replay`. |
 | `pidscan.py` | Mode 01 supported-PID bitmap scan. Feeds `pid-survey.md`; the input to **D-007**. |
 | `train/` | Model training (skeleton). Weights land in `models/` with the training commit in the header. |

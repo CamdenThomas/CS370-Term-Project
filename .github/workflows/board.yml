@@ -2,7 +2,7 @@
 # CI for the project board (CLAUDE.md 7.11, docs/BOARD/BOARD.md).
 #
 # Two guarantees, one workflow:
-#   manifest - docs/BOARD/board.toml is well-formed (offline, always fast)
+#   manifest - docs/milestones.md, the board, is well-formed (offline, always fast)
 #   drift    - GitHub actually matches it, i.e. nobody forgot to run sync
 #
 # plus a third, soft for now: every PR traces back to an issue.
@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   manifest:
-    name: board.toml is well-formed
+    name: milestones.md is well-formed
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
       - run: python tools/test_board.py
 
   drift:
-    name: GitHub matches board.toml
+    name: GitHub matches milestones.md
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +61,6 @@ jobs:
           if printf '%s' "$BODY" | grep -Eiq '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'; then
             echo "ok - PR closes an issue"
           else
-            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.11: every PR traces back to an issue; if there is no issue, add the [[item]] to docs/BOARD/board.toml first."
+            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.11: every PR traces back to an issue; if there is no issue, add a line to docs/milestones.md and sync first."
             exit 1
           fi

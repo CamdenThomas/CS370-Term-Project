@@ -6,8 +6,7 @@
     "partners/*/transcripts/*.jsonl",
     "**/*.kicad_*",
     "**/*.svg",
-    "**/*.pdf",
-    "docs/BOARD/board.lock.json"
+    "**/*.pdf"
   ],
   "ignoreWords": [
     "carwatci"
