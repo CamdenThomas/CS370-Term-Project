@@ -130,14 +130,14 @@ Ownership means first authorship and answerability at the defense, not exclusivi
 
 ---
 
-# 7. Git and pull-request law
+## 7. Git and pull-request law
 
 **This section is not advisory.** Our process grade is computed from transcripts
 corroborated against commits; the git history is itself a graded deliverable; and neither
 partner will break down a thousand-line diff to review it. A commit small enough to review
 in ninety seconds is a commit that actually gets reviewed.
 
-## 7.1 The five absolutes
+### 7.1 The five absolutes
 
 Claude may **never**, under any instruction short of an explicit human override in the
 current session:
@@ -154,7 +154,7 @@ current session:
 
 Violating any of these is a stop-work event: say so, and do not attempt a workaround.
 
-## 7.2 Branches
+### 7.2 Branches
 
 - `main` is protected, always green, and never committed to directly.
 - **One branch per unit of work.** Naming: `<owner>/<milestone>/<slug>`
@@ -166,7 +166,7 @@ Violating any of these is a stop-work event: say so, and do not attempt a workar
 - Branch from current `main`, freshly pulled. Never branch from another open branch
   without saying so in the PR.
 
-## 7.3 Commit granularity — one commit, one responsibility
+### 7.3 Commit granularity — one commit, one responsibility
 
 **There is no line-count limit.** A commit is sized by *what it is responsible for*, not by
 how big the diff happens to be. A 200-line rewrite of a single function is **one** commit;
@@ -186,7 +186,7 @@ leave it alone.
 without using "and". If you can, it is one commit no matter how many lines it took. If you
 cannot, split along the "and".
 
-### For code
+#### For code
 
 The unit is **one behavior, one function, or one design principle applied.**
 
@@ -203,7 +203,7 @@ one-sentence test — large diffs *often* contain a smuggled second responsibili
 survives the test, commit it as one unit and **say in the `WHY` why it is indivisible.**
 Then the reviewer knows the size was considered rather than accidental.
 
-### For documentation, Markdown, and data files
+#### For documentation, Markdown, and data files
 
 The unit is **one resolved question or one decision** — not one file, not one section.
 
@@ -221,7 +221,7 @@ The unit is **one resolved question or one decision** — not one file, not one 
 **The check:** `git show <commit>` should answer exactly one question a human asked. If it
 answers two, split. If it answers half of one, you committed too early.
 
-## 7.4 Commit message format
+### 7.4 Commit message format
 
 ```
 M<n> <area>: <imperative summary, ≤ 72 chars>
@@ -254,7 +254,7 @@ VERIFY: make && make test && make asan — all green, test_ring 3/3.
 **Banned messages**, non-negotiable: `wip`, `fix`, `fixes`, `updates`, `misc`, `cleanup`,
 `changes`, `more work`, `address feedback`, or any message that does not say what changed.
 
-## 7.5 Pull requests
+### 7.5 Pull requests
 
 - **One PR = one reviewable claim.** Title matches the lead commit: `M<n> <area>: <what>`.
 - **A PR is sized by its claim, not its diff.** If the title needs "and", split it. If a
@@ -278,7 +278,7 @@ VERIFY: make && make test && make asan — all green, test_ring 3/3.
   understandable — put it in the PR body. Making the reviewer reconstruct context is how
   reviews stop happening.
 
-## 7.6 The merge gate
+### 7.6 The merge gate
 
 **If the reviewer does not understand a line, the pull request does not merge.**
 
@@ -301,7 +301,7 @@ Neither partner approves a PR they could not defend at the keyboard, alone, on d
 **Approving code you do not understand is the only unrecoverable mistake in this
 workflow** — it is 20 individual points, and the defense will find it.
 
-## 7.7 Session start and session end
+### 7.7 Session start and session end
 
 **Start of session:**
 1. Read `CLAUDE.md`, `docs/milestones.md`, `docs/DECISIONS.md`.
@@ -321,7 +321,7 @@ workflow** — it is 20 individual points, and the defense will find it.
 **Claude never marks a decision reviewed or LOCKED.** Only Camden or Lance does, by editing
 the `Reviewed` field, in a commit authored by that human.
 
-## 7.8 When to stop instead of commit
+### 7.8 When to stop instead of commit
 
 Stop and emit a structured blocker — the decision, the options, the cost of each, your
 recommendation — rather than proceeding, when:
@@ -333,7 +333,7 @@ recommendation — rather than proceeding, when:
 - `make`, `make test`, or `make asan` is not green
 - you would have to guess at hardware behavior without evidence (see §8)
 
-## 7.9 Volume and distribution
+### 7.9 Volume and distribution
 
 ≥ 40 meaningful commits across the semester, **both partners well represented**. A history
 where one partner authored under a quarter of the substantive commits is probed hard at the
@@ -343,7 +343,7 @@ zero **for both partners**.
 Commit *as you go*, inside the session. A session that produces one commit at the end has
 already lost the granularity this section exists to protect.
 
-## 7.10 Repository settings (humans, once)
+### 7.10 Repository settings (humans, once)
 
 On GitHub, set on `main`: require a pull request before merging · require 1 approval ·
 dismiss stale approvals on new commits · require conversation resolution · block force
@@ -351,7 +351,7 @@ pushes · block deletions. Enable **squash-merge only if** the squash message is
 to be meaningful — otherwise prefer merge commits, since our granular history *is* the
 deliverable and squashing destroys it.
 
-## 7.11 Issues and the project board — where work and questions live
+### 7.11 Issues and the project board — where work and questions live
 
 **GitHub Issues replace the blockers list.** Anything that needs a human — a question, a
 decision, a measurement only one of us can take, a part that must be ordered — is an
@@ -361,7 +361,7 @@ decision, a measurement only one of us can take, a part that must be ordered —
 Everything still open lives on the board, where it has an owner, a milestone, and a
 visible position in the queue.
 
-### The board is generated, not hand-maintained
+#### The board is generated, not hand-maintained
 
 **`docs/board.toml` is the source of truth. GitHub is derived from it.**
 `tools/board_sync.py` reconciles the two. Full contract in `docs/BOARD.md`; the part that
@@ -376,7 +376,7 @@ human parts, and sync respects all three — it never reopens what a human close
 reports any issue closed on GitHub that `board.toml` still thinks is open, so the manifest
 gets caught up in the next commit.
 
-### Issue types
+#### Issue types
 
 | Label | Meaning | Who closes it |
 |---|---|---|
@@ -391,7 +391,7 @@ gets caught up in the next commit.
 explicit `--close-questions` flag, which is a human typing it. That is the enforcement, not
 an honour system.
 
-### Claude's standing instructions
+#### Claude's standing instructions
 
 - **When you would stop and emit a blocker (§7.8), add an `[[item]]` to `docs/board.toml`
   instead**, run sync, and continue with whatever else is unblocked. Link the issue number
@@ -408,7 +408,7 @@ an honour system.
 - If the item exists because of a decision, set `decision = "D-###"`. Sync renders the link
   into the issue and warns if that ID is not in `docs/DECISIONS.md`.
 
-### Dependencies — the gate
+#### Dependencies — the gate
 
 `blocked_by` in `board.toml` takes **slugs, never issue numbers**. Sync resolves them,
 writes the `Blocked by: #12, #15` block into the body, and applies or removes the `blocked`
@@ -429,7 +429,7 @@ The board column follows from that, automatically:
 is. Answering one question can move several cards into Ready on the next sync; that is the
 board telling you what just became workable.
 
-### Issue → branch → PR, as one chain
+#### Issue → branch → PR, as one chain
 
 ```sh
 gh issue develop <n> --name camden/m3/obd-reader --checkout   # branch linked to issue
@@ -441,7 +441,7 @@ The PR body must contain `Closes #<n>`. Merging then closes the issue; the next 
 the card to Done. **Every PR traces back to an issue**; if there is no issue, add the
 `[[item]]` first — that is the record of *why* the work existed.
 
-### Session end
+#### Session end
 
 Run `python tools/board_sync.py`. It is the only thing that moves cards, and it is cheap:
 a run with nothing to do makes zero writes. **A board that lies is worse than no board**,
@@ -451,7 +451,7 @@ CI enforces it: `.github/workflows/board.yml` runs `--check --no-board` on every
 pull request and fails on drift, and `make test` validates `docs/board.toml` itself through
 `tools/test_board.py`. So a forgotten sync is a red build, not a quiet lie.
 
-### What this is worth at the defense
+#### What this is worth at the defense
 
 The board is not project-management theater. It is a timestamped record that the questions
 were asked before the work, that a human answered them, and that the answer shaped the
@@ -460,7 +460,7 @@ an independent system we did not write.
 
 ---
 
-## 7.12 Hardware changes (KiCad)
+### 7.12 Hardware changes (KiCad)
 
 The schematic lives in `electricalDrawing/` (KiCad 10, owned by Lance). KiCad files are
 S-expression **text**, so hardware goes through the same branches, commits and pull requests

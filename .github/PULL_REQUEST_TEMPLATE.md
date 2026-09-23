@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-file MD041 -- GitHub supplies the PR title as the heading. -->
 <!-- Every section is mandatory. A PR with an unfilled section is not ready for review.
      One PR = one reviewable claim (CLAUDE.md 7.5). Past ~10 commits or ~600 changed
      lines, re-apply the claim test — and if it survives, say in the body why. -->

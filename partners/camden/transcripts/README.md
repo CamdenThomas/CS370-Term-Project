@@ -10,14 +10,14 @@ folder is the only copy that is guaranteed to survive to Week 15.
 Exit Claude Code first (`/exit`), so the session file is complete. Then, in a normal
 terminal at the repository root:
 
-**Git Bash / macOS / Linux**
+### Git Bash / macOS / Linux
 
 ```sh
 cp ~/.claude/projects/*CS370-Term-Project*/*.jsonl partners/camden/transcripts/
 git add partners/camden/transcripts/*.jsonl
 ```
 
-**PowerShell**
+### PowerShell
 
 ```powershell
 Copy-Item "$env:USERPROFILE\.claude\projects\*CS370-Term-Project*\*.jsonl" partners\camden\transcripts\

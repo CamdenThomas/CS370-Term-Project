@@ -90,7 +90,7 @@ Items absent from the manifest are never touched.
 
 **My judgment.**
 
-> *(mine to write — the questions worth answering here:)*
+> *(Mine to write.)* The questions worth answering here:
 >
 > - I accepted the rewrite rather than the five bug fixes. Was that the right call, or was
 >   it scope creep dressed up as architecture? What would I say to someone who argued the

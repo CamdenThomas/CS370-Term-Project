@@ -32,7 +32,7 @@ that, by editing the `Reviewed` field, in a commit authored by that human.
 
 ---
 
-# ⚠️ REVIEW QUEUE — read this first
+## ⚠️ REVIEW QUEUE — read this first
 
 Decisions currently awaiting a human signature:
 
@@ -55,9 +55,9 @@ Decisions currently awaiting a human signature:
 
 ---
 
-# A. Hardware and interfaces
+## A. Hardware and interfaces
 
-## A.1 — The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal ⚠️ UNREVIEWED
+### A.1 — The Pi reads OBD2 through a USB adapter; raw CAN is a stretch goal ⚠️ UNREVIEWED
 `D-015` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-001 (§G.1)
 
@@ -85,7 +85,7 @@ why the STN chip is preferred.
 and the design doc follow. The PID survey needs no extra hardware — the same adapter does
 it.
 
-## A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
+### A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
 `D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-005 (§G.2)
 
@@ -106,7 +106,7 @@ is the one thing that cannot be compressed by working harder in Week 14.
 - Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
   schedule; Camden owns the capture code but not the car.
 
-## A.3 — Honda year/model/engine ⚠️ UNREVIEWED
+### A.3 — Honda year/model/engine ⚠️ UNREVIEWED
 `D-007` · **Owner:** Lance · **Tracked as:** GitHub issue `honda` (label `question`)
 · **Answered:** 2026-09-21, by Camden in session · **Reviewed:** Camden ✅ / Lance ⬜
 · **Blocks:** the PID survey, and therefore diagnostic #1
@@ -140,7 +140,7 @@ risk in `docs/PROBLEM.md`.
 **Action.** Run a supported-PID scan on the CR-V with the USB OBD2 adapter (D-015) —
 a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
-## A.4 — Capture the schematic in KiCad; do not fabricate a PCB 🔒
+### A.4 — Capture the schematic in KiCad; do not fabricate a PCB 🔒
 `D-009` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 **Decision.** We draw the full schematic in KiCad (`electricalDrawing/`, KiCad 10, owned by
@@ -163,7 +163,7 @@ disagree with reality by Week 9. A generated one cannot.
 build. `docs/hardware/wiring.md` and `BOM.md` become **derived** artifacts. `CLAUDE.md`
 §7.12 requires a rendered schematic in any PR touching hardware.
 
-## A.5 — ERC is a build failure, and the schematic SVG is committed 🔒
+### A.5 — ERC is a build failure, and the schematic SVG is committed 🔒
 `D-010` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 **Decision.** `kicad-cli sch erc --exit-code-violations` runs as `make hwcheck`; violations
@@ -184,7 +184,7 @@ diff a human can actually read. It is regenerated, never hand-edited.
 which did not exist — KiCad errors on project open. An empty library is committed to resolve
 it; populate it as parts are drawn.
 
-## A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
+### A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
 `D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 *Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
@@ -223,7 +223,7 @@ by its label (`docs/hardware/wiring.md`).
   accessory plus a battery tender.
 - The product is "one box, two cables", not "one dongle".
 
-## A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
+### A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 `D-012` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 *Revised 2026-09-21 by D-015, before any review: the CAN-level detail (arbitration IDs,
@@ -254,9 +254,9 @@ still E.1: three faults, one car, measured error rates.
 
 ---
 
-# B. Systems architecture and mechanisms
+## B. Systems architecture and mechanisms
 
-## B.1 — Mechanism commitments: D and E; B and F only with a Pi-side sensor ⚠️ UNREVIEWED
+### B.1 — Mechanism commitments: D and E; B and F only with a Pi-side sensor ⚠️ UNREVIEWED
 `D-017` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-002 (§G.3)
 
@@ -295,7 +295,7 @@ process boundary E requires, and B.3 still binds it.
 **Risk.** D and E alone meet the floor exactly. If either measurement fails, nothing is in
 reserve — which is why `pisensor` is on the critical path.
 
-## B.2 — Four processes, not one 🔒
+### B.2 — Four processes, not one 🔒
 `D-002` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 `obdd`, `storaged`, `analyzed` and `supervisor` are separate processes with separate
@@ -306,7 +306,7 @@ analysis engine is the most complex and least trustworthy component, and it must
 able to take the capture path down with it. One process would be simpler and would fail
 the thing the device exists to do.
 
-## B.3 — The ring refuses rather than overwrites 🔒
+### B.3 — The ring refuses rather than overwrites 🔒
 Decided M0 · **By:** Claude, from D-002 · **Reviewed:** Camden ✅ / Lance ⬜
 
 When the ring is full the producer returns failure and increments an overrun counter. It
@@ -319,7 +319,7 @@ looks like a quiet minute. Enforced by `tests/test_ring.c`.
 **Reviewer note.** This is a real trade: under sustained overload we drop *new* data
 rather than *old*. If that is ever the wrong choice for a diagnostic, reopen this.
 
-## B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
+### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 `D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 **Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
@@ -351,7 +351,7 @@ remains demonstrable through `obdctl` alone.
   interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
   §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
 
-## B.5 — One warning light, driven by the supervisor ⚠️ UNREVIEWED
+### B.5 — One warning light, driven by the supervisor ⚠️ UNREVIEWED
 `D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 **Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
@@ -386,9 +386,9 @@ blink timer must never delay `waitpid` handling. Colour, brightness and placemen
 
 ---
 
-# C. Storage and data integrity
+## C. Storage and data integrity
 
-## C.1 — Append-only, self-framing, CRC'd records 🔒
+### C.1 — Append-only, self-framing, CRC'd records 🔒
 `D-002/D` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 Records are never rewritten in place. Each carries a magic number for resynchronization
@@ -404,7 +404,7 @@ wrong numbers you trust are more dangerous than missing numbers you know about.
 value, only one justifiable from user requirements. Document the argument in `docs/DESIGN.md`
 §4 before writing the code.
 
-## C.2 — Every record carries a provenance tag 🔒
+### C.2 — Every record carries a provenance tag 🔒
 Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 Every record and every log line carries `src = live | replay | synth`. Present in the
@@ -418,9 +418,9 @@ anywhere in it.
 
 ---
 
-# D. Intelligence and analysis
+## D. Intelligence and analysis
 
-## D.1 — Self-trained model; training in Python, inference in C 🔒
+### D.1 — Self-trained model; training in Python, inference in C 🔒
 `D-004` · Decided M0 · **By:** Camden (confirmed with instructor) · **Reviewed:** Camden ✅ / Lance ⬜
 
 A locally-trained, self-authored model is permitted; hosted APIs and third-party
@@ -438,7 +438,7 @@ binning, per-bin baselines, Mahalanobis residuals, Theil–Sen trends, all hand-
 Delete the weights file and the system still produces residuals and trends; it loses only
 the final labeling step. That separation is deliberate and it is the answer at the defense.
 
-## D.2 — Analysis pipeline shape 🔒
+### D.2 — Analysis pipeline shape 🔒
 Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 Operating-point binning (RPM × load × coolant temp) → per-bin running mean/variance →
@@ -454,7 +454,7 @@ sensor's value — oil pressure is supposed to rise with RPM. A measure of anoma
 already accounts for normal partnerships, and alarms only when a partnership breaks, is
 what makes this something a threshold provably cannot do (handout §3.3).
 
-## D.3 — Hysteresis and dwell before any verdict surfaces 🔒
+### D.3 — Hysteresis and dwell before any verdict surfaces 🔒
 Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 No verdict reaches the user until it has persisted. Trip and un-trip levels differ
@@ -464,7 +464,7 @@ deliberately.
 than none because someone far away believes it is on duty. **False-positive rate is a
 first-class metric in `docs/EVALUATION.md`, not an afterthought.**
 
-## D.4 — The threshold test, as a standing rule 🔒
+### D.4 — The threshold test, as a standing rule 🔒
 Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 Every diagnostic we ship must require at least two cooperating sensors to reach its
@@ -474,9 +474,9 @@ diagnostic** — this is checked at the defense.
 
 ---
 
-# E. Scope, claims and evaluation
+## E. Scope, claims and evaluation
 
-## E.1 — Three induced-and-measured diagnostics, and no more 🔒
+### E.1 — Three induced-and-measured diagnostics, and no more 🔒
 `D-003` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 The claim we defend is: *"detects the three faults we can induce on this vehicle, with
@@ -493,7 +493,7 @@ these error rates."* Not "predicts failure." Not "generalizes to any post-1996 c
 claim gestured at. Twelve vague diagnoses is the named failure mode for this project's
 seed.
 
-## E.2 — Induced ground truth 🔒
+### E.2 — Induced ground truth 🔒
 `D-003` (corollary) · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
 We cannot wait a semester for a failure, so we provoke conditions and label the recordings:
@@ -508,7 +508,7 @@ We cannot wait a semester for a failure, so we provoke conditions and label the 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
 
-## E.3 — 48-hour soak: live sensors vs. a fake OBD2 port ❓ OPEN
+### E.3 — 48-hour soak: live sensors vs. a fake OBD2 port ❓ OPEN
 `D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
 · **Must close before M4** · Blocks nothing before M3
 
@@ -534,9 +534,9 @@ regardless.
 
 ---
 
-# F. Process, team and tooling
+## F. Process, team and tooling
 
-## F.1 — Git and pull-request law 🔒
+### F.1 — Git and pull-request law 🔒
 Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 
 The binding ruleset lives in **`CLAUDE.md` §7**, because that is the file the agent reads
@@ -557,7 +557,7 @@ commits, the git history is a graded deliverable, and neither of us will break d
 thousand-line diff. A commit small enough to review in ninety seconds is a commit we will
 actually review — and the defense asks us to answer for individual lines.
 
-## F.2 — Ownership map 🔒
+### F.2 — Ownership map 🔒
 Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 
 | Owner | Subsystems |
@@ -570,7 +570,7 @@ Ownership means **first authorship and answerability at the defense**, not exclu
 Each partner must still be able to answer one question from across the boundary — demo day
 guarantees one.
 
-## F.3 — Milestone dates ⚠️ UNREVIEWED
+### F.3 — Milestone dates ⚠️ UNREVIEWED
 `D-008` · **Owner:** Camden · **Tracked as:** board item `dates` (label `question`)
 · **Answered:** 2026-09-21, by Camden · **Reviewed:** Camden ⬜ / Lance ⬜
 
@@ -582,7 +582,7 @@ Camden marks it LOCKED in his own commit.
 **Why it mattered.** The handout gives weeks, not dates; a one-week error would have moved
 the M4 soak start, and M4 already lands on Thanksgiving week.
 
-## F.4 — Markdown is linted with markdownlint, at a 90-column wrap ⚠️ UNREVIEWED
+### F.4 — Markdown is linted with markdownlint, at a 90-column wrap ⚠️ UNREVIEWED
 `D-018` · **By:** Claude, in Camden's session 2026-09-23 · **Reviewed:** Camden ⬜ / Lance ⬜
 
 `.markdownlint.jsonc` at the repository root sets the rules the VS Code markdownlint
@@ -601,13 +601,13 @@ problem (a broken heading tree, a list that does not render) is invisible in the
 
 ---
 
-# G. Superseded
+## G. Superseded
 
 When a decision is replaced, it moves here with a pointer to its replacement. Never delete
 one: the reasoning is evidence, and "what M2 got wrong" is a graded section of
 `docs/DESIGN.md`.
 
-## G.1 — (was A.1) CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🗑
+### G.1 — (was A.1) CAN reaches the Pi via MCP2515 on SPI, not Bluetooth 🗑
 `D-001` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 · **Superseded 2026-09-21 by D-015 (§A.1)** — raw CAN became a stretch goal.
 
@@ -630,7 +630,7 @@ vehicle. Accepted.
 warned about, in exchange for hardware that works on day one; D-017 records which
 mechanisms survive.
 
-## G.2 — (was A.2) Testbeds: Subaru Outback and Lance's Honda 🗑
+### G.2 — (was A.2) Testbeds: Subaru Outback and Lance's Honda 🗑
 `D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 · **Superseded 2026-09-21 by D-016 (§A.2)** — the second vehicle was cut, as this entry
 said it would be first.
@@ -649,7 +649,7 @@ on standard Mode 01 PIDs only; manufacturer-specific frames are a stretch.
 **Risk.** If the schedule slips, the **first** thing cut is the second vehicle — not a
 mechanism, and not the evaluation. Record it here if it happens.
 
-## G.3 — (was B.1) Mechanism commitments: B, D, E, F 🗑
+### G.3 — (was B.1) Mechanism commitments: B, D, E, F 🗑
 `D-002` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 · **Superseded 2026-09-21 by D-017 (§B.1)** — with raw CAN a stretch goal (D-015), B and F
 lost their data source.
