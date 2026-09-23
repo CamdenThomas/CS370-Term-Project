@@ -1,14 +1,13 @@
 # Problem memo — carwatch (Camden Thomas, Lance Baron)
 
-
 ## The user
 
-An average car owner who drives everyday to work, is vastly different from someone who
-works from home and does the yearly road trip, although the recommended maintenance is
-still the same. 
+An average car owner who drives to work every day uses a car very differently from someone
+who works from home and takes one road trip a year, yet both are handed the same
+recommended maintenance schedule.
 
-The point of two users is the thesis: the same oil-change sticker says 5,000 miles to
-both cars, and the cars disagree.
+That contrast is the thesis: the same oil-change sticker says 5,000 miles to both cars,
+and the cars disagree.
 
 ## The problem
 
@@ -16,11 +15,14 @@ both cars, and the cars disagree.
 
 Maintenance intervals are generalizations. The sticker on the windshield knows nothing
 about how this engine has actually been run — a commuter that never reaches operating
-temperature and a highway car with the same odometer reading have not aged the same
-way. The consequence runs both directions and both are expensive: oil changed far
-earlier than it needed to be, or an engine run on oil that lost its pressure margin
-weeks ago. While the sensors already present do a great job tracking all the need information,
-people just need a device to monitor and store this data to learn the car and predict failures before the check engine light of doom puts you on the hour long bus ride.
+temperature and a highway car with the same odometer reading have not aged the same way.
+The error runs in both directions, and both are expensive: oil changed far earlier than it
+needed to be, or an engine run on oil that lost its pressure margin weeks ago.
+
+The car's own sensors already measure everything needed to tell these cases apart. What is
+missing is a device that records that data continuously, learns what normal looks like for
+this car, and flags a developing fault before the check-engine light of doom puts its
+owner on an hour-long bus ride.
 
 ## Why a device
 
@@ -33,7 +35,7 @@ drives someone remembered to open an app for. A phone app is present for the tri
 thought to instrument, which is a biased sample of exactly the variable being measured.
 
 The interesting moment is also never the moment anyone is looking: it is the third cold
-start of a February week where warm-up took ninety seconds longer than it did in
+start of a February week when warm-up took ninety seconds longer than it did in
 January. Nobody is holding a phone then. The device is in the car, awake at key-on,
 recording before anyone has decided anything is wrong.
 
@@ -45,7 +47,7 @@ holding a log of everywhere this person drove.
 > Which two (or more) and how they **cooperate** rather than coexist.
 
 The vehicle's own sensors, read via the OBD2 port: oil pressure, coolant temperature,
-intake air temperature, MAP, O2 / fuel trims, RPM, engine load.
+intake air temperature, MAP, O2 / fuel trims, RPM, and engine load.
 
 They cooperate because **no one of them means anything alone.** Oil pressure is a
 function of RPM and oil temperature; the diagnostic signal is the *residual* after
@@ -54,7 +56,6 @@ trim is only interpretable against load. Coolant temperature only indicts a ther
 once ambient temperature and load have been accounted for. Every verdict this device
 produces requires at least two sensors to agree on something a single threshold cannot
 see.
-
 
 ## The mechanisms
 
@@ -65,7 +66,7 @@ every single time the key turns off, so the storage layer never gets a clean shu
 and must recover a torn tail on every boot.
 
 **E — multi-process architecture with a supervisor.** A recorder that dies silently has
-harmed its owner, who believes it is on duty; capture, storage and analysis run as
+harmed its owner, who believes it is on duty; capture, storage, and analysis run as
 separate processes so that a crash in the analysis cannot take the recording down with it.
 
 ## The risk
@@ -74,4 +75,8 @@ The primary risk, named honestly: the oil-life trend needs a real oil interval t
 and that is calendar time we cannot buy back by working harder in Week 14. Baseline
 collection starts at M2 or it does not happen.
 
-Secondly there lies another risk of how the OBD protocol works, were each car implements it differently, there being 4 different *data frames*, and even if we get past those worries, decoding the recieved signal may not be possible due it being proprietary to the manufacturer. The scale of the project is quite large, and we risk not completeing the project within one semester. 
+The second risk is the OBD2 protocol itself. Each manufacturer implements it differently,
+across four different *data frames*, and even once those are handled, a received signal
+may be impossible to decode because the manufacturer keeps its meaning proprietary.
+
+Finally, the project's scope is large, and we risk not finishing it within one semester.
