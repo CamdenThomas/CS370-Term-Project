@@ -90,7 +90,7 @@ the measured numbers that justify it.
 > What is stored, at what rate, in what format, with what retention, and what happens to
 > it when the power dies mid-write.
 
-- **Record format:** [magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]
+- **Record format:** `[magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]`
 - **Rates:** [fill — Mode 01 request budget, and the per-PID rate it implies (D-012)]
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
 - **fsync discipline:** [fill — batch size, interval, and the argument for it]

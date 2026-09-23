@@ -20,7 +20,7 @@
 
 ## Episode template
 
-### E-00 — <short title>
+### E-00 — (short title)
 
 **Milestone:** M?  **Date:**  **Category:** plan / rejected diff / hardware loop / partner review
 

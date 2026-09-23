@@ -618,8 +618,8 @@ the M4 soak start, and M4 already lands on Thanksgiving week.
 
 `.markdownlint.jsonc` at the repository root sets the rules the VS Code markdownlint
 extension enforces: every default rule on, lines wrapped at **90 columns** (tables, code
-and headings exempt), `<details>`, `<summary>`, `<sub>` and `<br>` allowed as inline
-HTML, and tables in the compact `| a | b |` / `| --- | --- |` style.
+and headings exempt), `<details>`, `<summary>`, `<code>`, `<sub>` and `<br>` allowed as
+inline HTML, and tables in the compact `| a | b |` / `| --- | --- |` style.
 `.markdownlintignore` excludes `docs/handout/`, which is a transcription of the
 instructor's PDF.
 

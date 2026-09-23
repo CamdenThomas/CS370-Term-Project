@@ -15,7 +15,7 @@
   // HTML we use on purpose: collapsible PR sections and the small print under
   // generated tables.
   "MD033": {
-    "allowed_elements": ["details", "summary", "sub", "br"]
+    "allowed_elements": ["details", "summary", "code", "sub", "br"]
   },
 
   // One table style everywhere: `| a | b |` over `| --- | --- |`.
