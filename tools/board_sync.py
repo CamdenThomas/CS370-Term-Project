@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-board_sync.py — reconcile docs/board.toml onto GitHub issues and the project board.
+board_sync.py — reconcile docs/BOARD/board.toml onto GitHub issues and the board.
 
 This is a RECONCILER, not a generator. It computes the difference between what
-docs/board.toml says should exist and what GitHub actually has, then makes the
-smallest set of changes that closes the gap. Consequences worth knowing:
+docs/BOARD/board.toml says should exist and what GitHub actually has, then makes
+the smallest set of changes that closes the gap. Consequences worth knowing:
 
   * Running it twice in a row does nothing the second time.
   * Issues that are not in board.toml are never touched. Not edited, not closed,
@@ -51,8 +51,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-MANIFEST = REPO_ROOT / "docs" / "board.toml"
-LOCKFILE = REPO_ROOT / "docs" / "board.lock.json"
+# The three board files live in docs/BOARD/ — commit e42b28d moved them there.
+# milestones.md and DECISIONS.md did NOT move and stay at docs/.
+BOARD_DIR = REPO_ROOT / "docs" / "BOARD"
+MANIFEST = BOARD_DIR / "board.toml"
+LOCKFILE = BOARD_DIR / "board.lock.json"
 MILESTONE_DOC = REPO_ROOT / "docs" / "milestones.md"
 DECISION_DOC = REPO_ROOT / "docs" / "DECISIONS.md"
 
@@ -551,7 +554,7 @@ def sync_milestone_doc(manifest: dict, items: dict, numbers: dict[str, int],
 # ----------------------------------------------------------------------- main
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Reconcile docs/board.toml onto GitHub.")
+    ap = argparse.ArgumentParser(description="Reconcile docs/BOARD/board.toml onto GitHub.")
     ap.add_argument("--check", action="store_true",
                     help="report drift, change nothing; exits 1 if anything would change")
     ap.add_argument("--status", action="store_true",

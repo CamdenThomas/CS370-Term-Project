@@ -16,6 +16,10 @@
       "number": 49,
       "title": "M4 analysis: operating-point binning (RPM x load x coolant temp)"
     },
+    "boardpath": {
+      "number": 96,
+      "title": "M1 tools: board_sync still looks for docs/board.toml after the move to docs/BOARD/"
+    },
     "canirq": {
       "number": 36,
       "title": "M3 capture: interrupt-driven read path for the Pi-side sensor"
@@ -351,6 +355,9 @@
     "txglob": {
       "number": 99,
       "title": "M1 process: the transcript copy-out glob also matches the HW1 project folder"
+    "txwin": {
+      "number": 97,
+      "title": "M1 process: recover Camden's M0 transcripts from the Windows machine before they purge"
     },
     "welford": {
       "number": 50,
