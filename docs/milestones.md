@@ -57,8 +57,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       schedule-killer** `order` @camden <!-- #4 -->
 - [x] M1 hardware: supported-PID survey on the Outback (cut) `pidsub` @camden <!-- #11 -->
 - [ ] M1 hardware: supported-PID survey on the Honda `pidhonda` @lance <!-- #12 -->
-- [ ] M1 decision: is analog oil pressure available? If not, what replaces diagnostic #1?
-      `oilq` <!-- #13 -->
+- [x] M1 decision: is analog oil pressure available? If not, what replaces diagnostic #1?
+      (cut, D-021) `oilq` <!-- #13 -->
 - [ ] M1 review: Lance reviews docs/PROBLEM.md against the phone-app test `memorev` @lance
       <!-- #16 -->
 - [x] M1 docs: factor the plug-in product design through the repo `productform` @camden
@@ -83,6 +83,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `claudeindex` @camden <!-- #106 -->
 - [ ] M1 tools: make docs/milestones.md the board; retire board.toml (D-020) `boardlist`
       @camden <!-- #120 -->
+- [ ] M1 docs: reframe the repo as a one-car monitor that names the fault area (D-021)
+      `reframe` @camden
 - [ ] M1 decision: add electricalDrawing/ and the Makefile to LOCKED ownership map F.2
       `ownmap` @lance <!-- #112 -->
 - [ ] M1 hw: stop tracking electricalDrawing/.kicad_prl and .history `kicadtrack` @lance
@@ -94,8 +96,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `designdoc` <!-- #28 -->
 - [ ] **Both sensors alive: real Mode 01 replies from a real car, captured to a file**
       `firstcap` @camden <!-- #20 -->
-- [ ] **Baseline data collection started on the CR-V; the long pole, cannot be compressed
-      later** `baseline` <!-- #21 -->
+- [ ] **Baseline data collection started on the CR-V; the model learns normal from it**
+      `baseline` <!-- #21 -->
 - [ ] M2 decision: 48-hour soak on a fake OBD2 port — ask Pallickara `soakq` @camden
       <!-- #7 -->
 - [ ] M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car `bench` @camden
@@ -162,7 +164,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] **Feature freeze: no new features after this line; bugs only** `freeze` <!-- #67 -->
 - [ ] **Mechanisms D and E implemented and measured (plus B and F if `pisensor` added
       them)** <!-- #122 -->
-- [ ] **Induced-fault captures recorded and labeled for all three diagnostics**
+- [ ] **Induced-fault captures recorded and labeled for each fault area (D-021)**
       <!-- #123 -->
 - [ ] **`make asan` and `make memcheck` clean everywhere** `sanitize` <!-- #70 -->
 - [ ] **48-hour soak begins, with the injected fault planned and scripted** `soak1`
@@ -194,7 +196,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M4 ground truth: induce and label a cooling anomaly `fcool` <!-- #63 -->
 - [ ] M4 ground truth: sensor unplug — and demo-day rehearsal `funplug` @camden
       <!-- #64 -->
-- [ ] M4 CRITICAL PATH: capture across a real oil change on the CR-V `foil` <!-- #65 -->
+- [x] M4: capture across a real oil change on the CR-V (cut, D-021) `foil` <!-- #65 -->
 - [ ] M4 hardware: enclosure and in-vehicle mounting `encl` @camden <!-- #66 -->
 - [ ] M4 soak: 48-hour run #2 (the margin) `soak2` <!-- #69 -->
 - [ ] M4 process: transcript copy-out `tx4` <!-- #71 -->
