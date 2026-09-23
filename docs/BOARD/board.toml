@@ -527,6 +527,9 @@ Narrow the glob to `*CS370-Term-Project*` in all five places:
     partners/lance/transcripts/README.md   (sh and PowerShell)
 
 Found while doing tx1 (#17). See the copy-out PR for the full session inventory.
+'''
+
+[[item]]
 slug = "boardpath"
 milestone = "M1"
 labels = ["bug", "critical-path"]
