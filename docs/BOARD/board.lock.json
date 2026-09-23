@@ -6,11 +6,11 @@
     },
     "baseline": {
       "number": 21,
-      "title": "M2 CRITICAL PATH: start baseline collection on BOTH vehicles"
+      "title": "M2 CRITICAL PATH: start baseline collection on the CR-V"
     },
     "bench": {
       "number": 18,
-      "title": "M2 hardware: MCP2515 bench bring-up on the Pi, no car"
+      "title": "M2 hardware: USB OBD2 adapter bring-up on the Pi, no car"
     },
     "bin": {
       "number": 49,
@@ -18,11 +18,15 @@
     },
     "canirq": {
       "number": 36,
-      "title": "M3 can: SocketCAN open + epoll on the interrupt-driven RX path"
+      "title": "M3 capture: interrupt-driven read path for the Pi-side sensor"
     },
     "canpoll": {
       "number": 37,
-      "title": "M3 can: --poll variant behind a flag for the mechanism-B comparison"
+      "title": "M3 capture: --poll variant behind a flag for the mechanism-B comparison"
+    },
+    "canreq": {
+      "number": 88,
+      "title": "M3 obd: rate-limited Mode 01 requester on the adapter tty"
     },
     "cleanup": {
       "number": 9,
@@ -76,6 +80,10 @@
       "number": 58,
       "title": "M4 experiment: interrupt vs polling — latency distribution and CPU, idle and loaded"
     },
+    "expkill": {
+      "number": 92,
+      "title": "M4 experiment: supervision — kill -9 each child, time detection and recovery"
+    },
     "failtable": {
       "number": 25,
       "title": "M2 docs: failure-mode table"
@@ -90,7 +98,7 @@
     },
     "foil": {
       "number": 65,
-      "title": "M4 CRITICAL PATH: capture across a real oil change on both vehicles"
+      "title": "M4 CRITICAL PATH: capture across a real oil change on the CR-V"
     },
     "freeze": {
       "number": 67,
@@ -110,7 +118,7 @@
     },
     "fvac": {
       "number": 62,
-      "title": "M4 ground truth: induce and label a vacuum leak, both vehicles"
+      "title": "M4 ground truth: induce and label a vacuum leak on the CR-V"
     },
     "ghsetup": {
       "number": 8,
@@ -134,11 +142,15 @@
     },
     "keyoff": {
       "number": 61,
-      "title": "M4 hardware: measure key-off current draw"
+      "title": "M2 hardware: prove the USB-C supply — switched, and no brown-out at crank"
     },
     "lancesign": {
       "number": 10,
       "title": "M0 review: Lance reads and signs the decision log"
+    },
+    "led": {
+      "number": 89,
+      "title": "M3 supervisor: drive the warning light from child health and verdicts"
     },
     "livemod": {
       "number": 81,
@@ -176,6 +188,10 @@
       "number": 57,
       "title": "M4 interface: remaining four obdctl verbs"
     },
+    "obdsim": {
+      "number": 90,
+      "title": "M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth"
+    },
     "obdstatus": {
       "number": 44,
       "title": "M3 interface: obdctl UDS transport + status verb"
@@ -186,11 +202,19 @@
     },
     "order": {
       "number": 4,
-      "title": "M0 hardware: order the core BOM (and the ELM327 in the same cart)"
+      "title": "M0 hardware: order the core BOM, USB OBD2 adapter first"
+    },
+    "overhaul": {
+      "number": 87,
+      "title": "M1 docs: overhaul the repo for the USB-OBD2, one-car design"
     },
     "persist": {
       "number": 51,
       "title": "M4 analysis: persist learned baselines through a power cut"
+    },
+    "phoneview": {
+      "number": 91,
+      "title": "M4 interface: read-only phone status page over the device's own Wi-Fi"
     },
     "pidhonda": {
       "number": 12,
@@ -200,9 +224,17 @@
       "number": 11,
       "title": "M1 hardware: supported-PID survey on the Outback"
     },
+    "pisensor": {
+      "number": 93,
+      "title": "M2 decision: add a sensor on the Pi itself — MPU-6050, DS18B20, both, or neither?"
+    },
     "plots": {
       "number": 72,
       "title": "M5 tools: soak figures — RSS, CPU, event counts over 48h"
+    },
+    "productform": {
+      "number": 86,
+      "title": "M1 docs: factor the plug-in product design through the repo"
     },
     "promptlog": {
       "number": 76,
@@ -254,7 +286,7 @@
     },
     "soakq": {
       "number": 7,
-      "title": "M0 decision: 48-hour soak on a synthesized CAN source — ask Pallickara"
+      "title": "M0 decision: 48-hour soak on a fake OBD2 port — ask Pallickara"
     },
     "storerecover": {
       "number": 40,

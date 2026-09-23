@@ -79,27 +79,34 @@ shown me the output.** Not "should pass." Output, pasted.
 
 ## 3. What we are building (the one-paragraph version)
 
-A Raspberry Pi wired to the OBD2 connector through an MCP2515 CAN controller on SPI,
-riding in a daily-driven car. It reads the car's own sensors off the bus — oil pressure,
-coolant temp, MAP, O2, fuel trims, RPM, load — and builds a statistical model of what
+A Raspberry Pi riding in a daily-driven car. A USB OBD2 adapter in the car's OBD2 port
+gives it the car's own sensors (D-015); the car's USB-C port powers it — nothing is cut or
+spliced (D-011). Through standard Mode 01 requests (D-012) it reads oil temperature,
+coolant temp, MAP, O2 / fuel trims, RPM and load, and builds a statistical model of what
 normal looks like *for this car, at this operating point*. It then reports deviations
-that a mileage sticker and a check-engine light both miss.
+that a mileage sticker and a check-engine light both miss. The owner reads it from their
+phone over the device's own Wi-Fi — read-only, no internet (D-013); `obdctl` stays the
+exact interface. A single warning light on the box blinks while it is on duty and
+changes pattern when something needs attention (D-014).
 
 **The user:** a named owner of a specific car who wants maintenance driven by measured
-condition instead of a generic interval. Testbeds: a **Subaru Outback** and **Lance's
-Honda** — the same sticker says 5,000 miles to both cars, and the cars disagree.
+condition instead of a generic interval. Testbed: **Lance's 2015 Honda CR-V EX-L**, the
+only one (D-016). Its sticker and its Maintenance Minder both *estimate* from how far and
+how hard it has been driven; the device *measures* the engine's condition (D-007).
 
-**The claim we defend:** *"detects the three faults we can induce on these two vehicles,
-with these measured error rates."* Not "predicts failure." (handout §5)
+**The claim we defend:** *"detects the three faults we can induce on this vehicle, with
+these measured error rates."* Not "predicts failure." (handout §5)
 
 ---
 
 ## 4. Mechanism commitments
 
-We need two. We are building four, and will measure all of them: **B** (interrupt-driven
-CAN RX with a polling comparison), **D** (append-only crash-consistent storage), **E**
-(multi-process with a supervisor), **F** (no-drop SPSC ring). **A** and **C** are M4+
-stretch only. Full rationale: `docs/DECISIONS.md` §B.1.
+We need two. We commit to **D** (append-only crash-consistent storage — power is cut at
+every key-off) and **E** (multi-process with a supervisor), and measure both. **B**
+(interrupt-driven input vs polling) and **F** (high-rate no-drop ring) come back only if a
+Pi-side sensor is added (board item `pisensor`): Mode 01 through a USB adapter is too slow,
+and has no interrupt of ours, to justify either. **A**, **C** and raw CAN are stretch only.
+Full rationale: `docs/DECISIONS.md` §B.1 (D-017).
 
 ---
 
@@ -115,7 +122,7 @@ standing "threshold test" rule: `docs/DECISIONS.md` §D.
 
 | Owner | Subsystems |
 |---|---|
-| **Camden** | `src/can/`, `src/capture/`, `src/ipc/`, `drivers/` |
+| **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/`, **`electricalDrawing/`** |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
 
@@ -151,7 +158,7 @@ Violating any of these is a stop-work event: say so, and do not attempt a workar
 
 - `main` is protected, always green, and never committed to directly.
 - **One branch per unit of work.** Naming: `<owner>/<milestone>/<slug>`
-  — `camden/m3/can-irq-rx`, `lance/m3/store-recovery`, `camden/m2/design-doc`.
+  — `camden/m3/obd-reader`, `lance/m3/store-recovery`, `camden/m2/design-doc`.
 - **A branch has exactly one purpose.** If you discover unrelated work mid-branch, you do
   not fold it in. Note it, finish the branch, open a separate one.
 - Branch lifetime: one session's work, three days maximum. A long-lived branch is a
@@ -226,8 +233,8 @@ REVIEW: What the reviewer should check hardest, and what I am least sure about.
 VERIFY: The exact commands run and their result.
 ```
 
-`<area>` is one of: `can`, `capture`, `ipc`, `store`, `analysis`, `supervisor`,
-`interface`, `common`, `drivers`, `build`, `tests`, `tools`, `soak`, `docs`.
+`<area>` is one of: `obd`, `ipc`, `store`, `analysis`, `supervisor`,
+`interface`, `common`, `build`, `tests`, `tools`, `soak`, `docs`.
 
 Real example:
 
@@ -425,9 +432,9 @@ board telling you what just became workable.
 ### Issue → branch → PR, as one chain
 
 ```sh
-gh issue develop <n> --name camden/m3/can-irq-rx --checkout   # branch linked to issue
+gh issue develop <n> --name camden/m3/obd-reader --checkout   # branch linked to issue
 # ... commits per §7.3 ...
-gh pr create --draft --title "M3 can: interrupt-driven RX path" --body-file <filled template>
+gh pr create --draft --title "M3 obd: Mode 01 reader on the adapter tty" --body-file <filled template>
 ```
 
 The PR body must contain `Closes #<n>`. Merging then closes the issue; the next sync moves
@@ -498,8 +505,8 @@ module.
    Say what you read.
 3. **Tests lead.** New behavior gets a test that fails first.
 4. **Evidence over assertion — hardware clause (handout §10.2).** Never propose a hardware
-   fix from a verbal description. Paste the artifact: `dmesg` verbatim,
-   `/proc/interrupts` before and after, the logic-analyzer capture, the timing histogram.
+   fix from a verbal description. Paste the artifact: `dmesg` verbatim, the raw adapter
+   replies, the `vcgencmd get_throttled` reading, the timing histogram.
    Without evidence, your job is to say what to capture — not to guess.
 5. **Adversarial review.** Every milestone's diff gets a fresh-context agent review *and* a
    human review by the partner who did not write it.
@@ -512,9 +519,10 @@ module.
 
 ### Prompt quality bar (handout §10.4)
 
-Useless: "make the sensor work." Effective: "`i2cdetect` sees the MCP2515 but `CANINTF`
-never asserts. Here is our init sequence and the datasheet's required mode transition
-[paste both]. Diff them and identify the missing step; do not rewrite the module."
+Useless: "make the sensor work." Effective: "`/dev/obd` opens and `ATZ` answers, but
+`010C` returns `NO DATA` with the engine running. Here is our init sequence and the raw
+replies [paste both]. Diff them against the ELM327 datasheet's protocol-selection steps and
+identify the missing one; do not rewrite the reader."
 
 ---
 

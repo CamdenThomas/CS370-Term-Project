@@ -20,8 +20,8 @@ The schematic is worth the time anyway, because three graded artifacts depend on
 - The **three-isolated-workers test** needs a parts-only buyer who can order from the BOM
   without ever seeing the design
 
-`electricalDrawing/electricalDrawing.kicad_pcb` stays in the repo, empty, on purpose — the
-same way `src/capture/` does. Its emptiness is a recorded position, not an oversight.
+`electricalDrawing/electricalDrawing.kicad_pcb` stays in the repo, empty, on purpose. Its
+emptiness is a recorded position, not an oversight.
 
 ## Sheet structure
 
@@ -30,16 +30,16 @@ architecture, which makes both documents easier to defend:
 
 | Block | Contains |
 |---|---|
-| **Power** | OBD2 pin 16 (+12 V, **live with the key off**), fuse, 12 V→5 V buck, bulk and bypass caps, the Pi's 5 V rail |
-| **CAN** | OBD2 pin 6 / pin 14, TJA1050 transceiver, MCP2515, crystal + load caps, termination decision, `INT` to GPIO |
-| **Pi interface** | 40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, grounds |
+| **Power** | USB-C input from the car (switched, D-011) as an off-sheet connector, the Pi's 5 V rail, bulk and bypass caps. **No** OBD2 pin 16 and no buck converter. |
+| **CAN** | OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050 transceiver, MCP2515, crystal + load caps, termination jumper **drawn open** (D-011), `INT` to GPIO |
+| **Pi interface** | 40-pin header, SPI0 (CE0/MISO/MOSI/SCLK), the interrupt GPIO, the warning-light LED + 330 Ω on GPIO17 (D-014), grounds |
 | **Sensors** *(conditional, D-006)* | MPU-6050 on I2C with pull-ups; DS18B20 on 1-Wire with its 4.7 kΩ |
 
 ## Rules
 
 1. **Every net that leaves a block is a named label**, not a wire crossing a boundary. The
    netlist is read by humans at the defense.
-2. **Annotate the voltage domain on every power net** (`+12V_SW`, `+5V`, `+3V3`). The Pi has
+2. **Annotate the voltage domain on every power net** (`+5V_USB`, `+5V`, `+3V3`). The Pi has
    no 5 V-tolerant inputs and no over-voltage protection; a mislabeled rail is how a Pi dies
    silently in Week 13.
 3. **Every IC gets its decoupling drawn**, even when the module already has it. The
