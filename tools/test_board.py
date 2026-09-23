@@ -7,7 +7,7 @@ decision in this project is written down, and a bad hand-edit to it is the
 failure mode most likely to happen at 1am in Week 11. So it is checked by the
 same gate as the C code — `make test` runs this.
 
-Everything here is offline and deterministic. Network behaviour (does GitHub
+Everything here is offline and deterministic. Network behavior (does GitHub
 actually match the manifest?) is `board_sync.py --check`, which CI runs
 separately.
 

@@ -398,7 +398,7 @@ owned by `analyzed` would show a stale verdict instead. Verdicts reach the super
 the existing UDS. One writer, no GPIO contention.
 
 **Cost.** One more thing the supervisor does, and one more thing it must not block on: the
-blink timer must never delay `waitpid` handling. Colour, brightness and placement are open
+blink timer must never delay `waitpid` handling. Color, brightness and placement are open
 (M4 enclosure).
 
 ---

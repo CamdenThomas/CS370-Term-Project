@@ -391,7 +391,7 @@ gets caught up in the next commit.
 
 `board_sync.py` refuses to close a `question`, `decision` or `hardware` issue without the
 explicit `--close-questions` flag, which is a human typing it. That is the enforcement, not
-an honour system.
+an honor system.
 
 #### Claude's standing instructions
 
