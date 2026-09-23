@@ -6,7 +6,7 @@ CC       ?= gcc
 # tools/ needs tomllib, which is Python 3.11+. The department machines put 3.9
 # on PATH as python3, where boardcheck dies with ModuleNotFoundError before it
 # can report anything useful. Pick the first interpreter that can actually parse
-# board.toml; fall back to python3 so the error, if any, still comes from tools/.
+# the board; fall back to python3 so the error, if any, still comes from tools/.
 PY       ?= $(shell for p in python3 python3.13 python3.12 python3.11; do \
               command -v $$p >/dev/null 2>&1 && \
               $$p -c 'import tomllib' >/dev/null 2>&1 && { echo $$p; exit 0; }; \
@@ -69,8 +69,8 @@ boundary:
 		echo "BOUNDARY VIOLATION: network symbol outside src/interface/"; exit 1; \
 	else echo "boundary                     PASS"; fi
 
-# docs/BOARD/board.toml is a graded artifact too - every task, question and decision
-# in the project is written there. Validate it in the same gate as the C.
+# docs/milestones.md is the board (D-020) - every task, question and decision
+# in the project is a checkbox there. Validate it in the same gate as the C.
 boardcheck:
 	@$(PY) tools/test_board.py
 

@@ -19,7 +19,8 @@ You (Claude) are required in our **workflow** and forbidden in our **product** (
 
 1. Read `docs/milestones.md` (where we are), then the review queue at the top of
    `docs/DECISIONS.md` (what is settled, what awaits review).
-2. `python tools/board_sync.py --status`. Pick work from **Ready**, nowhere else.
+2. `python tools/board_sync.py --status`. Pick work from the open boxes in
+   `docs/milestones.md`, nowhere else.
 3. State whose session this is. Do not edit outside that owner's area (§6) without being
    told.
 4. `git status` clean, `git pull` on `main`, create the branch **before** the first edit.
@@ -43,7 +44,7 @@ never marks a decision reviewed or LOCKED**; only Camden or Lance does, in their
 
 ```sh
 make              # build everything, -Wall -Wextra -Werror clean
-make test         # unit tests + boundary check + board.toml check
+make test         # unit tests + boundary check + milestones.md check
 make asan         # tests under AddressSanitizer + UBSan
 make memcheck     # valgrind over the test binaries
 make soakcheck    # 1-hour miniature of the 48h run
@@ -177,8 +178,8 @@ A decision and the code that enacts it share a commit. Session start and end are
 Do not commit when the change carries two inseparable responsibilities, needs a decision
 not in `docs/DECISIONS.md`, touches the other partner's area by more than a line, weakens
 a test, has `make` / `make test` / `make asan` red, or guesses at hardware without
-evidence (§8.4). **Add a board `[[item]]` instead** (§7.11), run sync, and continue with
-whatever is unblocked.
+evidence (§8.4). **Add an open box to `docs/milestones.md` instead** (§7.11), run sync,
+and continue with whatever is unblocked.
 
 ### 7.9 Volume
 
@@ -191,11 +192,11 @@ Set once by humans; the list and the configured state are in `docs/PROCESS.md`.
 
 ### 7.11 The board
 
-**`docs/BOARD/board.toml` is the source of truth; GitHub is derived from it.** Never
-create, retitle, relabel, re-milestone or re-assign an issue with `gh` or the web UI: edit
-the `[[item]]` and run sync. Humans may comment, answer and close. Only work items in
-**Ready**. Slugs are permanent. Claude never closes a `question`, `decision` or `hardware`
-item. How to write an item, labels, columns and CI: `docs/BOARD/BOARD.md`.
+**`docs/milestones.md` is the board** (D-020): one checkbox, one issue. Never create,
+retitle, re-milestone or re-assign an issue with `gh` or the web UI: edit the line and run
+`python tools/board_sync.py`. Never type or change a `<!-- #n -->` tag; sync owns it.
+Humans may comment and close on GitHub. **Claude never ticks a question, decision or
+hardware line**; ticking is the human act. Details: `docs/BOARD/BOARD.md`.
 
 ### 7.12 Hardware (KiCad)
 

@@ -11,10 +11,10 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | Rules for every session, git and PRs | [`../CLAUDE.md`](../CLAUDE.md) | — |
 | Why those rules, worked examples, repo settings | [`PROCESS.md`](PROCESS.md) | — |
 | What is decided, and what awaits a signature | [`DECISIONS.md`](DECISIONS.md) | everything that cites a `D-###` |
-| Open work, questions, owners, blockers | [`BOARD/board.toml`](BOARD/board.toml) → GitHub | — |
-| How the board works: labels, items, CI | [`BOARD/BOARD.md`](BOARD/BOARD.md) | — |
-| Milestone dates | `[[milestone]]` blocks in `BOARD/board.toml` | [`milestones.md`](milestones.md) table (generated) |
-| Milestone exit criteria and the M5 deliverables | [`milestones.md`](milestones.md) | — |
+| Open work, questions, owners | [`milestones.md`](milestones.md) checkboxes → GitHub | — |
+| How the board works: a line, sync, CI | [`BOARD/BOARD.md`](BOARD/BOARD.md) | — |
+| Milestone dates | the table in [`milestones.md`](milestones.md) | GitHub milestone due dates (synced) |
+| Milestone exit criteria and the M5 deliverables | [`milestones.md`](milestones.md) (bold lines) | — |
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
 | Ownership map | [`../CLAUDE.md`](../CLAUDE.md) §6 | `DESIGN.md` §7, `DECISIONS.md` §F.2 |
 | Hardware data path (Bluetooth OBD2 adapter) | `DECISIONS.md` §A.1 (D-019) | README, DESIGN, `hardware/` |
@@ -37,10 +37,8 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | Document | Answers | Kind |
 | --- | --- | --- |
 | [`DECISIONS.md`](DECISIONS.md) | What is settled, why, and what still needs a human signature? | **source** for decisions |
-| [`BOARD/board.toml`](BOARD/board.toml) | What work, questions and decisions are open, owned by whom, blocked by what? | **source** for all open work; GitHub is derived |
-| [`BOARD/BOARD.md`](BOARD/BOARD.md) | How does `board.toml` become the GitHub board? | how-to |
-| [`BOARD/board.lock.json`](BOARD/board.lock.json) | Which issue number is each board slug? | **generated**, never hand-edit |
-| [`milestones.md`](milestones.md) | What must be true to reach each milestone? | exit criteria; its date table is **generated** |
+| [`BOARD/BOARD.md`](BOARD/BOARD.md) | How does the checklist become the GitHub board? | how-to |
+| [`milestones.md`](milestones.md) | What is open, what is done, and what must be true to reach each milestone? | **source** for all work; GitHub is derived |
 | [`PLAN.md`](PLAN.md) | Why is the plan shaped this way, and what gets cut first? | reasoning |
 | [`PROCESS.md`](PROCESS.md) | Why are the git, PR and review rules shaped this way? | reasoning |
 | [`handout/CS370-TermProject.md`](handout/CS370-TermProject.md) | What does the rubric require? | reference: the rubric is law |

@@ -1,11 +1,12 @@
 # carwatch — full project plan
 
-**This file is the *why*. `docs/BOARD/board.toml` is the *what*.**
+**This file is the *why*. `docs/milestones.md` is the *what*.**
 
 The work breakdown that used to live here — 80 numbered tasks with owners and blocked-by
-lists — moved to `docs/BOARD/board.toml`, which `tools/board_sync.py` reconciles onto GitHub
-issues and the `carwatch` project board. Keeping a second copy here would guarantee the two
-disagreed by Week 9, and nothing would have told us which one was wrong.
+lists — is now the checklist in `docs/milestones.md`, which `tools/board_sync.py` mirrors
+onto GitHub issues and the `carwatch` project board (D-020). Keeping a second copy here
+would guarantee the two disagreed by Week 9, and nothing would have told us which one was
+wrong.
 
 So: read **this** for why the plan is shaped this way and what to sacrifice when it slips.
 Read **the board** for what to do next. See `docs/BOARD/BOARD.md` for how the board works.
@@ -14,8 +15,8 @@ Read **the board** for what to do next. See `docs/BOARD/BOARD.md` for how the bo
 - Milestone exit criteria: `docs/milestones.md`
 - The rubric itself: `docs/handout/CS370-TermProject.md`
 
-Items are named below by their board **slug**, which is permanent. Issue numbers are not
-written into any document — they live only in `docs/BOARD/board.lock.json`, which sync maintains.
+Items are named below by their **slug**, the short name in backticks at the end of their
+line in `docs/milestones.md`.
 
 ---
 
@@ -103,11 +104,11 @@ experiments (`expcrash`, `expkill` — plus `expirq` and `expdrop` if `pisensor`
 and F), the limitations section (`evalreport`), or the transcript copy-outs (`tx1`–`tx4`).
 Those are graded directly, and three of them cannot be reconstructed after the fact.
 
-**How to cut, mechanically.** Do not delete the `[[item]]` — a deleted item leaves an open
+**How to cut, mechanically.** Do not delete the line — a deleted line leaves an open
 issue behind that sync no longer manages, and the decision to cut disappears with it.
-Instead: record the cut in `DECISIONS.md`, add a line to the item's body saying it was cut
-and why, set `status = "done"`, and close the issue by hand. The board then shows a cut that
-was made deliberately rather than a task that quietly stopped being mentioned.
+Instead: record the cut in `DECISIONS.md`, tick the box, add "(cut)" to its text, and
+sync. The board then shows a cut that was made deliberately rather than a task that
+quietly stopped being mentioned.
 
 ---
 
