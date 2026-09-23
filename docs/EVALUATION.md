@@ -43,7 +43,7 @@ separately because a monitor that cries wolf twice gets unplugged.
 > system did, and **the log excerpt proving it**.
 
 | Injected | Expected | Observed | Warning light (D-014) | Log excerpt |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Sensor unplugged 10 min | | | | |
 | `kill -9 obdd` | | | | |
 | `kill -9 supervisor` | | | | |

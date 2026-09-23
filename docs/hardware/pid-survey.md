@@ -13,7 +13,7 @@ Vehicle: Lance's **2015 Honda CR-V EX-L** (D-007, D-016 — engine and transmiss
 to be confirmed from the VIN).
 
 | PID | Signal | CR-V | Notes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 0x0C | RPM | | |
 | 0x04 | Calculated load | | |
 | 0x05 | Coolant temp | | |

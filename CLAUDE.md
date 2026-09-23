@@ -121,7 +121,7 @@ standing "threshold test" rule: `docs/DECISIONS.md` §D.
 ## 6. Ownership map
 
 | Owner | Subsystems |
-|---|---|
+| --- | --- |
 | **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/`, **`electricalDrawing/`** |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
@@ -381,7 +381,7 @@ gets caught up in the next commit.
 #### Issue types
 
 | Label | Meaning | Who closes it |
-|---|---|---|
+| --- | --- | --- |
 | `question` | Needs human judgment or knowledge Claude does not have | **Human only** |
 | `decision` | A design choice that must be made before work proceeds | **Human only** |
 | `task` | Work to be done; may be Claude's or a human's | PR merge, or owner |
@@ -420,7 +420,7 @@ slug, so a bad edit fails before it reaches GitHub.
 The board column follows from that, automatically:
 
 | Column | Means |
-|---|---|
+| --- | --- |
 | **Backlog** | something it depends on is still open |
 | **Ready** | nothing blocks it — this is the actionable list |
 | **Blocked** | waiting on something that is *not* another item (a shipment, a reply) — set by hand |

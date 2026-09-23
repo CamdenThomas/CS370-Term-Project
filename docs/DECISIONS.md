@@ -21,7 +21,7 @@ your subsystems as surely as yours do.
 ## Status legend
 
 | Mark | Meaning |
-|---|---|
+| --- | --- |
 | 🔒 **LOCKED** | Decided and human-approved. Not reopened without saying so explicitly and getting a yes. |
 | ⚠️ **UNREVIEWED** | Made by Claude during a session without a human in the loop. **Binding on nothing until a human signs it.** |
 | ❓ **OPEN** | Not decided. Blocking something. Owner named. |
@@ -37,7 +37,7 @@ that, by editing the `Reviewed` field, in a commit authored by that human.
 Decisions currently awaiting a human signature:
 
 | ID | Decision | Made by | Session date | Reviewer needed |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
 | D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power schematic block |
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
@@ -275,7 +275,7 @@ still E.1: three faults, one car, measured error rates.
 The handout requires two, implemented by us and measured.
 
 | Mechanism | Status | Where |
-|---|---|---|
+| --- | --- | --- |
 | **D** — custom append-only storage, crash-consistent | **committed** | `src/store/` |
 | **E** — multi-process with a supervisor | **committed** | `src/supervisor/`, `src/ipc/` |
 | **B** — interrupt-driven input with a polling comparison | only if `pisensor` adds an MPU-6050 | capture path for that sensor |
@@ -376,7 +376,7 @@ remains demonstrable through `obdctl` alone.
 pattern*:
 
 | Light | Meaning | Priority |
-|---|---|---|
+| --- | --- | --- |
 | fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
 | double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
 | slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
@@ -590,7 +590,7 @@ actually review — and the defense asks us to answer for individual lines.
 Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
 
 | Owner | Subsystems |
-|---|---|
+| --- | --- |
 | **Camden** | `src/obd/`, `src/ipc/` |
 | **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
 | **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |

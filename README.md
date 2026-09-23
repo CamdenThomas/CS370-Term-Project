@@ -14,7 +14,7 @@ University.
 ## What it does
 
 | Diagnostic | Sensors that cooperate | Why a threshold can't do it |
-|---|---|---|
+| --- | --- | --- |
 | Oil pressure degradation across oil life | oil pressure + RPM + coolant temp | Oil pressure is a function of RPM and oil temperature. The signal is the *residual* after normalizing for both, trended over weeks. |
 | Cooling system anomaly | coolant temp + ambient/intake temp + engine load | A short-cycling thermostat has a period and amplitude. A single temperature reading has neither. |
 | Mixture drift (vacuum leak / failing O2 / dirty MAF) | short+long term fuel trim + MAP + RPM | Trim values are only meaningful relative to load; the diagnosis is which way trims move *as load changes*. |

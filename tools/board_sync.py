@@ -521,7 +521,7 @@ def sync_milestone_doc(manifest: dict, items: dict, numbers: dict[str, int],
             tally[0] += 1
 
     rows = ["| M | Deliverable | Week | Due | Team hrs | Progress |",
-            "|---|---|---|---|---|---|"]
+            "| --- | --- | --- | --- | --- | --- |"]
     for spec in manifest.get("milestone", []):
         name = spec["name"]
         done, total = done_by_ms.get(name, [0, 0])

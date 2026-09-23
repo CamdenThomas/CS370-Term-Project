@@ -57,7 +57,7 @@ The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); expand each row he
 the measured numbers that justify it.
 
 | Menu item | Component | Justification from requirements | How measured |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | D | `src/store/` | | recovery after mid-write power cut, N trials |
 | E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
 | B *(only with `pisensor`)* | Pi-side sensor capture path | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
@@ -70,7 +70,7 @@ the measured numbers that justify it.
 > so write the modes you are afraid of, not the ones you have already handled.
 
 | Component | Failure | Detection | Response | Log line |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | OBD2 adapter | unplugged mid-drive (`/dev/obd` disappears) | read error / `ENODEV` on the tty | degrade, do not restart-storm; reopen when udev brings it back | |
 | OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | `ATZ` reset, then back off | |
 | ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
@@ -105,7 +105,7 @@ the measured numbers that justify it.
 > "A design document with nothing to report here has usually not met its hardware yet."
 
 | Wanted | Using | What the substitution costs |
-|---|---|---|
+| --- | --- | --- |
 | Analog oil pressure sender, direct | Whatever the ECU publishes (D-007) | Possibly binary switch only — headline diagnostic at risk |
 | A year of failing engines | Induced faults on one healthy car (D-016) | Only three fault classes, and none of them is a real bearing failure |
 | Raw CAN at the ECU's own publish rate | Mode 01 replies through a USB OBD2 adapter (D-015) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
@@ -118,7 +118,7 @@ the measured numbers that justify it.
 > committed now are twice as credible when hit later, and instructive either way.
 
 | Measurement | Method | Target |
-|---|---|---|
+| --- | --- | --- |
 | OBD reply → stored, p50/p99 | timestamp at tty read and at fsync | |
 | `kill -9` each child: detection + recovery time | N trials per child, from the log | |
 | IRQ vs polling: latency + CPU *(only with `pisensor`)* | both paths, idle and `stress-ng` loaded | |
@@ -130,7 +130,7 @@ the measured numbers that justify it.
 ## 7. Ownership map
 
 | Owner | Subsystems |
-|---|---|
+| --- | --- |
 | Camden | `src/obd/`, `src/ipc/` |
 | Lance | `src/store/`, `src/analysis/`, `tools/train/` |
 | Shared | `src/supervisor/`, `src/interface/`, `src/common/`, docs |

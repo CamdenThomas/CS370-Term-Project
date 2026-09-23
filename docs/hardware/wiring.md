@@ -15,7 +15,7 @@ car is cut, spliced or pierced.
 ## OBD2 adapter → Pi (D-015)
 
 | Item | Value | Note |
-|---|---|---|
+| --- | --- | --- |
 | Connection | USB-A on the Pi | The adapter enumerates as a USB serial device (`/dev/ttyUSB*` or `/dev/ttyACM*`). |
 | Stable name | `/dev/obd` | A udev rule matching the adapter's vendor/product ID, installed by `scripts/provision_pi.sh`. The daemon never opens a `ttyUSB` number. |
 | Baud | 115200 (OBDLink SX) · 38400 (most ELM327 clones) | Record the adapter model and its baud here once it arrives. |
@@ -27,7 +27,7 @@ car is cut, spliced or pierced.
 The Pi is powered from the car's own USB-C port, or a USB-C adapter in the 12 V socket.
 
 | Check | How | Record |
-|---|---|---|
+| --- | --- | --- |
 | Is the port switched (off with the key)? | Meter or a USB power tester, key off / ACC / run | here |
 | Does it hold the Pi up at crank? | `vcgencmd get_throttled` after a cold start; must be `0x0` | here |
 | Rating | ≥ 5.1 V / 3 A for a Pi 4 | adapter model, here |
@@ -38,7 +38,7 @@ keeps running and corrupts the SD card later. Prove the port, do not trust its l
 ## Warning light → Pi (D-014)
 
 | Part | Pi pin | Pi signal | Note |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | LED anode, via 330 Ω | 11 | GPIO17 (proposed) | ~4 mA at 3.3 V — well inside the pin's limit. Written only by the supervisor. |
 | LED cathode | 9 | GND | |
 

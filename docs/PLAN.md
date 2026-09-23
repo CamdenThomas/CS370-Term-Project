@@ -71,7 +71,7 @@ feeds `oilq`, which is where the answer gets recorded.
 ## 2. Phase structure
 
 | Phase | Weeks | Theme | The thing that must be true at the end |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **M0** | 4 | Commit and order | Parts ordered, questions asked, board live |
 | **M1** | 5 | Know the problem | A named user, a named risk, and PID survey results |
 | **M2** | 6–7 | Argue on paper | Design settled, **logging running on the CR-V** |
