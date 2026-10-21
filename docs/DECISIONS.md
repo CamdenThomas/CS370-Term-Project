@@ -411,7 +411,9 @@ The handout requires two, implemented by us and measured.
 cleanly on its supercapacitor when it can, but the bank is empty at a cold start, a
 pulled cable beats it, and a crank dip can reset the Pi, so storage must survive a cut at
 any instant. *(Revised 2026-10-21 by D-024; it read "we never get a clean shutdown".)*
-Measured by pulling power mid-write, repeatedly, and proving recovery (`expcrash`).
+Measured by cutting the Pi's own 5 V rail mid-write, after the converter so the
+supercapacitor cannot cover it, repeatedly, and proving recovery (`expcrash`). Pulling
+the charger no longer tests this: it triggers a clean shutdown.
 
 **E.** A recorder that dies silently has actively harmed its user, who believes it is on
 duty. Any child may be `kill -9`'d; the system degrades, logs, recovers. Measured by killing

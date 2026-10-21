@@ -221,7 +221,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #59 -->
 - [ ] M4 experiment: supervision — kill -9 each child, time detection and recovery
       `expkill` <!-- #92 -->
-- [ ] M4 experiment: crash consistency — N power-cut trials `expcrash` <!-- #60 -->
+- [ ] M4 experiment: crash consistency — N cuts of the Pi's own rail, bypassing the
+      supercapacitor `expcrash` <!-- #60 -->
 - [ ] M4 ground truth: induce and label a vacuum leak on a testbed car `fvac` <!-- #62 -->
 - [ ] M4 ground truth: induce and label a cooling anomaly `fcool` <!-- #63 -->
 - [ ] M4 ground truth: sensor unplug — and demo-day rehearsal `funplug`

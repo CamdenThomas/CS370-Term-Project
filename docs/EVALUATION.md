@@ -57,7 +57,8 @@ separately because a monitor that cries wolf twice gets unplugged.
 
 ### 6.1 Crash consistency (mechanism D)
 
-N power-cut trials, recovery outcome each time, bytes lost per trial.
+N power-cut trials, each cutting the Pi's 5 V rail after the converter so the supercapacitor
+cannot cover it: recovery outcome each time, bytes lost per trial.
 
 ### 6.2 Supervision (mechanism E)
 
