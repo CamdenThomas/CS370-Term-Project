@@ -110,9 +110,9 @@ order now, while it is cheap, so the decision is not made at 2 a.m. in Week 13:
 A native phone app is already out of scope: a stretch goal, not on the board (D-028).
 
 **Never cut, in any circumstance:** the soak (`soak1`), the committed mechanism
-experiments (`expcrash`, `expkill` — plus `expirq` and `expdrop` if `pisensor` commits B
-and F), the limitations section (`evalreport`), or the transcript copy-outs (`tx1`–`tx4`).
-Those are graded directly, and three of them cannot be reconstructed after the fact.
+experiments (`expcrash`, `expkill`), the limitations section (`evalreport`), or the
+transcript copy-outs (`tx1`–`tx4`). Those are graded directly, and three of them cannot be
+reconstructed after the fact.
 
 **How to cut, mechanically.** Do not delete the line — a deleted line leaves an open
 issue behind that sync no longer manages, and the decision to cut disappears with it.

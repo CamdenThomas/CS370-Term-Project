@@ -187,8 +187,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 ## M4 — Feature freeze; 48-hour soak begins
 
 - [ ] **Feature freeze: no new features after this line; bugs only** `freeze` <!-- #67 -->
-- [ ] **Mechanisms D and E implemented and measured (plus B and F if `pisensor` added
-      them)** <!-- #122 -->
+- [ ] **Mechanisms D and E implemented and measured** <!-- #122 -->
 - [ ] **Induced-fault captures recorded and labeled for each fault area (D-021)**
       <!-- #123 -->
 - [ ] **`make asan` and `make memcheck` clean everywhere** `sanitize` <!-- #70 -->

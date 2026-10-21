@@ -23,7 +23,7 @@
   │ OBD2 adapter │◀ ~ ~ ~ ~ ~ ~ ~ ~ ~ ▶│      obdd      │  Mode 01 requests,
   │ (D-019)      │  /dev/obd           │  tty reader    │  [N] req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
-                                               │ SPSC ring, [N] samples/s  (mech F only with pisensor)
+                                               │ SPSC ring, [N] samples/s
                                                │ shm, sequence-accounted
                     ┌──────────────────────────┼──────────────────────┐
                     ▼                          ▼                      ▼
@@ -55,14 +55,13 @@
 > 2 ms of sampling jitter, hence SCHED_FIFO."
 
 The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); expand each row here with
-the measured numbers that justify it.
+the measured numbers that justify it. B and F were considered and declined: no Pi-side
+sensor is added, so nothing in the design needs them (D-029).
 
 | Menu item | Component | Justification from requirements | How measured |
 | --- | --- | --- | --- |
 | D | `src/store/` | | recovery after mid-write power cut, N trials |
 | E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
-| B *(only with `pisensor`)* | Pi-side sensor capture path | | event-latency distribution + CPU, IRQ vs poll, idle and loaded |
-| F *(only with `pisensor`)* | `src/ipc/ring.c` | | sustained rate, zero drops, sequence-accounted, under contention |
 
 ## 3. Failure-mode table
 >
@@ -133,7 +132,6 @@ the measured numbers that justify it.
 | --- | --- | --- |
 | OBD reply → stored, p50/p99 | timestamp at tty read and at fsync | |
 | `kill -9` each child: detection + recovery time | N trials per child, from the log | |
-| IRQ vs polling: latency + CPU *(only with `pisensor`)* | both paths, idle and `stress-ng` loaded | |
 | Drop rate under contention | sequence accounting | zero |
 | RSS per process over the 48 h window | heartbeats at session start, hourly and at session end (D-023), plotted per session | flat |
 | Detection: TPR / FPR per diagnostic | induced-fault fixtures | |

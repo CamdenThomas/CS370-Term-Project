@@ -52,6 +52,7 @@ Decisions currently awaiting a human signature:
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
+| D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -349,14 +350,17 @@ E.1 (D-021): one car, a learned normal, fault areas named, measured error rates.
 · **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-002 (§G.3)
 
+*B and F declined 2026-10-21 by D-029 (§B.7), before any review: no Pi-side sensor will be
+added, so D and E are the committed pair and the "only if" rows below no longer apply.*
+
 The handout requires two, implemented by us and measured.
 
 | Mechanism | Status | Where |
 | --- | --- | --- |
 | **D** — custom append-only storage, crash-consistent | **committed** | `src/store/` |
 | **E** — multi-process with a supervisor | **committed** | `src/supervisor/`, `src/ipc/` |
-| **B** — interrupt-driven input with a polling comparison | only if `pisensor` adds an MPU-6050 | capture path for that sensor |
-| **F** — high-rate no-drop SPSC ring | only if `pisensor` adds an MPU-6050 | `src/ipc/ring.c` |
+| **B** — interrupt-driven input with a polling comparison | declined (D-029) | — |
+| **F** — high-rate no-drop SPSC ring | declined (D-029) | — |
 | **A**, **C**, raw CAN | stretch, after D and E are measured | — |
 
 **D.** *Power disappears every time the key turns off* (D-024). The box shuts down
@@ -378,13 +382,13 @@ contention" would be true and meaningless.
 
 **What brings them back.** An MPU-6050 on the Pi's I2C, its `INT` pin on a GPIO: kHz
 samples from a hardware FIFO give a real interrupt-vs-polling comparison (B) and a rate
-that stresses the ring (F). That is board item `pisensor`, due at M2.
+that stresses the ring (F). That was board item `pisensor`; D-029 declined it.
 
 **The ring stays regardless.** It is how capture hands samples to storage across the
 process boundary E requires, and B.3 still binds it.
 
 **Risk.** D and E alone meet the floor exactly. If either measurement fails, nothing is in
-reserve — which is why `pisensor` is on the critical path.
+reserve. `pisensor` was that reserve, and D-029 declined it.
 
 ### B.2 — Four processes, not one 🔒
 
@@ -411,6 +415,36 @@ looks like a quiet minute. Enforced by `tests/test_ring.c`.
 
 **Reviewer note.** This is a real trade: under sustained overload we drop *new* data
 rather than *old*. If that is ever the wrong choice for a diagnostic, reopen this.
+
+### B.7 — No Pi-side sensor: mechanisms B and F are out of scope ⚠️ UNREVIEWED
+
+`D-029` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Resolves:** board item `pisensor`, and the "only if" conditions of D-017 (§B.1)
+
+**Decision.** No sensor is added on the Pi itself: no MPU-6050, no DS18B20. Mechanisms
+**D** and **E** are the committed pair, implemented and measured. **B** and **F** are out
+of scope. **A**, **C** and raw CAN stay stretch goals.
+
+**Why.** Camden declined `pisensor` in the 2026-10-21 session (`docs/REVISION_PLAN.md`
+§1.1, P5). The device's job is the car's engine sensors, and D and E follow from that job
+(§B.1).
+
+**Risks, stated plainly.**
+
+- D and E meet the handout's floor of two exactly (§3.2). If either measurement fails,
+  nothing is in reserve, so `expcrash` and `expkill` are never cut (PLAN.md §3).
+- Every sensor now reaches the Pi through one dongle. The handout asks for at least two
+  physically distinct sensors that cooperate (§3.1). Our answer: coolant temperature,
+  intake air temperature, MAP or MAF, the fuel trims and the O2 sensors are physically
+  distinct sensors on the engine, fused by our pipeline, and the dongle is their
+  transport, not a sensor. `docs/DESIGN.md` §2 must defend this; a skeptical grader will
+  ask.
+- The SPSC ring stays, because B.3 binds it and it is the capture-to-storage handoff
+  mechanism E needs. It is not claimed as mechanism F: Mode 01 rates never stress it.
+
+**Alternative rejected.** An MPU-6050 to bring back B and F (D-017's option): more
+hardware, for a sensor the user's problem does not need.
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 

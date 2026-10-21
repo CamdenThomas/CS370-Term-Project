@@ -1,6 +1,6 @@
 /* Single-producer / single-consumer lock-free ring from capture to storage. It is the
- * handoff mechanism E's process boundary needs, and mechanism F only if a Pi-side sensor
- * gives it a high-rate stream (D-017).
+ * handoff mechanism E's process boundary needs. It is not claimed as mechanism F: Mode 01
+ * rates never stress it, and no Pi-side sensor is added (D-029).
  *
  * The no-drop guarantee is the point. A gap in the record is a gap in the diagnosis,
  * so a drop must be impossible to hide: every slot carries a sequence number and the

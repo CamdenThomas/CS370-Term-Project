@@ -40,14 +40,6 @@ a human (`CLAUDE.md` §8.4). Sizes marked *estimate* come from the power workshe
 | 1 | Heatsink for the Pi | A Pi 4 throttles near 80 °C (`thermal`). |
 | 1 | Shell: heat-resistant plastic (ABS, ASA or similar), vent slots, no metal near the antenna | `enclspec`. PLA softens near 60 °C, below a parked cabin's temperature. A food container is an acceptable prototype (handout). |
 
-## Conditional — only if `pisensor` or D-006 resolves to "add physical sensors"
-
-| Qty | Part | ~Cost | Notes |
-| --- | --- | --- | --- |
-| 1 | MPU-6050 IMU | $4 | I2C 400 kHz, hardware FIFO, `INT` pin. The only way mechanisms B and F come back (D-017), and vibration data the ECU cannot see. |
-| 1 | DS18B20 waterproof probe | $4 | 1-Wire, kernel driver exists. |
-| 1 | 4.7 kΩ resistor | — | 1-Wire pull-up. |
-
 ## Stretch — raw CAN (D-019)
 
 Not ordered unless the stretch goal is taken up after mechanisms D and E are measured.

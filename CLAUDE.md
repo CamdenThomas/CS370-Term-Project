@@ -100,8 +100,8 @@ measured catch and false-alarm rates on faults we induce."* Not "predicts failur
 ## 4. Mechanisms
 
 Committed and measured: **D** (append-only, crash-consistent storage) and **E**
-(multi-process with a supervisor). **B** and **F** only if `pisensor` adds a Pi-side
-sensor; **A**, **C** and raw CAN are stretch. Why: DECISIONS §B.1 (D-017).
+(multi-process with a supervisor). **B** and **F** are declined: no Pi-side sensor
+(D-029). **A**, **C** and raw CAN are stretch. Why: DECISIONS §B.1 (D-017) and §B.7.
 
 ## 5. The intelligence
 

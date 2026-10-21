@@ -64,14 +64,7 @@ N power-cut trials, recovery outcome each time, bytes lost per trial.
 `kill -9` each child N times: time to detection, time to recovery, what degraded in the
 meantime, and proof that no file descriptor leaked across the restart.
 
-### 6.3 Interrupt-driven vs. polling (mechanism B — only with `pisensor`)
-
-Method · data · conclusion. Include the CPU cost of the polling design at the rate
-needed to match the interrupt design's drop rate — that comparison is the point.
-
-### 6.4 No-drop ring under contention (mechanism F — only with `pisensor`)
-
-Sustained rate with sequence accounting proving zero drops, under `stress-ng`.
+Mechanisms B and F were declined (D-029), so they have no comparison here.
 
 ## 7. Limitations
 
