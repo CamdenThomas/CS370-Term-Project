@@ -27,8 +27,8 @@
                                                │ sequence-accounted; one consumer (D-031)
                                                ▼
                                        ┌────────────────┐
-                                       │    storaged    │  append-only log, CRC'd,
-                                       │    [mech D]    │  fsync per batch
+                                       │    storaged    │  append-only log; BEGIN/COMMIT
+                                       │    [mech D]    │  batches, one fsync each (D-025)
                                        └───────┬────────┘
                                                │ committed records only, read from
                                                │ the log, [N] records/s (D-031)
@@ -85,7 +85,8 @@ sensor is added, so nothing in the design needs them (D-029).
 | obdd | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
 | ring | consumer stalls, producer would overwrite | sequence gap accounting | | |
 | storaged | disk full | | | |
-| storaged | power cut mid-write | CRC mismatch on recovery scan | truncate torn tail | |
+| storaged | power cut mid-write | CRC mismatch, or a batch with no `COMMIT`, on the recovery scan | truncate the torn tail and the uncommitted batch (D-025) | |
+| analyzed | checkpoint torn by a power cut | slot CRC or generation check | load the other slot; redo from its older offset (D-025) | |
 | analyzed | model file missing or corrupt | | fall back to residuals only | |
 | supervisor | itself dies | systemd `Restart=always` | the light freezes steady, which by design reads "not running" (D-027) | |
 | status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
@@ -108,14 +109,21 @@ sensor is added, so nothing in the design needs them (D-029).
 > What is stored, at what rate, in what format, with what retention, and what happens to
 > it when the power dies mid-write.
 
-- **Record format:** `[magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]`
+- **Record format:** `[magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]`,
+  grouped into `BEGIN` … `COMMIT` batches; transaction and boot record kinds are settled
+  in `recfmt` (D-025)
 - **Rates:** [fill — Mode 01 request budget, and the per-PID rate it implies (D-012)]
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
-- **fsync discipline:** [fill — batch size, interval, and the argument for it]
-- **Crash story:** [fill — recovery scan, torn-tail truncation, what is lost and why
-  losing it is acceptable]
+- **fsync discipline:** provisional: one `COMMIT` and one `fsync` per batch of about one
+  second (D-025). [fill — the argument for that size, from the user's requirements
+  (`fsync`)]
+- **Crash story:** at boot, `storaged` scans forward from its last committed offset,
+  verifies every CRC, and truncates the torn tail and any batch with no `COMMIT`
+  (undo is truncation, because nothing is overwritten in place). [fill — what is lost and
+  why losing it is acceptable]
 - **Baseline persistence:** learned per-bin statistics must survive a power cut. This is
-  the requirement that made mechanism D non-optional.
+  the requirement that made mechanism D non-optional. `analyzed` checkpoints them to A/B
+  slots and, at start, redoes every committed batch after the newest valid slot (D-025).
 
 ## 5. Constraints and substitutions
 >

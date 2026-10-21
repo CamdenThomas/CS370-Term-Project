@@ -50,6 +50,7 @@ Decisions currently awaiting a human signature:
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
+| D-025 | Write-ahead transactions (`BEGIN`, records, `COMMIT`, one `fsync`) and A/B baseline checkpoints; extends 🔒 C.1 (§C.3) | Camden (extended C.1) + Claude | 2026-10-21 | Lance — it is the storage design behind mechanism D |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
@@ -656,6 +657,10 @@ pattern code the owner has to learn.
 
 `D-002/D` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
+*Extended 2026-10-21 by D-025 (§C.3), with Camden's explicit yes: records are written in
+committed batches, and baselines are saved in A/B checkpoint slots. Every rule below
+stays.*
+
 Records are never rewritten in place. Each carries a magic number for resynchronization
 and a CRC32 over its whole body. Recovery scans from the last known-good offset, verifies
 CRCs, truncates the torn tail, and logs exactly what was lost.
@@ -681,6 +686,54 @@ logs, report, demo. Making it a mandatory field rather than a convention means i
 structurally impossible to forget. Mislabeling synthesized data as live is the single
 integrity failure this course is best equipped to detect, and the worst trade available
 anywhere in it.
+
+### C.3 — Write-ahead transactions and A/B checkpoints ⚠️ UNREVIEWED
+
+`D-025` · Decided M2, 2026-10-21 · **By:** Camden (in session, extending 🔒 C.1) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** 🔒 C.1, whose rules all stay: append-only, self-framing, CRC'd records,
+each carrying its `src` tag (C.2)
+
+**Decision.**
+
+- **Transactions (`storaged`).** `storaged` drains the ring into batches: a
+  `BEGIN(txn_id)` record, the sample records, a `COMMIT(txn_id)` record, then one
+  `fsync`. A batch is durable only once its `COMMIT` is on disk.
+- **Checkpoints (`analyzed`).** `analyzed` holds the learned per-bin baselines (D-031),
+  so it checkpoints them: now and then, a snapshot of the baselines plus the log offset
+  and the last committed `txn_id` it covers. There are two alternating slots, A and B,
+  each CRC'd and carrying a generation counter, so a checkpoint torn by a power cut never
+  destroys the previous good one.
+- **Recovery at boot.** `storaged` scans its log forward from the last offset it knows was
+  committed, verifying every CRC. The scan stops at the first bad record and truncates the
+  torn tail, and a batch with no `COMMIT` is truncated at its `BEGIN` (**undo**).
+  `analyzed` then loads the newest valid checkpoint slot and re-applies every committed
+  batch after its offset (**redo**), through the same code as live analysis. Both log
+  exactly what was recovered and what was lost, as counts and offsets.
+- **Every session starts with a boot record** that says whether the previous session
+  ended in a clean shutdown or was recovered.
+
+**Why undo is only truncation.** Nothing is ever overwritten in place (C.1), so there is
+no before-image to restore: undo means discarding an uncommitted tail. Say so plainly at
+the defense, and do not claim an undo log the design does not need.
+
+**Extending a locked decision.** C.1 is 🔒. Camden approved this extension explicitly in
+the 2026-10-21 session (`docs/REVISION_PLAN.md` §1.1, P4), because it ties the storage
+layer to the logging and checkpoint techniques taught in class. C.1 stays 🔒 and gains a
+pointer.
+
+**Provisional numbers (estimates).** One `COMMIT` and one `fsync` per batch of about one
+second of samples. Records of about 48 bytes at 10 to 20 requests a second come to about
+1 KB/s, or about 3.5 MB per running hour. The worst loss from a power cut that beats the
+clean shutdown is then about one second of samples. The argument for the batch size is
+still written in `docs/DESIGN.md` §4 before the code, as C.1 requires (`fsync`).
+
+**Record format.** The new record kinds (transaction begin and commit, boot) and a boot
+id in the header are settled in `recfmt`. The CRC known-answer test does not change.
+
+**Cost.** Recovery now spans two processes, so the crash tests (cut the file at every
+byte offset, then `expcrash` on the device) must cover both. Checkpoint frequency trades
+write load against redo time at boot.
 
 ---
 

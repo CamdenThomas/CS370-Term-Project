@@ -1,12 +1,14 @@
 /* On-disk record format — mechanism D.
  *
- * The defining constraint: the power is cut mid-write every time the key turns off.
- * We never get a clean shutdown, so the format must let recovery find the torn tail
- * and truncate it without losing anything before it.
+ * The constraint: power disappears every time the key turns off. The box shuts down
+ * cleanly when its supercapacitor allows (D-024), but a cold-start crank, a pulled
+ * cable or an empty bank can still cut a write, so the format must let recovery find
+ * the torn tail and truncate it without losing anything before it.
  *
  * Therefore every record is (a) self-framing, so a scan can resynchronize, and
  * (b) CRC'd over its whole body, so a partially-flushed record is detectable rather
- * than merely wrong.
+ * than merely wrong. Records are written in committed batches (D-025): a batch with
+ * no COMMIT on disk is discarded at recovery.
  */
 #ifndef CARWATCH_RECORD_H
 #define CARWATCH_RECORD_H

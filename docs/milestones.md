@@ -110,7 +110,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `pidforester`
 - [x] M2 hardware: two-node bench CAN bus — prove frames move before a car is attached
       (cut) `twonode` @camden <!-- #19 -->
-- [ ] M2 decision: finalize the on-disk record format `recfmt` <!-- #22 -->
+- [ ] M2 decision: finalize the on-disk format, including transaction and boot records
+      `recfmt` <!-- #22 -->
 - [ ] M2 decision: fsync discipline — batch size and interval `fsync` <!-- #23 -->
 - [ ] M2 docs: architecture diagram with a rate on every arrow `archdiag`
       <!-- #24 -->
@@ -168,10 +169,10 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
 - [ ] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`
       <!-- #38 -->
-- [ ] M3 store: record write path with the chosen fsync policy `storewrite`
+- [ ] M3 store: write path: BEGIN, records, COMMIT, one fsync per batch `storewrite`
       <!-- #39 -->
-- [ ] M3 store: recovery scan, CRC verify, torn-tail truncation `storerecover`
-      <!-- #40 -->
+- [ ] M3 store: recovery: CRC scan, torn-tail and uncommitted-batch truncation
+      `storerecover` <!-- #40 -->
 - [ ] M3 supervisor: fork/exec, waitpid, fd hygiene across restart `supfork` <!-- #41 -->
 - [ ] M3 supervisor: backoff and restart-storm guard `supbackoff` <!-- #42 -->
 - [ ] M3 supervisor: drive the tri-color light from child health, verdicts and power
@@ -200,8 +201,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #49 -->
 - [ ] M4 analysis: per-bin running mean and variance (Welford) `welford`
       <!-- #50 -->
-- [ ] M4 analysis: persist learned baselines through a power cut `persist`
-      <!-- #51 -->
+- [ ] M4 analysis: A/B baseline checkpoints, and redo from the log after a power cut
+      `persist` <!-- #51 -->
 - [ ] M4 analysis: multivariate residual (Mahalanobis distance) `mahal`
       <!-- #52 -->
 - [ ] M4 analysis: robust trend estimation (Theil-Sen) `trend` <!-- #53 -->

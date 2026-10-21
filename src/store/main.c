@@ -16,10 +16,12 @@ int main(void)
     /* TODO(M2): decide and document the fsync discipline in docs/DESIGN.md §4 before
      *           writing it. Batch size and interval are a user-requirements argument,
      *           not a default to inherit.
-     * TODO(M3): open-or-recover: scan from the last known-good offset, verify CRCs,
-     *           truncate the torn tail, log exactly what was lost.
-     * TODO(M3): drain the ring; sequence-account every slot.
-     * TODO(M4): persist REC_BASELINE so learned statistics survive key-off. */
+     * TODO(M3): open-or-recover: scan from the last known-committed offset, verify
+     *           CRCs, truncate the torn tail and any batch without a COMMIT (D-025),
+     *           log exactly what was lost.
+     * TODO(M3): drain the ring into batches: BEGIN, records, COMMIT, one fsync;
+     *           sequence-account every slot.
+     * TODO(M3): write a boot record saying whether the last session ended cleanly. */
 
     LOG_W("not implemented — M0 scaffold");
     return 0;

@@ -24,6 +24,8 @@ int main(void)
      *           (D-031); stop at the last committed record.
      * TODO(M3): operating-point binning + running statistics (Welford).
      * TODO(M4): Mahalanobis residual; Theil-Sen trend; state machine.
+     * TODO(M4): checkpoint baselines to A/B slots; at start, load the newest valid
+     *           slot and redo the committed batches after its offset (D-025).
      * TODO(M4): load weights from models/; inference in C. NO network, ever. */
 
     LOG_W("not implemented — M0 scaffold");
