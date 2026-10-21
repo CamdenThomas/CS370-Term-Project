@@ -162,8 +162,8 @@ decision, a measurement only one of us can take, a part that must be ordered —
 **issue**, not a paragraph buried in a doc or a session summary nobody re-reads.
 
 `docs/DECISIONS.md` keeps only what has been **decided** (plus the review queue).
-Everything still open lives on the board, where it has an owner, a milestone, and a
-visible position in the queue.
+Everything still open lives on the board, where it has a milestone and a visible
+position in the queue, and is open to whoever is free (D-026).
 
 The board is not project-management theater. It is a timestamped record that the questions
 were asked before the work, that a human answered them, and that the answer shaped the

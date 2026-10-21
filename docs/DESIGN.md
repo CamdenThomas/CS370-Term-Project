@@ -150,7 +150,7 @@ sensor is added, so nothing in the design needs them (D-029).
 | `kill -9` each child: detection + recovery time | N trials per child, from the log | |
 | Drop rate under contention | sequence accounting | zero |
 | RSS per process over the 48 h window | heartbeats at session start, hourly and at session end (D-023), plotted per session | flat |
-| Detection: TPR / FPR per diagnostic | induced-fault fixtures | |
+| Detection: TPR / FPR per fault area (D-021) | induced-fault fixtures | |
 | Recovery after mid-write power cut | N cuts of the Pi's 5 V rail after the converter, so the supercapacitor cannot cover them (pulling the charger now triggers a clean shutdown) | 100% |
 
 ## 7. Ownership map

@@ -6,7 +6,7 @@ reference doc — its job is to let Camden and Lance verify, after any working s
 that no decision was made on their behalf that they disagree with.
 
 **This file holds what is DECIDED. Open work and open questions live on the GitHub
-board** as issues with owners, milestones and blocked-by dependencies (`CLAUDE.md` §7.11).
+board** as issues with milestones, and no pre-assigned owners (D-026, `CLAUDE.md` §7.11).
 An ❓ OPEN entry below exists only as a pointer to its issue, so the reasoning sits beside
 the decisions it will eventually join.
 
@@ -24,7 +24,7 @@ your subsystems as surely as yours do.
 | --- | --- |
 | 🔒 **LOCKED** | Decided and human-approved. Not reopened without saying so explicitly and getting a yes. |
 | ⚠️ **UNREVIEWED** | Made by Claude during a session without a human in the loop. **Binding on nothing until a human signs it.** |
-| ❓ **OPEN** | Not decided. Blocking something. Owner named. |
+| ❓ **OPEN** | Not decided. Blocking something. Tracked by a board item. |
 | 🗑 **SUPERSEDED** | Replaced. Kept with a pointer, never deleted — the reasoning is evidence. |
 
 **Claude may never change a decision's status to LOCKED.** Only Camden or Lance does

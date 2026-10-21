@@ -301,7 +301,7 @@ must cover the cabin's range.
 | `RUNNING` | All children healthy, source present | Normal operation | green pulse |
 | `DEGRADED` | A child is down or restart-limited, adapter silent, storage or power fault | Keeps recording what it can, logs the distinction between absent and crashed | red blink |
 | `GRACE` | Source-present signal lost | Starts a timer. Keeps recording. If the source returns, return to `RUNNING` | yellow blink |
-| `SHUTTING_DOWN` | Grace timer expired with no source | Stops `obdd`, tells `storaged` to commit and checkpoint, `sync`, `shutdown -h` | yellow blink |
+| `SHUTTING_DOWN` | Grace timer expired with no source | Stops `obdd`, tells `storaged` to commit and `analyzed` to checkpoint (D-025), `sync`, `shutdown -h` | yellow blink |
 | `OFF` | Pi halted, converter cut | Nothing runs | dark |
 
 Open edge cases to settle in `shutfsm` before any code: the grace period's length (longer
@@ -486,7 +486,7 @@ deleted. IDs continue from D-021. Text below is a draft; keep each entry's struc
 | --- | --- | --- | --- |
 | D-022 | Testbeds: the 2008 Forester (Camden's) and the 2015 CR-V (Lance's); neither is required of anyone | Supersedes D-016. Amends D-007 (CR-V answer stays; Forester added) and the "this CR-V" wording of D-021 | P1 |
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles | Closes D-006 (E.3). Pending written confirmation (U4) | P3 |
-| D-024 | Power and shutdown: one USB-C input, a short-lived stored-energy element, clean shutdown as the normal path, crash consistency as the guarantee, off at rest | Supersedes D-011 (and the key-off cost paragraph of A.6); revises D-019's "Pi powered from the car's USB". The element's chemistry is an ❓ OPEN sub-decision (R1) | P7, P8, P9, P10, P13 |
+| D-024 | Power and shutdown: one USB-C input, a short-lived stored-energy element, clean shutdown as the normal path, crash consistency as the guarantee, off at rest | Supersedes D-011 (and the key-off cost paragraph of A.6); revises D-019's "Pi powered from the car's USB". The element's chemistry was an ❓ OPEN sub-decision (R1); settled: supercapacitor | P7, P8, P9, P10, P13 |
 | D-025 | Write-ahead transactions and A/B checkpoints | Extends 🔒 C.1 with Camden's explicit yes (P4). C.1 stays 🔒 and gains a pointer line. Settles `walspec`; narrows `recfmt` | P4 |
 | D-026 | No pre-assigned task owners; ownership of a subsystem by first substantive commit | Supersedes 🔒 F.2 and `CLAUDE.md` §6 with Camden's explicit yes (P2). Touches `CLAUDE.md` §0 step 3 | P2 |
 | D-027 | One tri-color status light, every live state pulsing | Supersedes D-014 | P10, P11 |

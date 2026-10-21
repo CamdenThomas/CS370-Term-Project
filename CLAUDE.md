@@ -1,7 +1,7 @@
 # CS370 Term Project — Team Rules
 
-**Project:** `carwatch`, an always-on in-vehicle diagnostic recorder that learns *this*
-car's normal and reports developing faults before a check-engine light would.
+**Project:** `carwatch`, an in-vehicle diagnostic recorder, on whenever the car is, that
+learns *this* car's normal and reports developing faults before a check-engine light would.
 **Team:** Camden Thomas (`crash8750@gmail.com`) · Lance Baron · CS 370, Colorado State
 (Pallickara). **Rubric:** `docs/handout/CS370-TermProject.md`; the rubric is law, and this
 file is how we obey it.
