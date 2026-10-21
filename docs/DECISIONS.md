@@ -772,7 +772,7 @@ generator. Every comparison happens inside one bin, against genuinely comparable
 conditions. This single step removes more false positives than anything else downstream.
 
 **Why multivariate.** The signal is the *correlation between sensors*, not any single
-sensor's value — oil pressure is supposed to rise with RPM. A measure of anomaly that
+sensor's value — fuel trim is supposed to track load. A measure of anomaly that
 already accounts for normal partnerships, and alarms only when a partnership breaks, is
 what makes this something a threshold provably cannot do (handout §3.3).
 
