@@ -41,6 +41,7 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | [`milestones.md`](milestones.md) | What is open, what is done, and what must be true to reach each milestone? | **source** for all work; GitHub is derived |
 | [`PLAN.md`](PLAN.md) | Why is the plan shaped this way, and what gets cut first? | reasoning |
 | [`PROCESS.md`](PROCESS.md) | Why are the git, PR and review rules shaped this way? | reasoning |
+| [`REVISION_PLAN.md`](REVISION_PLAN.md) | How do we revise the repo for the box redesign, and what is still unconfirmed? | proposal; nothing in it is a decision until `DECISIONS.md` says so |
 | [`handout/CS370-TermProject.md`](handout/CS370-TermProject.md) | What does the rubric require? | reference: the rubric is law |
 
 ## Hardware
