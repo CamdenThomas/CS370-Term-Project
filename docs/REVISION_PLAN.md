@@ -5,6 +5,11 @@
 > ⚠️ UNREVIEWED, in the same commit as whatever enacts it, and signed later by a human.
 > Claude never marks a decision reviewed or 🔒 LOCKED (`CLAUDE.md` §0).
 >
+> **Update, later on 2026-10-21: stage 1 is done** on branch `camden/m2/revision-plan`.
+> D-022 to D-031 are in `docs/DECISIONS.md` as ⚠️ UNREVIEWED, with every dependent doc
+> edit. Where this file and `DECISIONS.md` disagree, `DECISIONS.md` wins. What was
+> answered, and what is still open, is marked in §1.2, §4.2 and §11.
+>
 > **Audience: a fresh Claude session with no memory of the conversation that produced this
 > file.** Everything it needs is here or named by path. Where this file says "Camden
 > decided", that is a statement about the 2026-10-21 conversation, and §1 says exactly
@@ -61,6 +66,12 @@ bought.
 | R4 | Steady yellow while booting (a not-yet-running state), pulses everywhere once alive. | See §2.3 and §11. |
 | R5 | The phone page may set the Pi's clock (the Pi has no battery-backed clock). | Conflicts with D-013's "writes nothing". §11. |
 | R6 | Record the Forester as the car the first baseline and fault captures run on. | Follows from P1 but is not itself a decision about Lance. |
+
+**Answered by Camden, 2026-10-21, and recorded:** R1 supercapacitor (D-024). R3 HTML plus
+CSV served by C (D-028). R4 steady yellow held in hardware (D-027). R5 no: a real-time
+clock keeps the time instead, and the page stays read-only (D-030). **Still open:** R2,
+the grace period's length, which needs `cranklog`. R6 was not recorded: P1 says no car is
+required, so D-022 names both cars and neither as first.
 
 ### 1.3 Unknown, must be measured or asked
 
@@ -425,6 +436,26 @@ These are facts found by reading every tracked file. Items marked 🐞 are defec
 | 🐞14 | `Makefile` tests use `-fsanitize` only under `make asan`; `make memcheck` needs valgrind, which is not installed on Camden's Mac. | Run `memcheck` on the Pi or a Linux machine; say so in the PR. Not a defect to "fix". |
 | 🐞15 | `markdownlint-cli2` and `cspell` are not installed on Camden's Mac, so `CLAUDE.md` §8.9 lint was not run this session. | Install them (`npm i -g markdownlint-cli2 cspell`, Camden's call) or run them in CI. Until then hand-wrap at 90 columns and paste "not run" honestly. |
 
+**Status after stage 1.** Fixed: 🐞1 (D-031), 🐞3 (`m1.zip` removed), 🐞6 (`.mailmap`),
+🐞8, 🐞11 (comments only). 🐞13: the Status line is fixed, and the clone directory was
+never wrong, since the GitHub repository is named `CS370-Term-Project`. 🐞15: both
+linters run without a global install through `npx --yes markdownlint-cli2` and
+`npx --yes cspell`. Waiting on a human tick: 🐞9 and 🐞10 (`schcan`, `canirq`, `canpoll`,
+`expirq`, `expdrop`). Still open: 🐞2 (stage 4), 🐞4 (stage 5), 🐞7, 🐞12 (stage 2), 🐞14.
+
+**Found while verifying this plan, 2026-10-21:**
+
+| # | Finding | Where it went |
+| --- | --- | --- |
+| 🐞16 | No network and no battery-backed clock: `fake-hwclock` restores the last shutdown time, so the clock stops while parked and the logs could not prove a 48-hour wall-clock window. | D-030, a real-time clock |
+| 🐞17 | §3.3 had `storaged` checkpoint and redo the baselines, but `analyzed` holds them. | D-031 and D-025: `analyzed` owns checkpoint and redo |
+| 🐞18 | A source that returns mid-shutdown leaves a halted Pi and a dark box in a running car unless the power stage power-cycles anyway. | D-024, requirement 5 |
+| 🐞19 | "Current limit below the source's rating" needs the rating: a plain sink must read the CC advertisement. | D-024, requirement 2 |
+| 🐞20 | The reworded `keyoff` dropped the dongle's pin-16 key-off draw. | board item `dongledrain` |
+| 🐞21 | A drive shorter than an hour logs no hourly heartbeat. | D-023: heartbeats also at session start and end |
+| 🐞22 | `make` after `make asan` fails to link: `build/` keeps sanitizer objects, and the Makefile does not track flags. | not fixed; run `make clean` first |
+| 🐞23 | `board_sync.py` only adds assignees, so removing `@owner` leaves GitHub issues assigned. | D-026 says so; a human clears them |
+
 ### 4.3 Handout checks the plan must keep passing
 
 - §3.1 two physically distinct cooperating sensors: the OBD2 sensors are physically
@@ -666,7 +697,7 @@ attribution trailer the harness supplies.
   in `docs/README.md` and the new board slugs in `cspell.json`).
 - `M2 process: add the Ghostty transcript copy-out for Camden's Mac` (done, `2b1b5ba`).
 
-### Stage 1: decisions and the documents they change (branch `camden/m2/box-decisions`)
+### Stage 1: decisions and the documents they change (done on `camden/m2/revision-plan`)
 
 Docs only. One commit per decision, in this order, each carrying its `DECISIONS.md`
 entry, the review-queue row, every dependent doc edit from §6, and its board lines from
@@ -760,7 +791,11 @@ does not place symbols, choose parts without datasheets, or write board geometry
 > that (1) the logs may show off-periods between drives with hourly heartbeats while
 > running, (2) a clean shutdown at power loss counts as each session's orderly end, and
 > (3) one injected fault during the window, such as unplugging the OBD2 adapter for ten
-> minutes with the engine running, meets the fault-injection requirement? Thank you.
+> minutes with the engine running, meets the fault-injection requirement? And (4), since
+> every sensor reaches the Pi through the one OBD2 adapter: do the engine's own sensors
+> (coolant temperature, intake air temperature, fuel trims, oxygen sensors), read over
+> OBD2 and fused by our pipeline, satisfy the requirement for two physically distinct
+> sensors? Thank you.
 
 ## 10. Money: what is not authorized
 
@@ -784,18 +819,26 @@ rest is design. Do not exceed that without asking.
 Ask these in the first session; record each answer in `docs/DECISIONS.md` or the board,
 not in a document that nobody reads.
 
+Questions 1 to 6 and 8 were answered on 2026-10-21; the answer follows each.
+
 1. **Supercapacitor or small lithium cell** (R1)? Recommendation: supercapacitor.
+   *Answered: supercapacitor (D-024).*
 2. **Ring consumers** (🐞1): two rings, or `analyzed` reading `storaged`?
+   *Answered: `analyzed` reads the committed log (D-031).*
 3. **Light during boot** (R4): hold yellow on in hardware until the supervisor takes
-   over?
+   over? *Answered: yes (D-027).*
 4. **Can the phone page set the clock** (R5)? It would be the one write the page makes.
+   *Answered: no; a real-time clock instead (D-030).*
 5. **Report format and server language** (R3): HTML plus CSV from a C program?
+   *Answered: yes (D-028).*
 6. **Named user:** keep Lance and the CR-V in PROBLEM.md, or change it to a Forester
    owner? Recommendation: keep, and add one sentence about the second car.
+   *Answered: keep, plus one sentence (D-022).*
 7. **Which deliverable is due 2026-10-28** (U5)? Is M2 being submitted late, and does
    Camden want to ask the professor about it?
 8. **Canonical commit identity** for `.mailmap` (🐞6), and permission to remove `m1.zip`
-   (🐞3).
+   (🐞3). *Answered: `CamdenThomas <camden.thomas@colostate.edu>`; both done. Lance's
+   identity in `.mailmap` is Claude's pick and needs his yes.*
 9. **Lance:** he has reviewed no decisions. Tell him about D-022 to D-029, the removal of
    owner markers, and that his PID survey, schematic and record-format items are open for
    anyone. Do not take or reassign anything on his behalf.
