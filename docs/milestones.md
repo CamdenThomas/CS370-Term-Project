@@ -104,6 +104,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #7 -->
 - [ ] M2 decision: get the professor's 48-hour soak definition (D-023) in writing
       `profmail`
+- [ ] M2 docs: record the box redesign as D-022 to D-031 and bring every doc in line
+      `boxdocs`
 - [ ] M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car `bench`
       <!-- #18 -->
 - [ ] M2 hardware: supported-PID survey on the 2008 Forester, with protocol and VIN
