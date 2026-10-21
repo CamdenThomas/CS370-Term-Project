@@ -100,10 +100,14 @@ order now, while it is cheap, so the decision is not made at 2 a.m. in Week 13:
    the intelligence: residuals and trends still *flag* strange behavior without it, they
    just stop naming the area. Narrow the claim to flag-only in writing, and say so at the
    defense.
-2. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
+2. **The report download** — `report`. The page keeps showing status and verdicts without
+   it, and `obdctl` still produces every number in it (D-028).
+3. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
    reporting through your own interface"; the page is the product's face, not a graded
    mechanism (D-013). Cut it before any `obdctl` verb.
-3. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
+4. **The remaining `obdctl` verbs** — `obdrest`, down to `status` + `verdicts`.
+
+A native phone app is already out of scope: a stretch goal, not on the board (D-028).
 
 **Never cut, in any circumstance:** the soak (`soak1`), the committed mechanism
 experiments (`expcrash`, `expkill` — plus `expirq` and `expdrop` if `pisensor` commits B

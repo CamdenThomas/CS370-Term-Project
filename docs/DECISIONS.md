@@ -51,6 +51,7 @@ Decisions currently awaiting a human signature:
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
+| D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -416,6 +417,9 @@ rather than *old*. If that is ever the wrong choice for a diagnostic, reopen thi
 `D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude
 · **Reviewed:** Camden ✅ / Lance ⬜
 
+*Extended 2026-10-21 by D-028 (§B.6): the page also shows trends and downloads a report,
+and the server-language sub-decision below is closed (C).*
+
 **Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
 upstream connection, no internet**. The owner's phone joins it and opens a status page
 served from `src/interface/` by a supervised child process. The page shows exactly two
@@ -444,9 +448,54 @@ remains demonstrable through `obdctl` alone.
 - One more process in the 48-hour RSS plot, and Wi-Fi radio power on the car's USB port.
 - The access point shares the Pi 4's one radio chip with the Bluetooth link to the adapter
   (D-019). Measured by `btcoex`.
-- **Open sub-decision (M2, both):** the server's language. C in `src/interface/` keeps an
+- **Sub-decision, closed by D-028:** the server's language. C in `src/interface/` keeps an
   interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
   §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
+  Camden chose C, 2026-10-21.
+
+### B.6 — The phone page also downloads a report; an app is a stretch ⚠️ UNREVIEWED
+
+`D-028` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** D-013 (§B.4)
+
+**Decision.** The status page (D-013) shows status, current verdicts and trends, and has
+one button: **Download report**. The report is one self-contained HTML file plus a CSV of
+the same data, generated on the box by a C program in `src/interface/`. The page still
+writes nothing to the device. A native phone app is a stretch goal, not planned for M2 to
+M5.
+
+**Report contents** (first draft; finalized in `reportspec`):
+
+| Section | Content |
+| --- | --- |
+| Header | Box id, report time, whether wall-clock time is trustworthy, and the mix of data sources (`live`, `replay`, `synth`), always labeled (C.2) |
+| Sessions | Each key cycle: boot id, start, end, duration, ended cleanly or recovered, records lost on recovery |
+| Box health | Process liveness and restarts, ring overruns (must be zero), undervoltage and throttle events, temperature, the supercapacitor's self-check, free storage |
+| Car findings | Each surfaced verdict: fault area, the sensors that cooperated to call it, residual and trend evidence, when it began and ended, confidence |
+| Baseline maturity | Hours of normal driving learned per operating-point bin, so the owner knows how far to trust the verdicts |
+| Absent signals | Any PID the car stopped answering, and for how long |
+
+**Reachability.** The box is off whenever the car is (D-024), so a phone reaches it only
+while the car runs, or while the box is plugged into any USB-C charger at home, where it
+boots and serves the same page.
+
+**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P12): the owner views data and
+trends on a phone and downloads a report that says what is wrong with the box or the car.
+HTML opens on any phone with no app, and the CSV lets the owner or a mechanic take the
+numbers elsewhere. C, as D-013 recommended: the server is small, and an interpreter would
+add tens of megabytes to the 48-hour memory plot (R3).
+
+**Rule kept from D-013.** The report is assembled from the same supervisor UDS verbs
+`obdctl` uses, so every number in it can also be produced at the CLI, and every graded
+behavior stays demonstrable through `obdctl` alone.
+
+**Cost.** A report generator is new code in the product: it gets rows in the failure
+table, its memory shows in the soak plot, and the boundary check still has to show the
+page is the only network code.
+
+**Alternatives rejected.** A PDF report (needs a PDF writer we would have to defend). A
+native app (a second product to build). A Python server in `ui/` (the soak's memory).
 
 ### B.5 — One tri-color status light, and every live state pulses ⚠️ UNREVIEWED
 

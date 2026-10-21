@@ -79,9 +79,11 @@ obdctl baseline <pid>                # the learned model for an operating-point 
 obdctl faults                        # detection/degradation/recovery events
 ```
 
-**From a phone:** join the device's own Wi-Fi network (no internet — it has none) and open
-its status page. The page is read-only and shows exactly `status` and `verdicts`; anything
-deeper is `obdctl` (decision D-013).
+**From a phone:** join the box's own Wi-Fi network (no internet — it has none) and open
+its status page. The page shows status, current verdicts and trends, and a **Download
+report** button returns an HTML report plus a CSV of the same data. It is read-only, and
+anything deeper is `obdctl` (decisions D-013, D-028). The box is off whenever the car is,
+so to read it at home, plug it into any USB-C charger there.
 
 ## Repository layout
 
@@ -92,7 +94,7 @@ src/                systems core, C17, -Wall -Wextra -Werror clean
   store/            append-only crash-consistent log                     [mechanism D]
   analysis/         binning, baselines, residuals, trends, model, state machine
   supervisor/       spawn, restart with backoff, heartbeats, the light  [mechanism E]
-  interface/        obdctl CLI + read-only phone status page (D-013)
+  interface/        obdctl CLI + read-only phone status page and report (D-013, D-028)
   common/           logging and shared helpers
 include/            headers shared between subsystems (common, ipc, store)
 tests/              unit tests (make test)
@@ -112,5 +114,5 @@ Created when their first file lands, not before: `fixtures/` (labeled captures),
 This product contains no LLM client, no cloud inference, and no third-party pretrained
 model. The classifier weights in `models/` were trained by us from data we collected;
 the training code is in `tools/train/`. The only network activity in the shipped tree
-is serving the read-only status page on the device's own Wi-Fi access point, which has
-no upstream connection. See `CLAUDE.md` §2.
+is serving the read-only status page and its report on the box's own Wi-Fi access point,
+which has no upstream connection. See `CLAUDE.md` §2.

@@ -141,6 +141,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 docs: power-event state machine and the grace period `shutfsm`
 - [ ] M2 docs: tri-color light patterns, priority, the boot state and the LED part
       `ledspec`
+- [ ] M2 docs: report contents and format, box fault versus car fault `reportspec`
 - [ ] M2 docs: boot-time budget and what the first minute of a drive loses `bootbudget`
 - [ ] M2 docs: box mechanical spec: size, vents, heat-rated plastic, antenna clearance
       `enclspec`
@@ -178,6 +179,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim`
       <!-- #90 -->
 - [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon`
+- [ ] M3 interface: the box's own Wi-Fi access point, WPA2, no upstream `wifiap`
+- [ ] M3 interface: report generator (HTML and CSV), labeled by data source `report`
 - [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg`
 - [ ] M3 process: transcript copy-out `tx3` <!-- #48 -->
 
@@ -205,8 +208,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #55 -->
 - [ ] M4 analysis: C inference over our own weights `infer` <!-- #56 -->
 - [ ] M4 interface: remaining four obdctl verbs `obdrest` <!-- #57 -->
-- [ ] M4 interface: read-only phone status page over the device's own Wi-Fi `phoneview`
-      <!-- #91 -->
+- [ ] M4 interface: read-only phone status page, with trends, over the box's own Wi-Fi
+      `phoneview` <!-- #91 -->
 - [ ] M4 experiment: interrupt vs polling — latency distribution and CPU, idle and loaded
       `expirq` <!-- #58 -->
 - [ ] M4 experiment: no-drop under CPU contention, proven by sequence accounting `expdrop`

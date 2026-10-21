@@ -35,8 +35,8 @@
             └───────────────┘         └───────┬────────┘     ┌────────────────┐
                                               └─────────────▶│ status page    │──▶ phone
                                                         UDS  │ read-only,     │  own Wi-Fi AP,
-                                                             │ status+verdicts│  no upstream
-                                                             └────────────────┘  (D-013)
+                                                             │ verdicts+report│  no upstream
+                                                             └────────────────┘  (D-013, D-028)
                     ▲                          ▲
                     └──────────┬───────────────┘
                                │ spawn / heartbeat / restart-with-backoff
@@ -82,6 +82,7 @@ the measured numbers that justify it.
 | analyzed | model file missing or corrupt | | fall back to residuals only | |
 | supervisor | itself dies | systemd `Restart=always` | the light freezes steady, which by design reads "not running" (D-027) | |
 | status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
+| status page | report generation fails or runs out of memory (D-028) | error return; RSS in the heartbeat | the page says the report failed; capture and storage unaffected | |
 | clock | no RTC, time jumps at boot | | | |
 | power | source disappears: the normal key-off (D-024) | source-present GPIO | grace period, then commit, checkpoint, sync, halt; the power stage cuts the Pi | |
 | power | source dips at crank | source-present drops for less than the grace period | ride through on the supercapacitor; log the dip | |
@@ -169,9 +170,10 @@ adversarial review of diffs, documentation. Not used for: the analysis pipeline'
 design decisions, and never at runtime.
 
 The boundary is legible by inspection: `src/` contains no HTTP client and no network code
-except the read-only status page server in `src/interface/`, which serves the device's own
-Wi-Fi access point and has no upstream connection (D-013). `grep -r` for any network
-symbol outside that directory returns nothing, and that check is in `make test`.
+except the read-only status page and report server in `src/interface/`, which serves the
+box's own Wi-Fi access point and has no upstream connection (D-013, D-028). `grep -r` for
+any network symbol outside that directory returns nothing, and that check is in
+`make test`.
 
 ## 9. Changelog (added at M5)
 >
