@@ -21,7 +21,8 @@ int main(void)
     LOG_I("start");
 
     /* TODO(M3): read committed records from storaged's log as it grows, never the ring
-     *           (D-031); stop at the last committed record.
+     *           (D-031); never read past the durable offset storaged publishes after
+     *           fsync returns.
      * TODO(M3): operating-point binning + running statistics (Welford).
      * TODO(M4): Mahalanobis residual; Theil-Sen trend; state machine.
      * TODO(M4): checkpoint baselines to A/B slots; at start, load the newest valid

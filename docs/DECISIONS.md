@@ -486,9 +486,12 @@ readers
 
 **Decision.** The shared-memory SPSC ring has exactly one producer, `obdd`, and one
 consumer, `storaged`. `analyzed` does not read the ring: it reads `storaged`'s log, in
-order, and only records whose batch has been committed to disk. `obdctl` and the status
-page never read samples themselves; they ask the supervisor over its Unix socket, and the
-supervisor asks the process that holds the answer.
+order, and only records whose batch has been committed to disk. "Committed" means
+durable, not merely written: a reader of the file sees a `COMMIT` in the page cache before
+`fsync` returns, so `storaged` publishes a **durable offset** only after `fsync` returns,
+and `analyzed` never reads past it. `obdctl` and the status page never read samples
+themselves; they ask the supervisor over its Unix socket, and the supervisor asks the
+process that holds the answer.
 
 **Why.** An SPSC ring has one consumer, so the old diagram could not be built as drawn.
 Camden chose this over two rings, 2026-10-21:
@@ -505,8 +508,13 @@ Camden chose this over two rings, 2026-10-21:
 `fsync`), which is nothing for signals that move over minutes. `analyzed` depends on the
 log format, so a format change touches both processes. If `storaged` is down, analysis
 stalls rather than running on unrecorded data, and the light shows red. A reader of a file
-that is still growing must stop at the last committed record and treat anything after it
-as not there yet.
+that is still growing must stop at the durable offset and treat anything after it as not
+there yet.
+
+**Open, for the stage-2 architecture (`archdiag`).** The ring carries only samples, so this
+entry does not yet say how `analyzed`'s verdicts and the supervisor's fault and heartbeat
+events reach durable storage, which the report and `obdctl verdicts --since` need. The
+obvious answer is a Unix socket to `storaged`; it is not decided here.
 
 **Alternative rejected.** Two rings, `obdd` pushing every sample into both: lower
 analysis latency, but the analysis ring overruns whenever `analyzed` restarts, and
