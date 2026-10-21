@@ -24,7 +24,7 @@ how many trials. Enough for a TA to re-measure.
 > CPU and RSS per process, at steady state and **over the full soak**. The hourly
 > heartbeats give you this series for free — plot it.
 
-[figure: RSS vs. time, all processes, full 48 h]
+[figure: RSS vs. time, all processes, every session of the 48 h key-cycle window (D-023)]
 
 A flat line here is the whole point. A device that leaks for 48 hours and happens not
 to die has not passed the soak; it has outrun it.

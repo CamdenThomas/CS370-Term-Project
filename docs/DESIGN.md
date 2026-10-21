@@ -109,7 +109,7 @@ the measured numbers that justify it.
 | Every engine sensor, direct | Whatever Mode 01 PIDs the ECU publishes (D-007, D-022) | The model sees only what the car reports, and the two testbeds may report different lists; oil pressure, for one, is probably absent |
 | A year of failing engines | Induced faults on healthy testbed cars, one car at a time (D-021, D-022) | A handful of fault areas, all reversible; no real wear-out failure is ever seen |
 | Raw CAN at the ECU's own publish rate | Mode 01 replies from a Bluetooth OBD2 adapter (D-019) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
-| 48h of live driving | [pending D-006] | |
+| 48 continuous hours on live sensors | 48 hours wall-clock of normal use across key cycles (D-023), pending the professor's written confirmation | The log is a series of sessions with deliberate gaps while parked; the memory plot is per session; the soak needs a car driven normally for two days |
 | Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
 
 ## 6. Evaluation plan
@@ -123,7 +123,7 @@ the measured numbers that justify it.
 | `kill -9` each child: detection + recovery time | N trials per child, from the log | |
 | IRQ vs polling: latency + CPU *(only with `pisensor`)* | both paths, idle and `stress-ng` loaded | |
 | Drop rate under contention | sequence accounting | zero |
-| RSS per process over 48h | hourly heartbeat, plotted | flat |
+| RSS per process over the 48 h window | heartbeats at session start, hourly and at session end (D-023), plotted per session | flat |
 | Detection: TPR / FPR per diagnostic | induced-fault fixtures | |
 | Recovery after mid-write power cut | N pull-the-plug trials | 100% |
 

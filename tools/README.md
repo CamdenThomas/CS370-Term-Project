@@ -17,7 +17,7 @@ product's runtime path.
 
 | Tool | Purpose | Board item |
 | --- | --- | --- |
-| `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty that answers Mode 01 requests from recorded captures, for soak rehearsal and testing. Output is labeled `synth`. See **D-006**. | `obdsim` |
+| `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty that answers Mode 01 requests from recorded captures, for development and testing, never the soak's data source (**D-023**). Output is labeled `synth`. | `obdsim` |
 | `plot_soak.py` | RSS / CPU / event-count series from soak heartbeats → the figure docs/EVALUATION.md §3 requires. | `plots` |
 
 **The labeling rule is absolute.** Anything these tools produce carries

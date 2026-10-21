@@ -101,6 +101,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `baseline` <!-- #21 -->
 - [ ] M2 decision: 48-hour soak on a fake OBD2 port — ask Pallickara `soakq` @camden
       <!-- #7 -->
+- [ ] M2 decision: get the professor's 48-hour soak definition (D-023) in writing
+      `profmail`
 - [ ] M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car `bench` @camden
       <!-- #18 -->
 - [ ] M2 hardware: supported-PID survey on the 2008 Forester, with protocol and VIN
@@ -170,8 +172,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] **Induced-fault captures recorded and labeled for each fault area (D-021)**
       <!-- #123 -->
 - [ ] **`make asan` and `make memcheck` clean everywhere** `sanitize` <!-- #70 -->
-- [ ] **48-hour soak begins, with the injected fault planned and scripted** `soak1`
-      <!-- #68 -->
+- [ ] **48-hour key-cycle soak begins (D-023), with the injected fault planned and
+      scripted** `soak1` <!-- #68 -->
 - [ ] M4 analysis: operating-point binning (RPM x load x coolant temp) `bin` @lance
       <!-- #49 -->
 - [ ] M4 analysis: per-bin running mean and variance (Welford) `welford` @lance
@@ -201,7 +203,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #64 -->
 - [x] M4: capture across a real oil change on the CR-V (cut, D-021) `foil` <!-- #65 -->
 - [ ] M4 hardware: enclosure and in-vehicle mounting `encl` @camden <!-- #66 -->
-- [ ] M4 soak: 48-hour run #2 (the margin) `soak2` <!-- #69 -->
+- [ ] M4 soak: 48-hour key-cycle run #2 (the margin) `soak2` <!-- #69 -->
 - [ ] M4 process: transcript copy-out `tx4` <!-- #71 -->
 
 ## M5 — Final submission: system, soak logs, eval report, process artifacts, transcripts

@@ -50,6 +50,7 @@ Decisions currently awaiting a human signature:
 | D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation you own now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
+| D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -578,31 +579,48 @@ recordings:
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
 
-### E.3 — 48-hour soak: live sensors vs. a fake OBD2 port ❓ OPEN
+### E.3 — The 48-hour soak is 48 hours of normal use across key cycles ⚠️ UNREVIEWED
 
-`D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
-· **Must close before M4** · Blocks nothing before M3
+`D-023` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers:** D-006 (§G.7) · **Pending:** the professor's written confirmation
+(`profmail`)
 
-**The conflict.** A car cannot run for 48 hours, so Camden's memo (PROBLEM.md, risk)
-proposes a **fake OBD2 port** that answers Mode 01 requests continuously — board item
-`obdsim`. Handout §5 endorses exactly this kind of harness as "a legitimate systems
-artifact." But the same paragraph says: *"The 48-hour soak and the live demonstration run
-on live sensors; everything else may run on honest replay."* A soak on the fake port is
-synthesized data by definition, and is labeled `src=synth` everywhere regardless.
+**Decision.** The graded soak (handout §3.4) is a **48-hour wall-clock window of the car's
+normal use**. Across that window the box:
 
-**Options.**
+- boots at every key-on, records, and shuts down at every key-off;
+- logs a timestamped start of every session, and a heartbeat at session start, at least
+  hourly while running, and at session end, so a drive shorter than an hour still has
+  one;
+- takes at least one injected fault (the OBD2 dongle unplugged for ten minutes with the
+  engine running, or `kill -9` of a child), with detection, degradation and recovery in
+  the log;
+- ends every session in an orderly state, and the log says whether each session ended in
+  a clean shutdown or was recovered at the next boot.
 
-- **(a)** A written exception from Pallickara for a soak on the fake port. The email text
-  is in the body of board item `soakq`.
-- **(b)** A sensor on the Pi itself (`pisensor`: MPU-6050 and/or DS18B20, ~$8) runs live
-  for all 48 hours while the OBD side comes from the fake port, labeled `synth`.
-- **(c)** The parked CR-V, key in accessory, on the live port with a battery tender. Fully
-  live, but engine-off values barely move, the socket must stay live in accessory (D-011),
-  and it ties up Lance's car for two days.
+The data source is the live car, `src=live`. The fake OBD2 port (`obdsim`) is a
+development tool and never the soak's data source.
 
-**Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
-reason `pisensor` is on the critical path. The `src=` field is in the record format
-regardless.
+**Why.** Professor Pallickara told Camden, verbally, that the 48-hour soak means 48 hours
+of regular use: the car starts and stops, the product handles every cycle, shuts down
+gracefully at key-off and boots again at the next start. Camden chose the wall-clock
+reading (`docs/REVISION_PLAN.md` §1.1, P3). It also dissolves D-006's conflict: the soak
+runs on live sensors, as handout §5 requires.
+
+**Pending.** The handout's text says "48 continuous hours". Until the professor confirms
+this reading in writing (email draft in `docs/REVISION_PLAN.md` §9; Camden sends it),
+build so that a grader reading the handout literally can still follow the logs: every
+off period is a deliberate gap between a logged shutdown and a logged boot.
+
+**Cost.**
+
+- The soak needs a real car driven normally for two days, with margin to do it twice
+  (handout §16).
+- Proving a 48-hour wall-clock span needs wall-clock time that survives the box being
+  off. The Pi has no battery-backed clock, so this needs its own decision.
+- Heartbeats exist only while the car runs, so the memory plot is a series of sessions,
+  not one line.
 
 ---
 
@@ -883,6 +901,34 @@ is the one thing that cannot be compressed by working harder in Week 14.
   (D-021).
 - Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
   schedule; Camden owns the capture code but not the car.
+
+### G.7 — (was E.3) 48-hour soak: live sensors vs. a fake OBD2 port 🗑
+
+`D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
+· **Must close before M4** · Blocks nothing before M3
+· **Answered 2026-10-21 by D-023 (§E.3)**: the soak is 48 hours of normal use across key
+cycles, on the live car, so none of the options below is needed.
+
+**The conflict.** A car cannot run for 48 hours, so Camden's memo (PROBLEM.md, risk)
+proposes a **fake OBD2 port** that answers Mode 01 requests continuously — board item
+`obdsim`. Handout §5 endorses exactly this kind of harness as "a legitimate systems
+artifact." But the same paragraph says: *"The 48-hour soak and the live demonstration run
+on live sensors; everything else may run on honest replay."* A soak on the fake port is
+synthesized data by definition, and is labeled `src=synth` everywhere regardless.
+
+**Options.**
+
+- **(a)** A written exception from Pallickara for a soak on the fake port. The email text
+  is in the body of board item `soakq`.
+- **(b)** A sensor on the Pi itself (`pisensor`: MPU-6050 and/or DS18B20, ~$8) runs live
+  for all 48 hours while the OBD side comes from the fake port, labeled `synth`.
+- **(c)** The parked CR-V, key in accessory, on the live port with a battery tender. Fully
+  live, but engine-off values barely move, the socket must stay live in accessory (D-011),
+  and it ties up Lance's car for two days.
+
+**Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
+reason `pisensor` is on the critical path. The `src=` field is in the record format
+regardless.
 
 ---
 
