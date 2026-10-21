@@ -37,6 +37,7 @@ a human (`CLAUDE.md` §8.4). Sizes marked *estimate* come from the power workshe
 | 1 | 5 V / 3 A converter that can step up | The bank's voltage falls as it discharges. |
 | 1 | Source-present divider and halt-done switch | GPIOs chosen in the schematic (`schpi`). |
 | 1 | Tri-color LED (red, yellow, green) + its resistors + the boot-time pull | The light (D-027). Two or three GPIOs, depending on the part; resistor values from its datasheet (`ledspec`). |
+| 1 | Real-time clock module on I2C, with its own backup cell or capacitor | Keeps wall time while the box is off (D-030). The backup's temperature rating must cover the cabin (`rtcspec`). |
 | 1 | Heatsink for the Pi | A Pi 4 throttles near 80 °C (`thermal`). |
 | 1 | Shell: heat-resistant plastic (ABS, ASA or similar), vent slots, no metal near the antenna | `enclspec`. PLA softens near 60 °C, below a parked cabin's temperature. A food container is an acceptable prototype (handout). |
 

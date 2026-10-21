@@ -82,7 +82,7 @@ sensor is added, so nothing in the design needs them (D-029).
 | supervisor | itself dies | systemd `Restart=always` | the light freezes steady, which by design reads "not running" (D-027) | |
 | status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
 | status page | report generation fails or runs out of memory (D-028) | error return; RSS in the heartbeat | the page says the report failed; capture and storage unaffected | |
-| clock | no RTC, time jumps at boot | | | |
+| clock | the RTC lost its backup or is missing (D-030) | the RTC reports invalid time, or does not answer, at boot | run on `mono_ns`; mark the session's wall time untrusted; the report says so | |
 | power | source disappears: the normal key-off (D-024) | source-present GPIO | grace period, then commit, checkpoint, sync, halt; the power stage cuts the Pi | |
 | power | source dips at crank | source-present drops for less than the grace period | ride through on the supercapacitor; log the dip | |
 | power | source returns during shutdown | source-present rises in `SHUTTING_DOWN` | finish the clean shutdown; the power stage power-cycles the Pi, which boots again | |

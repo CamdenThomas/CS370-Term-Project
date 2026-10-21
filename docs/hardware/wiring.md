@@ -10,6 +10,7 @@ in the car's OBD2 port (D-019, D-024). Nothing on the car is cut, spliced or pie
                                         │  source-present (divided to 3.3 V) ──▶ GPIO
                                         ◀── halt-done ─────────────────────── GPIO
   Pi GPIOs ──resistors──▶ tri-color LED ──▶ GND    (the light, D-027)
+  Pi I2C (GPIO2 SDA, GPIO3 SCL) ──▶ real-time clock, powered from 3.3 V   (D-030)
 ```
 
 GPIO numbers for source-present, halt-done and the light are set in the schematic
@@ -74,6 +75,18 @@ an input, so a booting box shows steady yellow.
 
 Every live state is a pulse or blink; a **steady** light, other than yellow while booting,
 or a dark one while the car runs, means the device is not running (DECISIONS §B.5).
+
+## Real-time clock → Pi (D-030)
+
+| Clock pin | Pi pin | Pi signal | Note |
+| --- | --- | --- | --- |
+| SDA | 3 | GPIO2 (I2C1 SDA) | |
+| SCL | 5 | GPIO3 (I2C1 SCL) | |
+| VCC | 1 | 3.3 V | Power it from 3.3 V, so its I2C pull-ups never put 5 V on the Pi. Meter it before connecting. |
+| GND | 6 | GND | |
+
+The part, its backup cell or capacitor, and that backup's temperature rating are chosen in
+`rtcspec`.
 
 ## Bring-up order
 

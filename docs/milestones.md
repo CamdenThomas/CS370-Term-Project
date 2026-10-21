@@ -142,6 +142,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 docs: tri-color light patterns, priority, the boot state and the LED part
       `ledspec`
 - [ ] M2 docs: report contents and format, box fault versus car fault `reportspec`
+- [ ] M2 docs: real-time clock: part, backup cell, cabin temperature rating `rtcspec`
 - [ ] M2 docs: boot-time budget and what the first minute of a drive loses `bootbudget`
 - [ ] M2 docs: box mechanical spec: size, vents, heat-rated plastic, antenna clearance
       `enclspec`
@@ -179,6 +180,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim`
       <!-- #90 -->
 - [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon`
+- [ ] M3 supervisor: set the clock from the RTC at boot; flag invalid time `rtcboot`
 - [ ] M3 interface: the box's own Wi-Fi access point, WPA2, no upstream `wifiap`
 - [ ] M3 interface: report generator (HTML and CSV), labeled by data source `report`
 - [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg`

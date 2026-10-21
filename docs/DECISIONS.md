@@ -53,6 +53,7 @@ Decisions currently awaiting a human signature:
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
+| D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -339,6 +340,34 @@ scan tool does.
 
 **Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
 E.1 (D-021): one car, a learned normal, fault areas named, measured error rates.
+
+### A.8 — A real-time clock keeps wall time while the box is off ⚠️ UNREVIEWED
+
+`D-030` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** The box gets a small real-time clock module on the Pi's I2C bus, kept
+running by its own backup cell or capacitor while the box is off. At boot the system
+clock is set from it. If the clock reports its time as invalid (its backup was lost),
+that session's wall time is marked untrusted. Every record still carries `mono_ns`
+regardless. The phone page stays read-only: it does not set the clock.
+
+**Why.** The Pi has no battery-backed clock, and the box has no network (`CLAUDE.md`
+§2.3). Raspberry Pi OS's `fake-hwclock` restores the time saved at the last shutdown, so
+the clock does not advance while the box is off, and every boot would appear to follow the
+previous shutdown directly. The soak (D-023) must prove a 48-hour wall-clock span across
+parked gaps, and the report's session list needs real times. Camden chose the clock
+module, 2026-10-21, over the phone setting the time (that depends on someone opening the
+page on every drive) and over no wall clock at all (`docs/REVISION_PLAN.md` §1.2, R5).
+
+**Cost.**
+
+- One more part, on I2C (GPIO2 and GPIO3, header pins 3 and 5), drawn in the Pi interface
+  block, and bought only after the design is signed.
+- Its backup cell or capacitor lives in a parked car's cabin, so its temperature rating
+  must cover that, checked against the part's datasheet (`rtcspec`).
+- A clock that has drifted or lost its backup must be detected rather than trusted, so the
+  boot path checks it (`rtcboot`).
 
 ---
 
@@ -771,7 +800,7 @@ off period is a deliberate gap between a logged shutdown and a logged boot.
 - The soak needs a real car driven normally for two days, with margin to do it twice
   (handout §16).
 - Proving a 48-hour wall-clock span needs wall-clock time that survives the box being
-  off. The Pi has no battery-backed clock, so this needs its own decision.
+  off. The Pi has no battery-backed clock, so the box gets one (D-030).
 - Heartbeats exist only while the car runs, so the memory plot is a series of sessions,
   not one line.
 

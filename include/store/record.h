@@ -22,7 +22,8 @@ typedef struct {
     uint16_t len;        /* bytes of payload following this header */
     uint64_t seq;        /* monotonic; a gap here is a detected loss, not a hidden one */
     uint64_t mono_ns;    /* CLOCK_MONOTONIC — for intervals, survives wall-clock jumps */
-    uint64_t wall_ns;    /* CLOCK_REALTIME — may be wrong before NTP; see D-00x */
+    uint64_t wall_ns;    /* CLOCK_REALTIME, set from the RTC at boot (D-030); untrusted if
+                          * the RTC reported invalid time */
     uint8_t  src;        /* data_src_t — live | replay | synth. Never optional. */
     uint8_t  kind;       /* rec_kind_t */
     uint16_t _pad;

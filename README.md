@@ -36,12 +36,12 @@ came from.
 See `docs/hardware/BOM.md` for the parts list and `docs/hardware/wiring.md` for the
 connections and the safety notes. Summary: one small box with one USB-C port and one
 light, plus a Bluetooth Classic OBD2 dongle (OBDLink LX) in the car's OBD2 port. Inside
-the box are a Raspberry Pi 4, its microSD card and a power block with a small
-supercapacitor. Plug the dongle into the OBD2 port and the box into any USB-C charger in
-the car; nothing is cut or wired into the car (decision D-024). The box runs only while
-the car does: at key-off it shuts itself down cleanly on its stored energy and stays dark
-until the next start. The Pi pairs with the dongle and reads it over RFCOMM as `/dev/obd`
-(decision D-019).
+the box are a Raspberry Pi 4, its microSD card, a real-time clock (decision D-030) and a
+power block with a small supercapacitor. Plug the dongle into the OBD2 port and the box
+into any USB-C charger in the car; nothing is cut or wired into the car (decision D-024).
+The box runs only while the car does: at key-off it shuts itself down cleanly on its
+stored energy and stays dark until the next start. The Pi pairs with the dongle and reads
+it over RFCOMM as `/dev/obd` (decision D-019).
 
 **The light** (decision D-027). Every live state pulses, so a light that is stuck can only
 mean the box is not running:
