@@ -18,6 +18,8 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
 | Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §7 | `DECISIONS.md` §F.2 |
 | Hardware data path (Bluetooth OBD2 adapter) | `DECISIONS.md` §A.1 (D-019) | README, DESIGN, `hardware/` |
+| The box: power and shutdown, light, clock | `DECISIONS.md` §A.6 (D-024), §B.5 (D-027), §A.8 (D-030) | README, DESIGN, `hardware/` |
+| Testbed cars | `DECISIONS.md` §A.2 (D-022) | README, PROBLEM, `hardware/pid-survey.md` |
 | Commit message format | [`../.gitmessage`](../.gitmessage) | `CLAUDE.md` §7.4 |
 | PR body | [`../.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md) | `CLAUDE.md` §7.5 |
 | Markdown and spelling rules | [`../.markdownlint.jsonc`](../.markdownlint.jsonc), [`../cspell.json`](../cspell.json) | `DECISIONS.md` §F.4 (D-018) |

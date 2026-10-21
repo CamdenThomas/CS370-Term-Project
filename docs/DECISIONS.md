@@ -545,7 +545,8 @@ remains demonstrable through `obdctl` alone.
 
 - A network listener in the product. It binds only to the AP interface, is read-only, and
   lives only in `src/interface/`, where `make boundary` already allows network symbols.
-- One more process in the 48-hour RSS plot, and Wi-Fi radio power on the car's USB port.
+- One more process in the 48-hour RSS plot, and Wi-Fi radio power from the box's supply
+  (D-024).
 - The access point shares the Pi 4's one radio chip with the Bluetooth link to the adapter
   (D-019). Measured by `btcoex`.
 - **Sub-decision, closed by D-028:** the server's language. C in `src/interface/` keeps an
