@@ -54,8 +54,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [x] **Risk named plainly** <!-- #119 -->
 - [x] **Both partners' transcripts copied to `partners/<name>/transcripts/`** `tx1`
       <!-- #17 -->
-- [ ] **Hardware ordered (`docs/hardware/BOM.md`); shipping time is the most common silent
-      schedule-killer** `order` <!-- #4 -->
+- [ ] **Hardware ordered (`docs/hardware/BOM.md`): the dongle, a USB-C cable, microSD;
+      power-block parts only after the design is signed** `order` <!-- #4 -->
 - [x] M1 hardware: supported-PID survey on the Outback (cut) `pidsub` @camden <!-- #11 -->
 - [ ] M1 hardware: supported-PID survey on the Honda `pidhonda` <!-- #12 -->
 - [x] M1 decision: is analog oil pressure available? If not, what replaces diagnostic #1?
@@ -119,9 +119,11 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #26 -->
 - [ ] M2 docs: constraints and substitutions section `substit` <!-- #27 -->
 - [ ] M2 hw: populate CS370_Project_Library.kicad_sym `symlib` <!-- #29 -->
-- [ ] M2 hw: draw the Power block `schpower` <!-- #30 -->
+- [ ] M2 hw: draw the Power block (USB-C sink, protection, limiter, supercapacitor,
+      converter) `schpower` <!-- #30 -->
 - [ ] M2 hw: draw the CAN block `schcan` <!-- #31 -->
-- [ ] M2 hw: draw the Pi interface block `schpi` <!-- #32 -->
+- [ ] M2 hw: draw the Pi interface block (light, source-present, halt-done) `schpi`
+      <!-- #32 -->
 - [x] M2 hw: measure MCP2515 module VCC and MISO with the Pi DISCONNECTED (cut) `meterv`
       @camden <!-- #33 -->
 - [ ] M2 hw: make hwcheck green; regenerate wiring.md and BOM.md from the schematic
@@ -131,8 +133,18 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #110 -->
 - [ ] M2 decision: add a sensor on the Pi itself — MPU-6050, DS18B20, both, or neither?
       `pisensor` <!-- #93 -->
-- [ ] M2 hardware: prove the USB-C supply — switched, and no brown-out at crank `keyoff`
-      <!-- #61 -->
+- [ ] M2 hardware: prove the box's USB-C input: charger dead at key-off, crank dip,
+      undervoltage `keyoff` <!-- #61 -->
+- [ ] M2 hardware: measure the OBD2 dongle's key-off current from pin 16 `dongledrain`
+- [ ] M2 docs: power worksheet: Pi draw by state, shutdown and crank energy, bank size
+      `powerspec`
+- [ ] M2 docs: power-event state machine and the grace period `shutfsm`
+- [ ] M2 docs: boot-time budget and what the first minute of a drive loses `bootbudget`
+- [ ] M2 docs: box mechanical spec: size, vents, heat-rated plastic, antenna clearance
+      `enclspec`
+- [ ] M2 hardware: record the supply dip at crank with a meter `cranklog`
+- [ ] M2 hardware: supercapacitor bench test into a dummy load, no Pi, after the design
+      is signed `capbench`
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -163,6 +175,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 interface: obdctl UDS transport + status verb `obdstatus` <!-- #44 -->
 - [ ] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim`
       <!-- #90 -->
+- [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon`
+- [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg`
 - [ ] M3 process: transcript copy-out `tx3` <!-- #48 -->
 
 ## M4 — Feature freeze; 48-hour soak begins
@@ -203,7 +217,12 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M4 ground truth: sensor unplug — and demo-day rehearsal `funplug`
       <!-- #64 -->
 - [x] M4: capture across a real oil change on the CR-V (cut, D-021) `foil` <!-- #65 -->
-- [ ] M4 hardware: enclosure and in-vehicle mounting `encl` <!-- #66 -->
+- [ ] M4 hardware: the box: shell, vents, USB-C port, light, mounting `encl` <!-- #66 -->
+- [ ] M4 experiment: clean-shutdown time distribution and supercapacitor margin `expshut`
+- [ ] M4 experiment: key-cycle recovery: N real cycles, unclean endings, records lost
+      `keycyc`
+- [ ] M4 hardware: Pi and supercapacitor temperature in a sealed shell in a hot cabin
+      `thermal`
 - [ ] M4 soak: 48-hour key-cycle run #2 (the margin) `soak2` <!-- #69 -->
 - [ ] M4 process: transcript copy-out `tx4` <!-- #71 -->
 

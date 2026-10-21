@@ -83,8 +83,10 @@ is pasted.** Not "should pass." Output.
 
 A Raspberry Pi in a car. The testbeds are Camden's **2008 Subaru Forester** and Lance's
 **2015 Honda CR-V EX-L**, and neither is required of anyone (D-022). A Bluetooth
-Classic OBD2 adapter in the OBD2 port is read over RFCOMM as `/dev/obd` (D-019); the car's
-USB powers the Pi, nothing cut (D-011). Mode 01 requests (D-012) read every engine sensor
+Classic OBD2 adapter in the OBD2 port is read over RFCOMM as `/dev/obd` (D-019). The Pi
+lives in one small box with one USB-C port, fed by the owner's own charger, and a
+seconds-scale supercapacitor lets it shut down cleanly at key-off; it is off while the car
+is, and nothing is cut (D-024). Mode 01 requests (D-012) read every engine sensor
 the car publishes; the device learns *this car's* normal per operating point, flags what
 leaves it, and names the likely fault area. A rough first draft, not a finished product.
 The owner reads it on a phone over the device's own Wi-Fi (D-013) or with `obdctl`; one

@@ -41,8 +41,8 @@ is ugly, even if it is just raw adapter replies logged to a file. A crude captur
 on time beats an elegant one that starts three weeks late. Every week it slips is a week
 less of normal to learn from, and a weaker catch rate at M5.
 
-Board chain: `order` → `bench` → `firstcap` → **`baseline`**, with `keyoff` (the USB-C
-supply proven) also gating `baseline`.
+Board chain: `order` → `bench` → `firstcap` → **`baseline`**, with `keyoff` (the owner's
+charger proven dead at key-off) also gating `baseline`.
 
 ### Critical path B — hardware lead time
 
@@ -51,9 +51,19 @@ order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first li
 ```
 
 Nothing downstream of "arrives" can start early. The handout names shipping time as the most
-common silent schedule-killer, twice. **Order on the day you read this.** The Bluetooth
-OBD2 adapter (D-019) is the whole data path — the same part runs the PID survey, the bench
-bring-up and every capture after it.
+common silent schedule-killer, twice. **Order the dongle the day the paper plan is
+signed.** The Bluetooth OBD2 adapter (D-019) is the whole data path — the same part runs
+the PID survey, the bench bring-up and every capture after it.
+
+The box's power block (D-024) is the second chain on this path, and it starts later
+because nothing in it is ordered until its design is signed:
+
+```text
+powerspec ──▶ schpower ──▶ design signed ──▶ parts ──▶ capbench ──▶ encl (the box)
+```
+
+Until the box exists, the Pi runs straight from a charger, so baseline capture does not
+wait for it.
 
 Board chain: `order` blocks the PID survey, `bench` and `keyoff`, and everything physical
 after them.

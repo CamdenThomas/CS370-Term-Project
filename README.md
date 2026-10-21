@@ -1,14 +1,15 @@
 # carwatch
 
-A plug-in engine monitor for one car. It reads the car's own sensors through a Bluetooth
-OBD2 adapter, learns what *that specific car* looks like at each operating point, and
-flags behavior that leaves its normal, naming the likely fault area, before a
-check-engine light would. A rough first draft of the idea: one car, one adapter, one Pi.
+A small in-car box that watches one car's engine. It reads the car's own sensors through
+a Bluetooth OBD2 dongle, learns what *that specific car* looks like at each operating
+point, and flags behavior that leaves its normal, naming the likely fault area, before a
+check-engine light would. A rough first draft of the idea: one box, one dongle, one car at
+a time.
 
 CS 370 Operating Systems term project — Camden Thomas & Lance Baron, Colorado State
 University.
 
-> **Status: M1.** Structure and contracts are in place; subsystems are stubs. Every
+> **Status: M2.** The design is being written; subsystems are stubs. Every
 > document is indexed in [`docs/README.md`](docs/README.md); progress is in
 > [`docs/milestones.md`](docs/milestones.md).
 
@@ -33,10 +34,14 @@ came from.
 ## Hardware
 
 See `docs/hardware/BOM.md` for the parts list and `docs/hardware/wiring.md` for the
-connections and the safety notes. Summary: a Raspberry Pi 4 and a Bluetooth Classic OBD2
-adapter (OBDLink LX) in the car's OBD2 port. The Pi pairs with it and reads it over RFCOMM
-as `/dev/obd` (decision D-019). Power comes from the car's USB-C port or a 12 V-socket
-USB-C adapter — no wiring into the car, nothing cut (decision D-011). One LED on GPIO17 is
+connections and the safety notes. Summary: one small box with one USB-C port and one
+light, plus a Bluetooth Classic OBD2 dongle (OBDLink LX) in the car's OBD2 port. Inside
+the box are a Raspberry Pi 4, its microSD card and a power block with a small
+supercapacitor. Plug the dongle into the OBD2 port and the box into any USB-C charger in
+the car; nothing is cut or wired into the car (decision D-024). The box runs only while
+the car does: at key-off it shuts itself down cleanly on its stored energy and stays dark
+until the next start. The Pi pairs with the dongle and reads it over RFCOMM as `/dev/obd`
+(decision D-019). One LED on GPIO17 is
 the warning light: slow blink = recording, double-blink = a finding, fast blink =
 degraded, **steady on or off = not running** (decision D-014).
 

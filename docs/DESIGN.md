@@ -16,8 +16,9 @@
 
 ```text
   OBD2 port
-        │                          Pi power: car USB-C / 12 V socket, ≥ 5.1 V / 3 A,
-  ┌──────────────┐                 switched — cut, unannounced, at every key-off (D-011)
+        │                          Pi power: the box's one USB-C input from the owner's
+  ┌──────────────┐                 charger + a seconds-scale supercapacitor; off at rest,
+  │              │                 clean shutdown at key-off (D-024)
   │ Bluetooth    │  RFCOMM tty         ┌────────────────┐
   │ OBD2 adapter │◀ ~ ~ ~ ~ ~ ~ ~ ~ ~ ▶│      obdd      │  Mode 01 requests,
   │ (D-019)      │  /dev/obd           │  tty reader    │  [N] req/s, round-robin (D-012)
@@ -82,8 +83,17 @@ the measured numbers that justify it.
 | supervisor | itself dies | systemd `Restart=always` | warning light freezes steady, which by design reads "not running" (D-014) | |
 | status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
 | clock | no RTC, time jumps at boot | | | |
-| power | USB port sags at crank; Pi undervolts but keeps running (D-011) | `vcgencmd get_throttled` polled by supervisor | | |
-| power | cut at key-off, every drive (D-011) | none possible in advance — recovery scan at next boot | | |
+| power | source disappears: the normal key-off (D-024) | source-present GPIO | grace period, then commit, checkpoint, sync, halt; the power stage cuts the Pi | |
+| power | source dips at crank | source-present drops for less than the grace period | ride through on the supercapacitor; log the dip | |
+| power | source returns during shutdown | source-present rises in `SHUTTING_DOWN` | finish the clean shutdown; the power stage power-cycles the Pi, which boots again | |
+| power | bank empty at key-off or at a cold-start crank | failed shutdown timing; next boot finds an unclean end | crash-consistent recovery at the next boot (mechanism D) | |
+| power | charger pulled mid-drive | source-present GPIO | as key-off, logged as unplanned | |
+| power | weak source; Pi undervolts but keeps running | `vcgencmd get_throttled` polled by supervisor | degrade; log; the bank supplements | |
+| power | charger stays live with the key off (unsupported install) | source present while the engine reports nothing for a long time | log it; the box stays on; the report says so | |
+| thermal | Pi throttles in a hot cabin | `vcgencmd get_throttled`, SoC temperature | degrade; log; the report shows it | |
+| storage | SD card fails | write error | degrade and log; do not crash | |
+| radio | Bluetooth and Wi-Fi contend on the Pi 4's one chip | `btcoex` measurement | measure and document | |
+| boot | the previous session ended unclean | boot record flag, recovery log | recover; list it in the report's sessions | |
 
 ## 4. Storage and data
 >
@@ -110,7 +120,8 @@ the measured numbers that justify it.
 | A year of failing engines | Induced faults on healthy testbed cars, one car at a time (D-021, D-022) | A handful of fault areas, all reversible; no real wear-out failure is ever seen |
 | Raw CAN at the ECU's own publish rate | Mode 01 replies from a Bluetooth OBD2 adapter (D-019) | ~10–20 samples/s total, request/response only; no interrupt line, no bus timing — most of the mechanism menu leaves the data path (D-017) |
 | 48 continuous hours on live sensors | 48 hours wall-clock of normal use across key cycles (D-023), pending the professor's written confirmation | The log is a series of sessions with deliberate gaps while parked; the memory plot is per session; the soak needs a car driven normally for two days |
-| Fused automotive supply with hold-up for a clean shutdown | The car's switched USB-C port (D-011) | No warning before power loss; brown-out at crank must be measured, not assumed |
+| A supply with full hold-up through crank and shutdown | The owner's USB-C charger plus a seconds-scale supercapacitor (D-024) | Shutdown is clean only once the bank has charged. At a cold start the bank is empty, so the first crank may reset the Pi. A charger that stays live with the key off keeps the box on |
+| A device that is recording the instant the key turns | A stock Pi 4 boot, roughly half a minute (estimate, `bootbudget`) | The start of each drive's warm-up, among its most informative minutes, goes unrecorded |
 
 ## 6. Evaluation plan
 >

@@ -30,8 +30,8 @@ architecture, which makes both documents easier to defend:
 
 | Block | Contains |
 | --- | --- |
-| **Power** | USB-C input from the car (switched, D-011) as an off-sheet connector, the Pi's 5 V rail, bulk and bypass caps. **No** OBD2 pin 16 and no buck converter. |
-| **Pi interface** | 40-pin header, the warning-light LED + 330 Ω on GPIO17 (D-014), grounds |
+| **Power** | The box's USB-C sink input (5.1 kΩ on CC1 and CC2) as an off-sheet connector; input protection and fuse; current limit and inrush limiter; the supercapacitor bank with balancing and its fuse; the power-path controller; the step-up-capable 5 V / 3 A converter to the Pi; the source-present and halt-done signals (D-024). **No** OBD2 pin 16. |
+| **Pi interface** | 40-pin header, the warning-light LED + 330 Ω on GPIO17 (D-014), source-present (divided to 3.3 V) and halt-done GPIOs, grounds |
 | **CAN** *(stretch only, D-019)* | OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050 transceiver, MCP2515, crystal + load caps, termination jumper **drawn open** (D-011), `INT` to GPIO, SPI0 (CE0/MISO/MOSI/SCLK) |
 | **Sensors** *(conditional, D-006)* | MPU-6050 on I2C with pull-ups; DS18B20 on 1-Wire with its 4.7 kΩ |
 
@@ -42,9 +42,9 @@ Bluetooth (D-019), so no wire of ours touches it.
 
 1. **Every net that leaves a block is a named label**, not a wire crossing a boundary. The
    netlist is read by humans at the defense.
-2. **Annotate the voltage domain on every power net** (`+5V_USB`, `+5V`, `+3V3`). The Pi has
-   no 5 V-tolerant inputs and no over-voltage protection; a mislabeled rail is how a Pi dies
-   silently in Week 13.
+2. **Annotate the voltage domain on every power net** (`+5V_USB`, `+V_BANK`, `+5V`,
+   `+3V3`). The Pi has no 5 V-tolerant inputs and no over-voltage protection; a mislabeled
+   rail is how a Pi dies silently in Week 13.
 3. **Every IC gets its decoupling drawn**, even when the module already has it. The
    schematic documents what is *electrically true*, not what we happened to buy assembled.
 4. *(CAN stretch only.)* **The MCP2515 crystal frequency is a value field, not a comment**

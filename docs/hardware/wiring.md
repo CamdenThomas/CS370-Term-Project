@@ -1,41 +1,68 @@
 # Wiring and electrical safety
 
-The device is two off-the-shelf connections, one Bluetooth link and one LED (D-011,
-D-019). Nothing on the car is cut, spliced or pierced.
+The product is one box with one USB-C port and one light, plus a Bluetooth OBD2 dongle
+in the car's OBD2 port (D-019, D-024). Nothing on the car is cut, spliced or pierced.
 
 ```text
-  OBD2 port ──[Bluetooth OBD2 adapter]~~ RFCOMM ~~▶ Pi (/dev/rfcomm0 → /dev/obd)
-  car USB-C port or 12 V socket adapter ──USB-C──▶ Pi power
+  OBD2 port ──[Bluetooth OBD2 dongle]~~ RFCOMM ~~▶ Pi (/dev/rfcomm0 → /dev/obd)
+
+  owner's USB-C charger ──USB-C──▶ [box: power block, supercapacitor] ──5 V──▶ Pi
+                                        │  source-present (divided to 3.3 V) ──▶ GPIO
+                                        ◀── halt-done ─────────────────────── GPIO
   Pi GPIO17 ──330 Ω──▶ LED ──▶ GND          (warning light)
 ```
 
-> **The Pi's GPIO is 3.3 V and has zero over-voltage protection.** The LED is the only
-> thing wired to the header. Wire it with the Pi powered off.
+GPIO numbers for source-present and halt-done are set in the schematic (`schpi`), not
+here.
 
-## OBD2 adapter → Pi (D-019)
+> **The Pi's GPIO is 3.3 V and has zero over-voltage protection.** Source-present comes
+> from the 5 V USB input, so it reaches the header only through a divider; meter it
+> before it is connected. Wire everything with the Pi powered off.
+
+## OBD2 dongle → Pi (D-019)
 
 | Item | Value | Note |
 | --- | --- | --- |
-| Adapter | OBDLink LX (STN chip) | **Bluetooth Classic, Serial Port Profile. Not BLE:** a BLE-only adapter has no RFCOMM channel and will not bind. |
-| Connection | The Pi's built-in Bluetooth | Paired and trusted once with `bluetoothctl`; record the adapter's MAC address here. |
+| Dongle | OBDLink LX (STN chip) | **Bluetooth Classic, Serial Port Profile. Not BLE:** a BLE-only adapter has no RFCOMM channel and will not bind. |
+| Connection | The Pi's built-in Bluetooth | Paired and trusted once with `bluetoothctl`; record the dongle's MAC address here. |
 | Stable name | `/dev/obd` | `rfcomm bind 0 <MAC> 1` creates `/dev/rfcomm0` at every boot, and a udev rule links it to `/dev/obd` (`scripts/provision_pi.sh`). The daemon never opens an `rfcomm` number. |
 | Baud | ignored | RFCOMM carries bytes without a line rate; `screen` and `obdd` may set any baud. |
 | Fallback | USB OBD2 adapter (D-015, §G.4) | Swap the udev rule to match its vendor/product ID; nothing else changes. |
-| Protocol | `ATSP0` (automatic) | The adapter negotiates the car's OBD2 protocol itself. |
-| Adapter power | OBD2 pin 16 — **live with the key off** | The adapter draws from the car even when parked. Measure its key-off current (board item `keyoff`) before leaving it plugged in overnight. |
+| Protocol | `ATSP0` (automatic) | The dongle negotiates the car's OBD2 protocol itself. Record what it chose (`ATDP`) in `pid-survey.md`. |
+| Dongle power | OBD2 pin 16 — **live with the key off** | The dongle draws from the car even when parked. Measure its key-off current (board item `dongledrain`) before leaving it plugged in overnight. |
 
-## Power — the car's USB-C (D-011)
+## Power — the box's USB-C input (D-024)
 
-The Pi is powered from the car's own USB-C port, or a USB-C adapter in the 12 V socket.
+The box takes the owner's own USB-C charger. Its power block (requirements in
+`docs/DECISIONS.md` §A.6):
 
-| Check | How | Record |
-| --- | --- | --- |
-| Is the port switched (off with the key)? | Meter or a USB power tester, key off / ACC / run | here |
-| Does it hold the Pi up at crank? | `vcgencmd get_throttled` after a cold start; must be `0x0` | here |
-| Rating | ≥ 5.1 V / 3 A for a Pi 4 | adapter model, here |
+1. sinks 5 V only (5.1 kΩ on both CC pins), behind transient and reverse-polarity
+   protection and a fuse;
+2. limits input current below what the source advertises, and limits inrush into the
+   empty supercapacitor bank;
+3. feeds the Pi from the source first and from the bank only for the gap;
+4. reports source-present on a GPIO;
+5. cuts the Pi's supply when the Pi signals halt-done, even if the source has returned,
+   then re-enables after a short off time;
+6. powers on again by itself when the source returns.
 
-A cheap built-in USB port is the likeliest silent failure in this design: an undervolted Pi
-keeps running and corrupts the SD card later. Prove the port, do not trust its label.
+**Not supported:** a charger that stays live with the key off. The box would stay on.
+
+An undervolted Pi keeps running and corrupts the SD card later. Prove the supply; do not
+trust its label.
+
+### Measurements (dated; a row without a result has not been done)
+
+| Measurement | How | Feeds | Date | Result |
+| --- | --- | --- | --- | --- |
+| Does the owner's charger go dead with the key off? Is it live in accessory? | USB-C meter, key off / ACC / run | `keyoff` | | |
+| Supply dip at crank | meter or scope at the charger's output | `cranklog`, the grace period | | |
+| Pi 4 draw by state: boot, idle, loaded, shutdown | USB-C meter | `powerspec` | | |
+| Boot time and shutdown time on the real image | `systemd-analyze`, log timestamps | `bootbudget` | | |
+| Bank discharge into a dummy load; charge time from empty | meter, stopwatch | `capbench` | | |
+| `vcgencmd get_throttled` after a cold start | on the Pi; must be `0x0` | `keyoff` | | |
+| Pi and bank temperature in a sealed shell, hot cabin | Pi sensor, thermometer | `thermal` | | |
+| Dongle key-off current from pin 16 | meter | `dongledrain` | | |
 
 ## Warning light → Pi (D-014)
 
@@ -49,12 +76,13 @@ running (DECISIONS §B.5).
 
 ## Bring-up order
 
-1. Pi on the bench, adapter powered, no car: `bluetoothctl` pairs and trusts it, then
-   `rfcomm bind 0 <MAC> 1`, `ls -l /dev/obd`, and `ATZ` answers with the adapter's
+1. Pi on the bench, dongle powered, no car: `bluetoothctl` pairs and trusts it, then
+   `rfcomm bind 0 <MAC> 1`, `ls -l /dev/obd`, and `ATZ` answers with the dongle's
    version string. Reboot once and confirm `/dev/obd` comes back without a hand.
 2. Car, key to run, engine off: `0100` returns the supported-PID bitmap.
 3. Car, engine running: `010C` (RPM) changes when you touch the throttle.
-4. USB-C power checks above, on a cold start.
+4. The power measurements above: the free ones first (the owner's charger with a meter,
+   key off and at crank), the bank only after the power design is signed.
 
 Measured results go in this file, dated. A step without a recorded result has not been
 done (CLAUDE.md §8.4).

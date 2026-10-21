@@ -39,7 +39,6 @@ Decisions currently awaiting a human signature:
 | ID | Decision | Made by | Session date | Reviewer needed |
 | --- | --- | --- | --- | --- |
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
-| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power schematic block |
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
@@ -51,6 +50,7 @@ Decisions currently awaiting a human signature:
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
+| D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -66,6 +66,10 @@ Decisions currently awaiting a human signature:
 `D-019` · Decided M1, 2026-09-23 · **By:** Camden (in session) + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Supersedes:** D-015 (§G.4)
+
+*Pi power revised 2026-10-21 by D-024 (§A.6), before any review: the Pi is in a box fed
+by the owner's USB-C charger, not wired to the car's USB. The adapter's key-off draw is
+now board item `dongledrain`.*
 
 **Decision.** An **OBDLink LX** (STN chip, **Bluetooth Classic, Serial Port Profile**; not
 BLE) plugs into the OBD2 port. The Pi, powered from the car's USB (D-011), talks to it with
@@ -104,7 +108,7 @@ records what survives (D and E). Bluetooth costs no further mechanism.
   `btcoex`. Putting the access point on 5 GHz is the first mitigation to try.
 - **Key-off draw.** The adapter still draws from OBD2 pin 16, live with the key off, and a
   Bluetooth adapter keeps a radio up. Its sleep behavior and key-off current are measured
-  before it stays plugged in overnight (`keyoff`).
+  before it stays plugged in overnight (`dongledrain`).
 
 **Fallback.** The USB adapter of D-015 (§G.4) needs only a different udev rule to appear as
 `/dev/obd`. If Bluetooth proves unreliable in the car, switching back is a provisioning
@@ -154,7 +158,7 @@ confirms against the VIN or the door-jamb sticker, then closes the issue.
 **What the answer changes.**
 
 - **No Honda Sensing on the EX-L** (it was Touring-only in 2015), so there is no
-  lane-keep camera connector to tap. The OBD2 port is the tap point (**D-011**).
+  lane-keep camera connector to tap. The OBD2 port is the tap point (**D-024**).
 - **Oil pressure is expected to be a switch, not a sender** (inference from Honda
   practice). Under D-021 that only removes one sensor from the list; nothing depends on it.
 - **The Honda has Maintenance Minder**, an oil-life estimate from how the engine has been
@@ -213,49 +217,95 @@ SVG is the diff a human can actually read. It is regenerated, never hand-edited.
 which did not exist — KiCad errors on project open. An empty library is committed to resolve
 it; populate it as parts are drawn.
 
-### A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
+### A.6 — One box, one USB-C input, and a seconds-scale supercapacitor ⚠️ UNREVIEWED
 
-`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
+`D-024` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-011 (§G.9) · **Revises:** D-019's "the Pi, powered from the car's USB"
 
-*Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
-became a USB OBD2 adapter. Revised again 2026-09-23 by D-019: the adapter talks to the Pi
-over Bluetooth Classic, so no data cable runs to the Pi.*
+**Decision.** The product is one small box, plus the Bluetooth OBD2 dongle (D-019) in the
+car's OBD2 port.
 
-**Decision.** The device is a box anyone could install without tools:
+- **One port.** A single USB-C receptacle is the box's only power input. The owner plugs
+  it into whatever USB-C charger and cable they already have in the car. The box is a
+  plain sink (5.1 kΩ on both CC pins), so no source offers it more than 5 V.
+- **One light, no buttons, no other ports** (light: D-027). Nothing on the car is cut,
+  spliced, pierced or clamped.
+- **Off at rest.** The box runs only while its source is live. At key-off the source
+  disappears; the box sees it on a source-present GPIO, waits out a short grace period,
+  commits and checkpoints its storage, and halts. The power stage then cuts the Pi's
+  supply, and the box stays dark until the next start, when it boots by itself.
+- **A small supercapacitor bank** supplements a weak source, rides through the dip at
+  engine start where it can, and powers the clean shutdown. It is short-lived by design:
+  the goal is seconds to tens of seconds of runtime, about one minute is the ceiling, and
+  it is never an always-on supply.
+- **Clean shutdown is the normal path; crash consistency is the guarantee.** If the bank
+  is empty, the cable is pulled or the Pi resets at crank, storage recovers at the next
+  boot (mechanism D).
 
-- **Data:** the Bluetooth OBD2 adapter (D-019) plugs into the OBD2 port; the Pi reads it
-  over RFCOMM. No data cable.
-- **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
-  No buck converter.
-- **Nothing is cut, spliced, pierced or clamped** on the car.
+**The power block's requirements.** Parts come only from datasheets a human has checked
+(`CLAUDE.md` §8.4), and nothing is ordered until the design is signed.
 
-**Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
-prototype is built the way the product would be installed. We are building the model to
-prove the idea is worth something, not the finished product — but a prototype that needs
-harness surgery proves a different, less interesting idea. Switched USB power also means
-no battery drain while parked, and it makes mechanism D's defining constraint literally
-true: power is cut, unannounced, at every key-off.
+1. Sink only, 5 V only; transient and reverse-polarity protection; a fuse.
+2. An input current limit below what the source advertises, and an inrush limiter,
+   because an empty bank looks like a short circuit. A plain sink does not know the
+   source's rating, so the box reads the source's CC advertisement (USB default, 1.5 A or
+   3 A).
+3. Power path: the source feeds the Pi first; the bank covers only the shortfall or the
+   gap.
+4. A source-present signal on a GPIO, divided down to 3.3 V.
+5. A halt-done signal: once the Pi has halted, the power stage removes the Pi's supply
+   **even if the source has come back**, holds it off briefly, then re-enables. Otherwise
+   a source that returns mid-shutdown leaves a halted Pi and a dark box in a running car.
+6. Auto power-on when the source returns, with no button.
+7. A 5 V, 3 A converter to the Pi that can step up, because the bank's voltage falls as it
+   discharges.
 
-**Alternatives rejected** (discussed 2026-09-21): splicing the bus behind the OBD2 port
-(the same conductors as the port pins, plus a cut harness on a daily driver); an in-line
-harness at the forward camera (the 2015 CR-V EX-L has none, D-007); a contactless bus
-clamp (receive-only, a black box); powering the Pi from OBD2 pin 16 through our own buck
-converter (live with the key off, and more hardware to build and defend).
+**Estimates, not measurements.** Each is replaced by a measured value before it appears
+in `docs/DESIGN.md` as anything but an estimate (`powerspec`, `capbench`).
 
-**Rule this imposes:** **the Pi must not brown out at crank.** The USB-C supply is rated
-≥ 5.1 V / 3 A (Pi 4), and is proven by `vcgencmd get_throttled` after a cold start, not
-by its label (`docs/hardware/wiring.md`).
+| Quantity | Estimate |
+| --- | --- |
+| Pi 4 draw during boot and shutdown | 3 to 5 W |
+| Clean-shutdown energy | 10–15 s × 4 W ÷ 0.85 converter efficiency ≈ 50–70 J |
+| Crank-bridge energy | 1–3 s × 5 W ≈ 5–15 J |
+| Two 2.7 V cells in series, 10 F total, charged to about 5 V | ½·C·V² ≈ 125 J stored; about 105 J usable above a 2 V converter floor, about 20 s at 4 W |
+| Charge time from empty at a 1 A budget | 10 F × 5 V ÷ 1 A ≈ 50 s |
 
-**Cost.**
+**Limits, stated plainly.**
 
-- No recording while the key is off — nothing happens then worth recording, but the device
-  also cannot run overnight in a parked car.
-- **The OBD2 adapter itself draws from pin 16, which is live with the key off.** Its
-  key-off current must be measured before it is left plugged in overnight.
-- D-006 option (c), the parked-car soak, now requires a socket that stays live in
-  accessory plus a battery tender.
-- The product is "one box, one power cable, plus the dongle in the port".
+- **Cold start.** The bank is empty at the first key-on of a session, so it cannot bridge
+  that crank dip, and the Pi may reset while cranking. That is survivable only because
+  storage is crash-consistent. Crank bridging is best-effort; the key-off shutdown is the
+  reliable path.
+- **Always-live sources are not supported.** On a charger that stays live with the key
+  off, the box simply stays on. This is an installation requirement, not a mode we
+  engineer around.
+- **Boot time.** A stock Pi 4 boots in roughly half a minute (estimate, `bootbudget`), so
+  the start of each drive's warm-up goes unrecorded.
+- **The dongle still draws from OBD2 pin 16 with the key off** (D-019). Its key-off
+  current is measured before it stays plugged in overnight (`dongledrain`).
+
+**Why one box.** Camden's design, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P7–P10,
+P13): "no need to reinvent the charger." The owner already has a USB-C charger, so the
+team designs the box and buys only the dongle and a cable. One port and one light is a
+product an ordinary owner can install.
+
+**Why a supercapacitor.** Camden's choice, 2026-10-21 (R1). A lithium cell must not
+charge above about 45 °C or below 0 °C, and a car cabin leaves that window at both ends;
+many cheap Pi UPS boards have no temperature cutoff. A supercapacitor has no
+thermal-runaway failure, tolerates a wider temperature range (confirm against the part's
+datasheet), and fits a seconds-scale job. Its costs are low voltage per cell (two in
+series, with balancing), very low internal resistance (so a fuse), and fast
+self-discharge, which does not matter for a box that is off at rest.
+
+**Alternatives rejected.** The car's USB wired straight to the Pi (D-011): no warning
+before power loss, so every key-off cut a write. A small lithium cell: the charge
+temperature window above. A wake button: dropped (P10).
+
+**Cost.** A power block to design, draw, buy and bench-test, on the hardware critical
+path (`powerspec`, `schpower`, `capbench`), and more to measure before any claim
+(`keyoff`, `cranklog`, `expshut`).
 
 ### A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 
@@ -269,11 +319,11 @@ broadcast frames, a listen-only flag, the port-traffic check) went with the MCP2
 requests** through the OBD2 adapter (D-019) on a fixed, rate-limited, round-robin schedule,
 one request outstanding at a time. Every timeout and every unanswered PID is logged.
 
-**Why.** D-011 makes this a plug-in device, and the thing that makes a plug-in device work
-on a car it has never seen is the part of the protocol every car must speak: Mode 01 is
-mandatory on US cars from model year 1996. *"Learns this car's normal"* is precisely what
-lets one device serve different cars without per-model decode work: it never needs to
-know what normal *is* ahead of time.
+**Why.** D-011 (now D-024) makes this a plug-in device, and the thing that makes a plug-in
+device work on a car it has never seen is the part of the protocol every car must speak:
+Mode 01 is mandatory on US cars from model year 1996. *"Learns this car's normal"* is
+precisely what lets one device serve different cars without per-model decode work: it
+never needs to know what normal *is* ahead of time.
 
 **Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
 (request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
@@ -308,9 +358,11 @@ The handout requires two, implemented by us and measured.
 | **F** — high-rate no-drop SPSC ring | only if `pisensor` adds an MPU-6050 | `src/ipc/ring.c` |
 | **A**, **C**, raw CAN | stretch, after D and E are measured | — |
 
-**D.** *The defining constraint: power is cut mid-write every time the key turns off*
-(D-011). We never get a clean shutdown. Measured by pulling power mid-write, repeatedly,
-and proving recovery (`expcrash`).
+**D.** *Power disappears every time the key turns off* (D-024). The box shuts down
+cleanly on its supercapacitor when it can, but the bank is empty at a cold start, a
+pulled cable beats it, and a crank dip can reset the Pi, so storage must survive a cut at
+any instant. *(Revised 2026-10-21 by D-024; it read "we never get a clean shutdown".)*
+Measured by pulling power mid-write, repeatedly, and proving recovery (`expcrash`).
 
 **E.** A recorder that dies silently has actively harmed its user, who believes it is on
 duty. Any child may be `kill -9`'d; the system degrades, logs, recovers. Measured by killing
@@ -970,6 +1022,52 @@ pre-assigned owners, and a subsystem belongs to its first substantive commit.
 Ownership means **first authorship and answerability at the defense**, not exclusivity.
 Each partner must still be able to answer one question from across the boundary — demo day
 guarantees one.
+
+### G.9 — (was A.6) Plug-in form: OBD2 port for data, car USB-C for power 🗑
+
+`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-10-21 by D-024 (§A.6)**: the Pi moved into one box with one USB-C
+input and a seconds-scale supercapacitor, so key-off is a clean shutdown, not a cut.
+
+*Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
+became a USB OBD2 adapter. Revised again 2026-09-23 by D-019: the adapter talks to the Pi
+over Bluetooth Classic, so no data cable runs to the Pi.*
+
+**Decision.** The device is a box anyone could install without tools:
+
+- **Data:** the Bluetooth OBD2 adapter (D-019) plugs into the OBD2 port; the Pi reads it
+  over RFCOMM. No data cable.
+- **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
+  No buck converter.
+- **Nothing is cut, spliced, pierced or clamped** on the car.
+
+**Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
+prototype is built the way the product would be installed. We are building the model to
+prove the idea is worth something, not the finished product — but a prototype that needs
+harness surgery proves a different, less interesting idea. Switched USB power also means
+no battery drain while parked, and it makes mechanism D's defining constraint literally
+true: power is cut, unannounced, at every key-off.
+
+**Alternatives rejected** (discussed 2026-09-21): splicing the bus behind the OBD2 port
+(the same conductors as the port pins, plus a cut harness on a daily driver); an in-line
+harness at the forward camera (the 2015 CR-V EX-L has none, D-007); a contactless bus
+clamp (receive-only, a black box); powering the Pi from OBD2 pin 16 through our own buck
+converter (live with the key off, and more hardware to build and defend).
+
+**Rule this imposes:** **the Pi must not brown out at crank.** The USB-C supply is rated
+≥ 5.1 V / 3 A (Pi 4), and is proven by `vcgencmd get_throttled` after a cold start, not
+by its label (`docs/hardware/wiring.md`).
+
+**Cost.**
+
+- No recording while the key is off — nothing happens then worth recording, but the device
+  also cannot run overnight in a parked car.
+- **The OBD2 adapter itself draws from pin 16, which is live with the key off.** Its
+  key-off current must be measured before it is left plugged in overnight.
+- D-006 option (c), the parked-car soak, now requires a socket that stays live in
+  accessory plus a battery tender.
+- The product is "one box, one power cable, plus the dongle in the port".
 
 ---
 

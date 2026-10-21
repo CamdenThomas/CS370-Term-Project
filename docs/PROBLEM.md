@@ -50,8 +50,10 @@ air/fuel mixture, or a sensor that has stopped making sense.
 ## The mechanisms
 
 Our first choice is **mechanism D, custom append-only storage with crash consistency**,
-because the power is cut mid-write every time the key turns off, so the storage layer never
-gets a clean shutdown and must recover a torn tail on every boot. We pair it with
+because the power disappears every time the key turns off. The device shuts itself down
+cleanly on a few seconds of stored energy when it can, but a cold start, a dip at engine
+start or a pulled cable can still cut it mid-write, so the storage layer must recover a
+torn tail at any boot. We pair it with
 **mechanism E, a multi-process architecture with a supervisor**, because a recorder that
 dies silently has harmed its owner, who believes it is still on duty; running capture,
 storage and analysis as separate processes means a crash in the analysis cannot take the
