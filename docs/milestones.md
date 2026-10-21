@@ -112,8 +112,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `pidforester`
 - [x] M2 hardware: two-node bench CAN bus — prove frames move before a car is attached
       (cut) `twonode` @camden <!-- #19 -->
-- [ ] M2 decision: finalize the on-disk format, including transaction and boot records
-      `recfmt` <!-- #22 -->
+- [ ] M2 decision: finalize the on-disk format, including transaction, boot and shutdown
+      records `recfmt` <!-- #22 -->
 - [ ] M2 decision: fsync discipline — batch size and interval `fsync` <!-- #23 -->
 - [ ] M2 docs: architecture diagram with a rate on every arrow `archdiag`
       <!-- #24 -->

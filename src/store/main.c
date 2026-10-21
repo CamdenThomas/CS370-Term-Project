@@ -21,7 +21,8 @@ int main(void)
      *           log exactly what was lost.
      * TODO(M3): drain the ring into batches: BEGIN, records, COMMIT, one fsync;
      *           sequence-account every slot.
-     * TODO(M3): write a boot record saying whether the last session ended cleanly. */
+     * TODO(M3): write a boot record saying whether the last session ended cleanly,
+     *           judged by a shutdown record after the last COMMIT (D-025). */
 
     LOG_W("not implemented — M0 scaffold");
     return 0;

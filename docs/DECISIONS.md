@@ -735,7 +735,9 @@ each carrying its `src` tag (C.2)
   batch after its offset (**redo**), through the same code as live analysis. Both log
   exactly what was recovered and what was lost, as counts and offsets.
 - **Every session starts with a boot record** that says whether the previous session
-  ended in a clean shutdown or was recovered.
+  ended in a clean shutdown or was recovered. That needs a positive marker: a clean
+  shutdown ends the log with a shutdown record after its last `COMMIT`, because a crash
+  just after a `COMMIT` otherwise looks exactly like a clean end.
 
 **Why undo is only truncation.** Nothing is ever overwritten in place (C.1), so there is
 no before-image to restore: undo means discarding an uncommitted tail. Say so plainly at
@@ -752,8 +754,9 @@ second of samples. Records of about 48 bytes at 10 to 20 requests a second come 
 clean shutdown is then about one second of samples. The argument for the batch size is
 still written in `docs/DESIGN.md` §4 before the code, as C.1 requires (`fsync`).
 
-**Record format.** The new record kinds (transaction begin and commit, boot) and a boot
-id in the header are settled in `recfmt`. The CRC known-answer test does not change.
+**Record format.** The new record kinds (transaction begin and commit, boot, clean
+shutdown) and a boot id in the header are settled in `recfmt`. The CRC known-answer test
+does not change.
 
 **Cost.** Recovery now spans two processes, so the crash tests (cut the file at every
 byte offset, then `expcrash` on the device) must cover both. Checkpoint frequency trades
