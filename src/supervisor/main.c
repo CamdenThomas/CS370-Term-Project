@@ -1,4 +1,4 @@
-/* supervisor — mechanism E. Shared ownership.
+/* supervisor — mechanism E.
  *
  * A diagnostic recorder that dies silently has actively harmed its user, who believes
  * it is on duty. Any child may be kill -9'd at any time; the system degrades, logs,

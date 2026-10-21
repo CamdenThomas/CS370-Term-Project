@@ -23,7 +23,7 @@ move cards on the `carwatch` project board.
 | `[ ]` / `[x]` | open / done. Tick it, sync, and the issue closes and its card moves to Done. |
 | the text | the issue title. `M<n>:` is added on GitHub if the text does not start with it. |
 | `` `firstcap` `` | optional short name other docs cite (PLAN.md, DECISIONS.md). |
-| `@camden`, `@lance` | optional assignee. |
+| `@camden`, `@lance` | optional assignee. Open lines carry none (D-026); ticked lines keep theirs as the record of who did the work. Sync only adds assignees: removing a marker does not unassign the issue. |
 | `<!-- #20 -->` | the issue number, hidden when rendered. **Sync writes it; never type one.** |
 
 **Bold** lines are the milestone's exit criteria; the plain lines under them are the tasks
@@ -34,7 +34,8 @@ that get there. Long lines wrap onto continuation lines indented six spaces.
 - **New line, no tag:** creates the issue in that milestone and writes the tag back.
 - **Ticked box, open issue:** closes it.
 - **Issue closed on GitHub, box not ticked:** ticks the box here. Sync never reopens.
-- **Wording, milestone or `@owner` changed:** retitles, re-milestones or assigns.
+- **Wording, milestone or `@owner` changed:** retitles, re-milestones or assigns. It never
+  removes an assignee.
 - **Table's Due column:** sets the GitHub milestone due dates; Progress is recounted.
 - **Never touches** issue bodies or labels (GitHub owns them), and never closes an issue
   that has disappeared from the list: it reports it instead.

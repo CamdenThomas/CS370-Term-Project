@@ -10,7 +10,33 @@ folder is the only copy that is guaranteed to survive to Week 15.
 Exit Claude Code first (`/exit`), so the session file is complete. Then, in a normal
 terminal at the repository root:
 
-### Git Bash / macOS / Linux
+### macOS: Camden's laptop (Ghostty, zsh)
+
+On this Mac the repository is `~/dev/school/cs370/car-watch`, so Claude Code stores its
+sessions in `~/.claude/projects/-Users-crash-dev-school-cs370-car-watch/`. The folder name
+contains `car-watch`, not `CS370-Term-Project`, so use this pattern. Exit Claude Code
+(`/exit`), open Ghostty, and paste this one line. It copies every session, stages them,
+and shows what is staged:
+
+```sh
+cd ~/dev/school/cs370/car-watch && ls -d ~/.claude/projects/*car-watch*/ && cp ~/.claude/projects/*car-watch*/*.jsonl partners/camden/transcripts/ && git add partners/camden/transcripts/*.jsonl && git status --short partners/camden/transcripts/
+```
+
+The same thing, one step at a time, if you want to check the folder first:
+
+```sh
+cd ~/dev/school/cs370/car-watch
+ls -d ~/.claude/projects/*car-watch*/
+cp ~/.claude/projects/*car-watch*/*.jsonl partners/camden/transcripts/
+git add partners/camden/transcripts/*.jsonl
+git status --short partners/camden/transcripts/
+```
+
+The `ls -d` line must print exactly one folder, the one ending in `cs370-car-watch`. If
+zsh answers `no matches found`, or prints a folder from another project, stop and list
+`~/.claude/projects/` to find the right name before copying.
+
+### Git Bash / Linux
 
 ```sh
 cp ~/.claude/projects/*CS370-Term-Project*/*.jsonl partners/camden/transcripts/

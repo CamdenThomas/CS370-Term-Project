@@ -24,7 +24,7 @@ how many trials. Enough for a TA to re-measure.
 > CPU and RSS per process, at steady state and **over the full soak**. The hourly
 > heartbeats give you this series for free — plot it.
 
-[figure: RSS vs. time, all processes, full 48 h]
+[figure: RSS vs. time, all processes, every session of the 48 h key-cycle window (D-023)]
 
 A flat line here is the whole point. A device that leaks for 48 hours and happens not
 to die has not passed the soak; it has outrun it.
@@ -43,7 +43,7 @@ separately because a monitor that cries wolf twice gets unplugged.
 > For each failure mode in the design document's table: what we injected, what the
 > system did, and **the log excerpt proving it**.
 
-| Injected | Expected | Observed | Warning light (D-014) | Log excerpt |
+| Injected | Expected | Observed | Light (D-027) | Log excerpt |
 | --- | --- | --- | --- | --- |
 | Sensor unplugged 10 min | | | | |
 | `kill -9 obdd` | | | | |
@@ -57,21 +57,15 @@ separately because a monitor that cries wolf twice gets unplugged.
 
 ### 6.1 Crash consistency (mechanism D)
 
-N power-cut trials, recovery outcome each time, bytes lost per trial.
+N power-cut trials, each cutting the Pi's 5 V rail after the converter so the supercapacitor
+cannot cover it: recovery outcome each time, bytes lost per trial.
 
 ### 6.2 Supervision (mechanism E)
 
 `kill -9` each child N times: time to detection, time to recovery, what degraded in the
 meantime, and proof that no file descriptor leaked across the restart.
 
-### 6.3 Interrupt-driven vs. polling (mechanism B — only with `pisensor`)
-
-Method · data · conclusion. Include the CPU cost of the polling design at the rate
-needed to match the interrupt design's drop rate — that comparison is the point.
-
-### 6.4 No-drop ring under contention (mechanism F — only with `pisensor`)
-
-Sustained rate with sequence accounting proving zero drops, under `stress-ng`.
+Mechanisms B and F were declined (D-029), so they have no comparison here.
 
 ## 7. Limitations
 

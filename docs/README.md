@@ -16,8 +16,10 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | Milestone dates | the table in [`milestones.md`](milestones.md) | GitHub milestone due dates (synced) |
 | Milestone exit criteria and the M5 deliverables | [`milestones.md`](milestones.md) (bold lines) | — |
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
-| Ownership map | [`../CLAUDE.md`](../CLAUDE.md) §6 | `DESIGN.md` §7, `DECISIONS.md` §F.2 |
+| Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §7 | `DECISIONS.md` §F.2 |
 | Hardware data path (Bluetooth OBD2 adapter) | `DECISIONS.md` §A.1 (D-019) | README, DESIGN, `hardware/` |
+| The box: power and shutdown, light, clock | `DECISIONS.md` §A.6 (D-024), §B.5 (D-027), §A.8 (D-030) | README, DESIGN, `hardware/` |
+| Testbed cars | `DECISIONS.md` §A.2 (D-022) | README, PROBLEM, `hardware/pid-survey.md` |
 | Commit message format | [`../.gitmessage`](../.gitmessage) | `CLAUDE.md` §7.4 |
 | PR body | [`../.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md) | `CLAUDE.md` §7.5 |
 | Markdown and spelling rules | [`../.markdownlint.jsonc`](../.markdownlint.jsonc), [`../cspell.json`](../cspell.json) | `DECISIONS.md` §F.4 (D-018) |
@@ -41,16 +43,17 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | [`milestones.md`](milestones.md) | What is open, what is done, and what must be true to reach each milestone? | **source** for all work; GitHub is derived |
 | [`PLAN.md`](PLAN.md) | Why is the plan shaped this way, and what gets cut first? | reasoning |
 | [`PROCESS.md`](PROCESS.md) | Why are the git, PR and review rules shaped this way? | reasoning |
+| [`REVISION_PLAN.md`](REVISION_PLAN.md) | How do we revise the repo for the box redesign, and what is still unconfirmed? | proposal; nothing in it is a decision until `DECISIONS.md` says so |
 | [`handout/CS370-TermProject.md`](handout/CS370-TermProject.md) | What does the rubric require? | reference: the rubric is law |
 
 ## Hardware
 
 | Document | Answers | Owner |
 | --- | --- | --- |
-| [`hardware/BOM.md`](hardware/BOM.md) | What do we buy? | Camden |
-| [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? | Camden |
-| [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does the CR-V actually publish? | Lance's car, either partner |
-| [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? | Lance |
+| [`hardware/BOM.md`](hardware/BOM.md) | What do we buy? | shared |
+| [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? | shared |
+| [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does each testbed car actually publish? | either partner |
+| [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? | shared |
 
 ## Outside `docs/`
 

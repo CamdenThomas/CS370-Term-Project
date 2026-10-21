@@ -1,7 +1,7 @@
 # CS370 Term Project — Team Rules
 
-**Project:** `carwatch`, an always-on in-vehicle diagnostic recorder that learns *this*
-car's normal and reports developing faults before a check-engine light would.
+**Project:** `carwatch`, an in-vehicle diagnostic recorder, on whenever the car is, that
+learns *this* car's normal and reports developing faults before a check-engine light would.
 **Team:** Camden Thomas (`crash8750@gmail.com`) · Lance Baron · CS 370, Colorado State
 (Pallickara). **Rubric:** `docs/handout/CS370-TermProject.md`; the rubric is law, and this
 file is how we obey it.
@@ -21,8 +21,9 @@ You (Claude) are required in our **workflow** and forbidden in our **product** (
    `docs/DECISIONS.md` (what is settled, what awaits review).
 2. `python tools/board_sync.py --status`. Pick work from the open boxes in
    `docs/milestones.md`, nowhere else.
-3. State whose session this is. Do not edit outside that owner's area (§6) without being
-   told.
+3. State whose session this is (Camden's or Lance's), for transcripts and attribution.
+   Any open task may be taken (D-026); do not edit a subsystem the other partner has
+   claimed (§6) without being told.
 4. `git status` clean, `git pull` on `main`, create the branch **before** the first edit.
 
 **End, every time:**
@@ -80,23 +81,27 @@ is pasted.** Not "should pass." Output.
 
 ## 3. What we are building
 
-A Raspberry Pi in Lance's **2015 Honda CR-V EX-L**, the only testbed (D-016). A Bluetooth
-Classic OBD2 adapter in the OBD2 port is read over RFCOMM as `/dev/obd` (D-019); the car's
-USB powers the Pi, nothing cut (D-011). Mode 01 requests (D-012) read every engine sensor
+A Raspberry Pi in a car. The testbeds are Camden's **2008 Subaru Forester** and Lance's
+**2015 Honda CR-V EX-L**, and neither is required of anyone (D-022). A Bluetooth
+Classic OBD2 adapter in the OBD2 port is read over RFCOMM as `/dev/obd` (D-019). The Pi
+lives in one small box with one USB-C port, fed by the owner's own charger, and a
+seconds-scale supercapacitor lets it shut down cleanly at key-off; it is off while the car
+is, and nothing is cut (D-024). Mode 01 requests (D-012) read every engine sensor
 the car publishes; the device learns *this car's* normal per operating point, flags what
 leaves it, and names the likely fault area. A rough first draft, not a finished product.
 The owner reads it on a phone over the device's own Wi-Fi (D-013) or with `obdctl`; one
-warning light blinks while on duty (D-014).
+tri-color light pulses while on duty (D-027).
 
-**The claim we defend (D-021):** *"learns this CR-V's normal across its engine sensors,
-flags behavior outside it and names the likely fault area, with measured catch and
-false-alarm rates on faults we induce."* Not "predicts failure" (handout §5).
+**The claim we defend (D-021, D-022):** *"learns the normal of the car it is installed in
+across its engine sensors, flags behavior outside it and names the likely fault area, with
+measured catch and false-alarm rates on faults we induce."* Not "predicts failure"
+(handout §5).
 
 ## 4. Mechanisms
 
 Committed and measured: **D** (append-only, crash-consistent storage) and **E**
-(multi-process with a supervisor). **B** and **F** only if `pisensor` adds a Pi-side
-sensor; **A**, **C** and raw CAN are stretch. Why: DECISIONS §B.1 (D-017).
+(multi-process with a supervisor). **B** and **F** are declined: no Pi-side sensor
+(D-029). **A**, **C** and raw CAN are stretch. Why: DECISIONS §B.1 (D-017) and §B.7.
 
 ## 5. The intelligence
 
@@ -106,12 +111,8 @@ two cooperating sensors (the threshold test). Why: DECISIONS §D.
 
 ## 6. Ownership
 
-| Owner | Subsystems |
-| --- | --- |
-| **Camden** | `src/obd/`, `src/ipc/` |
-| **Lance** | `src/store/`, `src/analysis/`, `tools/train/`, `electricalDrawing/` |
-| **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
-
+No pre-assigned owners (D-026). Any open task is for whoever is free. A subsystem belongs
+to whoever lands its first substantive commit; the realized map is `docs/DESIGN.md` §7.
 First authorship and answerability at the defense, not exclusivity.
 
 ## 7. Git and pull-request law

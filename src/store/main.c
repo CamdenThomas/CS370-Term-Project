@@ -1,6 +1,6 @@
 /* storaged — append-only, crash-consistent log. Mechanism D lives here.
  *
- * OWNER: Lance.  M3 target: samples from the ring durably on disk, recoverable after a
+ * M3 target: samples from the ring durably on disk, recoverable after a
  * power cut taken at an arbitrary instant.
  */
 #include "common/log.h"
@@ -16,10 +16,13 @@ int main(void)
     /* TODO(M2): decide and document the fsync discipline in docs/DESIGN.md §4 before
      *           writing it. Batch size and interval are a user-requirements argument,
      *           not a default to inherit.
-     * TODO(M3): open-or-recover: scan from the last known-good offset, verify CRCs,
-     *           truncate the torn tail, log exactly what was lost.
-     * TODO(M3): drain the ring; sequence-account every slot.
-     * TODO(M4): persist REC_BASELINE so learned statistics survive key-off. */
+     * TODO(M3): open-or-recover: scan from the last known-committed offset, verify
+     *           CRCs, truncate the torn tail and any batch without a COMMIT (D-025),
+     *           log exactly what was lost.
+     * TODO(M3): drain the ring into batches: BEGIN, records, COMMIT, one fsync;
+     *           sequence-account every slot.
+     * TODO(M3): write a boot record saying whether the last session ended cleanly,
+     *           judged by a shutdown record after the last COMMIT (D-025). */
 
     LOG_W("not implemented — M0 scaffold");
     return 0;

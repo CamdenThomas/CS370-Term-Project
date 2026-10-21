@@ -1,0 +1,4 @@
+# One display identity per partner in git log and git shortlog. History is not rewritten.
+CamdenThomas <camden.thomas@colostate.edu> Camden Thomas <crash321@colostate.edu>
+CamdenThomas <camden.thomas@colostate.edu> Camden Thomas <crash321@moth.cs.colostate.edu>
+Lance-Baron <lbaron082@gmail.com> <196358433+Lance-Baron@users.noreply.github.com>

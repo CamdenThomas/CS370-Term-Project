@@ -1,7 +1,5 @@
 /* analyzed — the intelligence. All of it ours (handout §3.3, D-004).
  *
- * OWNER: Lance.
- *
  * Pipeline:
  *   operating-point bin (RPM x load x coolant temp)
  *     -> per-bin running mean/variance
@@ -22,8 +20,13 @@ int main(void)
     log_init("analyzed", LOG_INFO);
     LOG_I("start");
 
-    /* TODO(M3): operating-point binning + running statistics (Welford).
+    /* TODO(M3): read committed records from storaged's log as it grows, never the ring
+     *           (D-031); never read past the durable offset storaged publishes after
+     *           fsync returns.
+     * TODO(M3): operating-point binning + running statistics (Welford).
      * TODO(M4): Mahalanobis residual; Theil-Sen trend; state machine.
+     * TODO(M4): checkpoint baselines to A/B slots; at start, load the newest valid
+     *           slot and redo the committed batches after its offset (D-025).
      * TODO(M4): load weights from models/; inference in C. NO network, ever. */
 
     LOG_W("not implemented — M0 scaffold");

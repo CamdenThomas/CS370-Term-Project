@@ -6,7 +6,7 @@ reference doc — its job is to let Camden and Lance verify, after any working s
 that no decision was made on their behalf that they disagree with.
 
 **This file holds what is DECIDED. Open work and open questions live on the GitHub
-board** as issues with owners, milestones and blocked-by dependencies (`CLAUDE.md` §7.11).
+board** as issues with milestones, and no pre-assigned owners (D-026, `CLAUDE.md` §7.11).
 An ❓ OPEN entry below exists only as a pointer to its issue, so the reasoning sits beside
 the decisions it will eventually join.
 
@@ -24,7 +24,7 @@ your subsystems as surely as yours do.
 | --- | --- |
 | 🔒 **LOCKED** | Decided and human-approved. Not reopened without saying so explicitly and getting a yes. |
 | ⚠️ **UNREVIEWED** | Made by Claude during a session without a human in the loop. **Binding on nothing until a human signs it.** |
-| ❓ **OPEN** | Not decided. Blocking something. Owner named. |
+| ❓ **OPEN** | Not decided. Blocking something. Tracked by a board item. |
 | 🗑 **SUPERSEDED** | Replaced. Kept with a pointer, never deleted — the reasoning is evidence. |
 
 **Claude may never change a decision's status to LOCKED.** Only Camden or Lance does
@@ -39,21 +39,28 @@ Decisions currently awaiting a human signature:
 | ID | Decision | Made by | Session date | Reviewer needed |
 | --- | --- | --- | --- | --- |
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
-| D-011 | Plugs into the OBD2 port for data; powered from the car's USB-C / 12 V socket (§A.6) | Camden + Claude | 2026-09-21 | Lance — owns the Power schematic block |
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
-| D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
-| D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
-| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
+| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
-| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation you own now target fault areas, not three diagnostics |
+| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
+| D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
+| D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
+| D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
+| D-025 | Write-ahead transactions (`BEGIN`, records, `COMMIT`, one `fsync`) and A/B baseline checkpoints; extends 🔒 C.1 (§C.3) | Camden (extended C.1) + Claude | 2026-10-21 | Lance — it is the storage design behind mechanism D |
+| D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
+| D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
+| D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
+| D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
+| D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
+| D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
-> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
-> subsystems.
+> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind storage
+> and analysis.
 
 ---
 
@@ -64,6 +71,10 @@ Decisions currently awaiting a human signature:
 `D-019` · Decided M1, 2026-09-23 · **By:** Camden (in session) + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Supersedes:** D-015 (§G.4)
+
+*Pi power revised 2026-10-21 by D-024 (§A.6), before any review: the Pi is in a box fed
+by the owner's USB-C charger, not wired to the car's USB. The adapter's key-off draw is
+now board item `dongledrain`.*
 
 **Decision.** An **OBDLink LX** (STN chip, **Bluetooth Classic, Serial Port Profile**; not
 BLE) plugs into the OBD2 port. The Pi, powered from the car's USB (D-011), talks to it with
@@ -102,32 +113,41 @@ records what survives (D and E). Bluetooth costs no further mechanism.
   `btcoex`. Putting the access point on 5 GHz is the first mitigation to try.
 - **Key-off draw.** The adapter still draws from OBD2 pin 16, live with the key off, and a
   Bluetooth adapter keeps a radio up. Its sleep behavior and key-off current are measured
-  before it stays plugged in overnight (`keyoff`).
+  before it stays plugged in overnight (`dongledrain`).
 
 **Fallback.** The USB adapter of D-015 (§G.4) needs only a different udev rule to appear as
 `/dev/obd`. If Bluetooth proves unreliable in the car, switching back is a provisioning
 change, not a code change.
 
-### A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
+### A.2 — Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V ⚠️ UNREVIEWED
 
-`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
-· **Supersedes:** D-005 (§G.2)
+`D-022` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-016 (§G.6) · **Amends:** the claim wording of D-021 (§E.1)
 
-**Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
+**Decision.** Two cars are available as testbeds: Camden's **2008 Subaru Forester**
+(non-turbo) and Lance's **2015 Honda CR-V EX-L** (D-007). Neither car is required of
+anyone, and either partner tests wherever suits them. Every capture records which car it
+came from.
 
-**Why.** Camden's call, 2026-09-21. D-005 itself named the second vehicle as the first
-thing to cut when the schedule slipped, and the CAN detour (PROMPTLOG E-02) spent that
-slack. One car halves the survey, baseline and ground-truth work, and the baseline window
-is the one thing that cannot be compressed by working harder in Week 14.
+**Why.** Camden's call, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P1): a car on Camden's
+own schedule lets live capture start without waiting on anyone, and no document should
+restrict where either partner tests. The device learns whichever car it is installed in,
+so a second car costs no code.
+
+**The claim, reworded.** D-021's *"this CR-V"* becomes *"the car it is installed in"*
+(§E.1). Results are reported per car and labeled with the car.
 
 **Cost.**
 
-- The two-car contrast was the old thesis's strongest demonstration, and it is gone. The
-  thesis is now argued within one car: what it does against its own learned normal
-  (D-021).
-- Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
-  schedule; Camden owns the capture code but not the car.
+- Each car needs its own PID survey (`pidforester`, `pidhonda`). The two sensor lists may
+  differ, and the Forester's OBD protocol is not verified: a 2008 US car is expected to
+  speak CAN (ISO 15765-4), but MAP, for one, may be absent.
+- Baselines are per car. Two cars split the calendar time of normal driving unless one of
+  them carries most of it.
+
+**Alternative rejected.** Keeping D-016 (the CR-V only): every live capture would wait on
+one car's schedule.
 
 ### A.3 — Honda year/model/engine ⚠️ UNREVIEWED
 
@@ -143,7 +163,7 @@ confirms against the VIN or the door-jamb sticker, then closes the issue.
 **What the answer changes.**
 
 - **No Honda Sensing on the EX-L** (it was Touring-only in 2015), so there is no
-  lane-keep camera connector to tap. The OBD2 port is the tap point (**D-011**).
+  lane-keep camera connector to tap. The OBD2 port is the tap point (**D-024**).
 - **Oil pressure is expected to be a switch, not a sender** (inference from Honda
   practice). Under D-021 that only removes one sensor from the list; nothing depends on it.
 - **The Honda has Maintenance Minder**, an oil-life estimate from how the engine has been
@@ -202,49 +222,111 @@ SVG is the diff a human can actually read. It is regenerated, never hand-edited.
 which did not exist — KiCad errors on project open. An empty library is committed to resolve
 it; populate it as parts are drawn.
 
-### A.6 — Plug-in form: OBD2 port for data, car USB-C for power ⚠️ UNREVIEWED
+### A.6 — One box, one USB-C input, and a seconds-scale supercapacitor ⚠️ UNREVIEWED
 
-`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
+`D-024` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-011 (§G.9) · **Revises:** D-019's "the Pi, powered from the car's USB"
 
-*Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
-became a USB OBD2 adapter. Revised again 2026-09-23 by D-019: the adapter talks to the Pi
-over Bluetooth Classic, so no data cable runs to the Pi.*
+**Decision.** The product is one small box, plus the Bluetooth OBD2 dongle (D-019) in the
+car's OBD2 port.
 
-**Decision.** The device is a box anyone could install without tools:
+- **One port.** A single USB-C receptacle is the box's only power input. The owner plugs
+  it into whatever USB-C charger and cable they already have in the car. The box is a
+  plain sink (5.1 kΩ on both CC pins), so no source offers it more than 5 V.
+- **One light, no buttons, no other ports** (light: D-027). Nothing on the car is cut,
+  spliced, pierced or clamped.
+- **Off at rest.** The box runs only while its source is live. At key-off the source
+  disappears; the box sees it on a source-present GPIO, waits out a short grace period,
+  commits and checkpoints its storage, and halts. The power stage then cuts the Pi's
+  supply, and the box stays dark until the next start, when it boots by itself.
+- **A small supercapacitor bank** covers brief shortfalls, rides through the dip at
+  engine start where it can, and powers the clean shutdown. A seconds-scale bank cannot
+  make up for a source that is too weak for a whole drive; see the limits below. It is
+  short-lived by design: the goal is seconds to tens of seconds of runtime, about one
+  minute is the ceiling, and it is never an always-on supply.
+- **Clean shutdown is the normal path; crash consistency is the guarantee.** If the bank
+  is empty, the cable is pulled or the Pi resets at crank, storage recovers at the next
+  boot (mechanism D).
 
-- **Data:** the Bluetooth OBD2 adapter (D-019) plugs into the OBD2 port; the Pi reads it
-  over RFCOMM. No data cable.
-- **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
-  No buck converter.
-- **Nothing is cut, spliced, pierced or clamped** on the car.
+**The power block's requirements.** Parts come only from datasheets a human has checked
+(`CLAUDE.md` §8.4), and nothing is ordered until the design is signed.
 
-**Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
-prototype is built the way the product would be installed. We are building the model to
-prove the idea is worth something, not the finished product — but a prototype that needs
-harness surgery proves a different, less interesting idea. Switched USB power also means
-no battery drain while parked, and it makes mechanism D's defining constraint literally
-true: power is cut, unannounced, at every key-off.
+1. Sink only, 5 V only; transient and reverse-polarity protection; a fuse.
+2. An input current limit below what the source advertises, and an inrush limiter,
+   because an empty bank looks like a short circuit. A plain sink does not know the
+   source's rating, so the box reads the source's CC advertisement (USB default, 1.5 A or
+   3 A). The Pi has no analog inputs, so that takes a detector part (comparators or a
+   USB-C controller IC) that reports the level on GPIOs.
+3. Power path: the source feeds the Pi first; the bank covers only the shortfall or the
+   gap.
+4. A source-present signal on a GPIO, divided down to 3.3 V.
+5. A halt-done signal: once the Pi has halted, the power stage removes the Pi's supply
+   **even if the source has come back**, holds it off briefly, then re-enables. Otherwise
+   a source that returns mid-shutdown leaves a halted Pi and a dark box in a running car.
+6. Auto power-on when the source returns, with no button.
+7. A 5 V, 3 A converter to the Pi that can step up, because the bank's voltage falls as it
+   discharges.
 
-**Alternatives rejected** (discussed 2026-09-21): splicing the bus behind the OBD2 port
-(the same conductors as the port pins, plus a cut harness on a daily driver); an in-line
-harness at the forward camera (the 2015 CR-V EX-L has none, D-007); a contactless bus
-clamp (receive-only, a black box); powering the Pi from OBD2 pin 16 through our own buck
-converter (live with the key off, and more hardware to build and defend).
+**Estimates, not measurements.** Each is replaced by a measured value before it appears
+in `docs/DESIGN.md` as anything but an estimate (`powerspec`, `capbench`).
 
-**Rule this imposes:** **the Pi must not brown out at crank.** The USB-C supply is rated
-≥ 5.1 V / 3 A (Pi 4), and is proven by `vcgencmd get_throttled` after a cold start, not
-by its label (`docs/hardware/wiring.md`).
+| Quantity | Estimate |
+| --- | --- |
+| Pi 4 draw during boot and shutdown | 3 to 5 W |
+| Grace period before shutdown starts (longer than a crank dip) | about 3 s × 4 W ÷ 0.85 ≈ 15 J |
+| Clean-shutdown energy | 10–15 s × 4 W ÷ 0.85 converter efficiency ≈ 50–70 J |
+| Crank-bridge energy | 1–3 s × 5 W ≈ 5–15 J |
+| Two 2.7 V cells in series, 10 F total, charged to about 5 V | ½·C·V² ≈ 125 J stored; about 105 J usable above a 2 V converter floor, about 20 s at 4 W |
+| Charge time from empty at a 1 A budget | 10 F × 5 V ÷ 1 A ≈ 50 s; slower on a 1.5 A source that is also running the Pi |
 
-**Cost.**
+The margin is thin: grace plus shutdown come to about 65–85 J against about 105 J usable,
+before the radios' draw is counted. `powerspec` replaces every row with a measurement and
+states the margin.
 
-- No recording while the key is off — nothing happens then worth recording, but the device
-  also cannot run overnight in a parked car.
-- **The OBD2 adapter itself draws from pin 16, which is live with the key off.** Its
-  key-off current must be measured before it is left plugged in overnight.
-- D-006 option (c), the parked-car soak, now requires a socket that stays live in
-  accessory plus a battery tender.
-- The product is "one box, one power cable, plus the dongle in the port".
+**Limits, stated plainly.**
+
+- **Cold start.** The bank is empty at the first key-on of a session, so it cannot bridge
+  that crank dip, and the Pi may reset while cranking. That is survivable only because
+  storage is crash-consistent. Crank bridging is best-effort; the key-off shutdown is the
+  reliable path.
+- **Always-live sources are not supported.** On a charger that stays live with the key
+  off, the box stays on, and the Pi plus the dongle can drain the car's battery over a few
+  days. This is an installation requirement, not a mode we engineer around, but whether
+  the box should halt itself after a long stretch with the engine silent is open
+  (`shutfsm`).
+- **Weak sources.** A charger that advertises only default USB current (500 or 900 mA)
+  cannot run a Pi 4 with both radios, and the bank cannot make up the difference for a
+  whole drive. What the box does then (refuse to start and show red, or run degraded) is
+  open (`powerspec`).
+- **Boot time.** A stock Pi 4 boots in roughly half a minute (estimate, `bootbudget`), so
+  the start of each drive's warm-up goes unrecorded.
+- **Demo day.** The box is off unless powered, and the handout's live demonstration runs
+  on live sensors (§5, §11), so the demo needs a running testbed car on site, or an
+  arrangement with the professor (`democar`).
+- **The dongle still draws from OBD2 pin 16 with the key off** (D-019). Its key-off
+  current is measured before it stays plugged in overnight (`dongledrain`).
+
+**Why one box.** Camden's design, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P7–P10,
+P13): "no need to reinvent the charger." The owner already has a USB-C charger, so the
+team designs the box and buys only the dongle and a cable. One port and one light is a
+product an ordinary owner can install.
+
+**Why a supercapacitor.** Camden's choice, 2026-10-21 (R1). A lithium cell must not
+charge above about 45 °C or below 0 °C, and a car cabin leaves that window at both ends;
+many cheap Pi UPS boards have no temperature cutoff. A supercapacitor has no
+thermal-runaway failure, tolerates a wider temperature range (confirm against the part's
+datasheet), and fits a seconds-scale job. Its costs are low voltage per cell (two in
+series, with balancing), very low internal resistance (so a fuse), and fast
+self-discharge, which does not matter for a box that is off at rest.
+
+**Alternatives rejected.** The car's USB wired straight to the Pi (D-011): no warning
+before power loss, so every key-off cut a write. A small lithium cell: the charge
+temperature window above. A wake button: dropped (P10).
+
+**Cost.** A power block to design, draw, buy and bench-test, on the hardware critical
+path (`powerspec`, `schpower`, `capbench`), and more to measure before any claim
+(`keyoff`, `cranklog`, `expshut`).
 
 ### A.7 — Standard Mode 01 requests are the primary data path ⚠️ UNREVIEWED
 
@@ -258,11 +340,11 @@ broadcast frames, a listen-only flag, the port-traffic check) went with the MCP2
 requests** through the OBD2 adapter (D-019) on a fixed, rate-limited, round-robin schedule,
 one request outstanding at a time. Every timeout and every unanswered PID is logged.
 
-**Why.** D-011 makes this a plug-in device, and the thing that makes a plug-in device work
-on a car it has never seen is the part of the protocol every car must speak: Mode 01 is
-mandatory on US cars from model year 1996. *"Learns this car's normal"* is precisely what
-lets one device serve different cars without per-model decode work: it never needs to
-know what normal *is* ahead of time.
+**Why.** D-011 (now D-024) makes this a plug-in device, and the thing that makes a plug-in
+device work on a car it has never seen is the part of the protocol every car must speak:
+Mode 01 is mandatory on US cars from model year 1996. *"Learns this car's normal"* is
+precisely what lets one device serve different cars without per-model decode work: it
+never needs to know what normal *is* ahead of time.
 
 **Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
 (request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
@@ -277,6 +359,34 @@ scan tool does.
 **Scope note.** "Works on any car" is the product's direction, not our claim. The claim is
 E.1 (D-021): one car, a learned normal, fault areas named, measured error rates.
 
+### A.8 — A real-time clock keeps wall time while the box is off ⚠️ UNREVIEWED
+
+`D-030` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** The box gets a small real-time clock module on the Pi's I2C bus, kept
+running by its own backup cell or capacitor while the box is off. At boot the system
+clock is set from it. If the clock reports its time as invalid (its backup was lost),
+that session's wall time is marked untrusted. Every record still carries `mono_ns`
+regardless. The phone page stays read-only: it does not set the clock.
+
+**Why.** The Pi has no battery-backed clock, and the box has no network (`CLAUDE.md`
+§2.3). Raspberry Pi OS's `fake-hwclock` restores the time saved at the last shutdown, so
+the clock does not advance while the box is off, and every boot would appear to follow the
+previous shutdown directly. The soak (D-023) must prove a 48-hour wall-clock span across
+parked gaps, and the report's session list needs real times. Camden chose the clock
+module, 2026-10-21, over the phone setting the time (that depends on someone opening the
+page on every drive) and over no wall clock at all (`docs/REVISION_PLAN.md` §1.2, R5).
+
+**Cost.**
+
+- One more part, on I2C (GPIO2 and GPIO3, header pins 3 and 5), drawn in the Pi interface
+  block, and bought only after the design is signed.
+- Its backup cell or capacitor lives in a parked car's cabin, so its temperature rating
+  must cover that, checked against the part's datasheet (`rtcspec`).
+- A clock that has drifted or lost its backup must be detected rather than trusted, so the
+  boot path checks it (`rtcboot`).
+
 ---
 
 ## B. Systems architecture and mechanisms
@@ -287,19 +397,26 @@ E.1 (D-021): one car, a learned normal, fault areas named, measured error rates.
 · **Reviewed:** Camden ✅ / Lance ⬜
 · **Supersedes:** D-002 (§G.3)
 
+*B and F declined 2026-10-21 by D-029 (§B.7), before any review: no Pi-side sensor will be
+added, so D and E are the committed pair and the "only if" rows below no longer apply.*
+
 The handout requires two, implemented by us and measured.
 
 | Mechanism | Status | Where |
 | --- | --- | --- |
 | **D** — custom append-only storage, crash-consistent | **committed** | `src/store/` |
 | **E** — multi-process with a supervisor | **committed** | `src/supervisor/`, `src/ipc/` |
-| **B** — interrupt-driven input with a polling comparison | only if `pisensor` adds an MPU-6050 | capture path for that sensor |
-| **F** — high-rate no-drop SPSC ring | only if `pisensor` adds an MPU-6050 | `src/ipc/ring.c` |
+| **B** — interrupt-driven input with a polling comparison | declined (D-029) | — |
+| **F** — high-rate no-drop SPSC ring | declined (D-029) | — |
 | **A**, **C**, raw CAN | stretch, after D and E are measured | — |
 
-**D.** *The defining constraint: power is cut mid-write every time the key turns off*
-(D-011). We never get a clean shutdown. Measured by pulling power mid-write, repeatedly,
-and proving recovery (`expcrash`).
+**D.** *Power disappears every time the key turns off* (D-024). The box shuts down
+cleanly on its supercapacitor when it can, but the bank is empty at a cold start, a
+pulled cable beats it, and a crank dip can reset the Pi, so storage must survive a cut at
+any instant. *(Revised 2026-10-21 by D-024; it read "we never get a clean shutdown".)*
+Measured by cutting the Pi's own 5 V rail mid-write, after the converter so the
+supercapacitor cannot cover it, repeatedly, and proving recovery (`expcrash`). Pulling
+the charger no longer tests this: it triggers a clean shutdown.
 
 **E.** A recorder that dies silently has actively harmed its user, who believes it is on
 duty. Any child may be `kill -9`'d; the system degrades, logs, recovers. Measured by killing
@@ -314,13 +431,13 @@ contention" would be true and meaningless.
 
 **What brings them back.** An MPU-6050 on the Pi's I2C, its `INT` pin on a GPIO: kHz
 samples from a hardware FIFO give a real interrupt-vs-polling comparison (B) and a rate
-that stresses the ring (F). That is board item `pisensor`, due at M2.
+that stresses the ring (F). That was board item `pisensor`; D-029 declined it.
 
 **The ring stays regardless.** It is how capture hands samples to storage across the
 process boundary E requires, and B.3 still binds it.
 
 **Risk.** D and E alone meet the floor exactly. If either measurement fails, nothing is in
-reserve — which is why `pisensor` is on the critical path.
+reserve. `pisensor` was that reserve, and D-029 declined it.
 
 ### B.2 — Four processes, not one 🔒
 
@@ -348,10 +465,89 @@ looks like a quiet minute. Enforced by `tests/test_ring.c`.
 **Reviewer note.** This is a real trade: under sustained overload we drop *new* data
 rather than *old*. If that is ever the wrong choice for a diagnostic, reopen this.
 
+### B.7 — No Pi-side sensor: mechanisms B and F are out of scope ⚠️ UNREVIEWED
+
+`D-029` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Resolves:** board item `pisensor`, and the "only if" conditions of D-017 (§B.1)
+
+**Decision.** No sensor is added on the Pi itself: no MPU-6050, no DS18B20. Mechanisms
+**D** and **E** are the committed pair, implemented and measured. **B** and **F** are out
+of scope. **A**, **C** and raw CAN stay stretch goals.
+
+**Why.** Camden declined `pisensor` in the 2026-10-21 session (`docs/REVISION_PLAN.md`
+§1.1, P5). The device's job is the car's engine sensors, and D and E follow from that job
+(§B.1).
+
+**Risks, stated plainly.**
+
+- D and E meet the handout's floor of two exactly (§3.2). If either measurement fails,
+  nothing is in reserve, so `expcrash` and `expkill` are never cut (PLAN.md §3).
+- Every sensor now reaches the Pi through one dongle. The handout asks for at least two
+  physically distinct sensors that cooperate (§3.1). Our answer: coolant temperature,
+  intake air temperature, MAP or MAF, the fuel trims and the O2 sensors are physically
+  distinct sensors on the engine, fused by our pipeline, and the dongle is their
+  transport, not a sensor. `docs/DESIGN.md` §2 must defend this; a skeptical grader will
+  ask.
+- The SPSC ring stays, because B.3 binds it and it is the capture-to-storage handoff
+  mechanism E needs. It is not claimed as mechanism F: Mode 01 rates never stress it.
+- The handout words mechanism E as "sensors isolated in separate processes". Here one
+  `obdd` reads every sensor, because they share one dongle. The isolation we defend is
+  between capture, storage and analysis (B.2); `docs/DESIGN.md` §2 must say so.
+
+**Alternative rejected.** An MPU-6050 to bring back B and F (D-017's option): more
+hardware, for a sensor the user's problem does not need.
+
+### B.8 — One ring, capture to storage; analysis reads the committed log ⚠️ UNREVIEWED
+
+`D-031` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Fixes:** `docs/DESIGN.md` §1, which fanned one single-consumer ring out to three
+readers
+
+**Decision.** The shared-memory SPSC ring has exactly one producer, `obdd`, and one
+consumer, `storaged`. `analyzed` does not read the ring: it reads `storaged`'s log, in
+order, and only records whose batch has been committed to disk. "Committed" means
+durable, not merely written: a reader of the file sees a `COMMIT` in the page cache before
+`fsync` returns, so `storaged` publishes a **durable offset** only after `fsync` returns,
+and `analyzed` never reads past it. `obdctl` and the status page never read samples
+themselves; they ask the supervisor over its Unix socket, and the supervisor asks the
+process that holds the answer.
+
+**Why.** An SPSC ring has one consumer, so the old diagram could not be built as drawn.
+Camden chose this over two rings, 2026-10-21:
+
+- the ring stays truly single-producer, single-consumer, which B.3 and its tests assume;
+- `analyzed` learns only from what is durable, so a baseline never absorbs a sample that
+  a power cut later erased;
+- rebuilding baselines after a crash reads the same log through the same code as live
+  analysis, so recovery is not a second implementation to test;
+- `analyzed` can crash or restart without losing input: it resumes from where it last
+  read.
+
+**Cost.** Analysis lags capture by about one commit batch (about a second, provisional:
+`fsync`), which is nothing for signals that move over minutes. `analyzed` depends on the
+log format, so a format change touches both processes. If `storaged` is down, analysis
+stalls rather than running on unrecorded data, and the light shows red. A reader of a file
+that is still growing must stop at the durable offset and treat anything after it as not
+there yet.
+
+**Open, for the stage-2 architecture (`archdiag`).** The ring carries only samples, so this
+entry does not yet say how `analyzed`'s verdicts and the supervisor's fault and heartbeat
+events reach durable storage, which the report and `obdctl verdicts --since` need. The
+obvious answer is a Unix socket to `storaged`; it is not decided here.
+
+**Alternative rejected.** Two rings, `obdd` pushing every sample into both: lower
+analysis latency, but the analysis ring overruns whenever `analyzed` restarts, and
+recovery would need its own replay path.
+
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 
 `D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude
 · **Reviewed:** Camden ✅ / Lance ⬜
+
+*Extended 2026-10-21 by D-028 (§B.6): the page also shows trends and downloads a report,
+and the server-language sub-decision below is closed (C).*
 
 **Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
 upstream connection, no internet**. The owner's phone joins it and opens a status page
@@ -378,47 +574,115 @@ remains demonstrable through `obdctl` alone.
 
 - A network listener in the product. It binds only to the AP interface, is read-only, and
   lives only in `src/interface/`, where `make boundary` already allows network symbols.
-- One more process in the 48-hour RSS plot, and Wi-Fi radio power on the car's USB port.
+- One more process in the 48-hour RSS plot, and Wi-Fi radio power from the box's supply
+  (D-024).
 - The access point shares the Pi 4's one radio chip with the Bluetooth link to the adapter
   (D-019). Measured by `btcoex`.
-- **Open sub-decision (M2, both):** the server's language. C in `src/interface/` keeps an
+- **Sub-decision, closed by D-028:** the server's language. C in `src/interface/` keeps an
   interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
   §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
+  Camden chose C, 2026-10-21.
 
-### B.5 — One warning light, driven by the supervisor ⚠️ UNREVIEWED
+### B.6 — The phone page also downloads a report; an app is a stretch ⚠️ UNREVIEWED
 
-`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
+`D-028` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** D-013 (§B.4)
 
-**Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
-**only by the supervisor**. Every state in which the device is working is a *blink
-pattern*:
+**Decision.** The status page (D-013) shows status, current verdicts and trends, and has
+one button: **Download report**. The report is one self-contained HTML file plus a CSV of
+the same data, generated on the box by a C program in `src/interface/`. The page still
+writes nothing to the device. A native phone app is a stretch goal, not planned for M2 to
+M5.
 
-| Light | Meaning | Priority |
-| --- | --- | --- |
-| fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
-| double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
-| slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
-| **steady on or steady off** | **the device is not running.** Never a valid state. | — |
+**Report contents** (first draft; finalized in `reportspec`):
 
-**Why a light at all.** The 3 a.m. test: nobody is looking at a phone at the moment that
-matters. It also makes "honest reporting through our own interface" (demo movement 1)
-visible from across the room when a sensor is unplugged.
+| Section | Content |
+| --- | --- |
+| Header | Box id, report time, whether wall-clock time is trustworthy, and the mix of data sources (`live`, `replay`, `synth`), always labeled (C.2) |
+| Sessions | Each key cycle: boot id, start, end, duration, ended cleanly or recovered, records lost on recovery |
+| Box health | Process liveness and restarts, ring overruns (must be zero), undervoltage and throttle events, temperature, the supercapacitor's self-check, free storage |
+| Car findings | Each surfaced verdict: fault area, the sensors that cooperated to call it, residual and trend evidence, when it began and ended, confidence |
+| Baseline maturity | Hours of normal driving learned per operating-point bin, so the owner knows how far to trust the verdicts |
+| Absent signals | Any PID the car stopped answering, and for how long |
 
-**Why every live state blinks.** A GPIO keeps its last level after the process driving it
-dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
-alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
-either kind can only mean *not running*. This is mechanism E's principle — a recorder that
-dies silently has harmed its user — applied to the one output a driver actually sees.
+**Reachability.** The box is off whenever the car is (D-024), so a phone reaches it only
+while the car runs, or while the box is plugged into any USB-C charger at home, where it
+boots and serves the same page.
 
-**Why the supervisor, not `analyzed`.** The supervisor already knows every child's
-liveness (mechanism E), so it can show "degraded" when `analyzed` itself has died; a light
-owned by `analyzed` would show a stale verdict instead. Verdicts reach the supervisor over
-the existing UDS. One writer, no GPIO contention.
+**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P12): the owner views data and
+trends on a phone and downloads a report that says what is wrong with the box or the car.
+HTML opens on any phone with no app, and the CSV lets the owner or a mechanic take the
+numbers elsewhere. C, as D-013 recommended: the server is small, and an interpreter would
+add tens of megabytes to the 48-hour memory plot (R3).
 
-**Cost.** One more thing the supervisor does, and one more thing it must not block on: the
-blink timer must never delay `waitpid` handling. Color, brightness and placement are open
-(M4 enclosure).
+**Rule kept from D-013.** The report is assembled from the same supervisor UDS verbs
+`obdctl` uses, so every number in it can also be produced at the CLI, and every graded
+behavior stays demonstrable through `obdctl` alone.
+
+**Cost.** A report generator is new code in the product: it gets rows in the failure
+table, its memory shows in the soak plot, and the boundary check still has to show the
+page is the only network code.
+
+**Alternatives rejected.** A PDF report (needs a PDF writer we would have to defend). A
+native app (a second product to build). A Python server in `ui/` (the soak's memory).
+
+### B.5 — One tri-color status light, and every live state pulses ⚠️ UNREVIEWED
+
+`D-027` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-014 (§G.10)
+
+**Decision.** One LED, visible through the shell, shows red, yellow or green. It is
+written **only by the supervisor** (D-014's rule, kept).
+
+| Light | Meaning |
+| --- | --- |
+| green, slow pulse (about 1 Hz) | Ready: booted, recording, all systems go |
+| yellow, medium blink (about 2 Hz) | Running on stored energy: riding a supply dip, or shutting down |
+| red, fast blink (about 4 Hz) | An issue, in the box **or** in the car; the report says which |
+| steady yellow | Booting: held on from power-up, before the supervisor runs |
+| any other steady light, or dark while the car runs | **Not running.** Never a valid live state |
+| dark while the car is off | Normal: the box is off |
+
+Priority when more than one applies: red over yellow over green. Steady yellow for more
+than about a minute means the boot never finished.
+
+**What counts as red.** In the box: a child down or restart-limited; the dongle silent
+while the engine runs; storage failing or nearly full; undervoltage or thermal
+throttling; the supercapacitor's self-check failed. In the car: a verdict has surfaced
+after hysteresis and dwell (D.3), or a sensor the car stopped answering.
+
+**Why every live state pulses.** D-014's reasoning, applied to three colors: a GPIO keeps
+its last level after the process driving it dies, so a steady green would freeze into a
+false all-clear if the supervisor crashed. If every live state blinks, a frozen light of
+any color can only mean "not running". Camden asked for whichever pattern is safer (P11),
+and this is.
+
+**The boot state.** The Pi spends roughly half a minute (estimate, `bootbudget`) booting
+before any software can drive the light. Yellow is held on from power-up in hardware: a
+pull keeps it lit while its GPIO is still an input, and once the supervisor drives the
+pin, the pin wins. Camden's choice (R4). The firmware's `gpio=` setting in `config.txt`
+might do the same with no parts; confirm on the board before relying on it.
+
+**Open (`ledspec`).** What the light shows after the supervisor takes the GPIOs but before
+every child's first heartbeat. Yellow blink is taken (stored energy). Claude's
+recommendation, not decided: the supervisor keeps yellow steady until its first
+all-healthy check, so the light still reads "not running yet".
+
+**The part.** Whether yellow is its own die or red and green mixed is a part choice (two
+GPIOs or three), made in `ledspec` from the LED's datasheet, which also sets the
+resistors. Pins are assigned in the schematic (`schpi`).
+
+**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P10, P11): one light, three
+colors, and red means an issue in either the box or the car.
+
+**Cost.** Two or three GPIOs instead of one; the supervisor's blink timer still must never
+delay `waitpid` handling; the colors must stay distinguishable through the shell
+(`enclspec`). Red merges box and car issues, so the report must say which.
+
+**Alternative rejected.** D-014's single-color patterns (a double-blink for a verdict): a
+pattern code the owner has to learn.
 
 ---
 
@@ -427,6 +691,10 @@ blink timer must never delay `waitpid` handling. Color, brightness and placement
 ### C.1 — Append-only, self-framing, CRC'd records 🔒
 
 `D-002/D` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+*Extended 2026-10-21 by D-025 (§C.3), with Camden's explicit yes: records are written in
+committed batches, and baselines are saved in A/B checkpoint slots. Every rule below
+stays.*
 
 Records are never rewritten in place. Each carries a magic number for resynchronization
 and a CRC32 over its whole body. Recovery scans from the last known-good offset, verifies
@@ -453,6 +721,57 @@ logs, report, demo. Making it a mandatory field rather than a convention means i
 structurally impossible to forget. Mislabeling synthesized data as live is the single
 integrity failure this course is best equipped to detect, and the worst trade available
 anywhere in it.
+
+### C.3 — Write-ahead transactions and A/B checkpoints ⚠️ UNREVIEWED
+
+`D-025` · Decided M2, 2026-10-21 · **By:** Camden (in session, extending 🔒 C.1) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** 🔒 C.1, whose rules all stay: append-only, self-framing, CRC'd records,
+each carrying its `src` tag (C.2)
+
+**Decision.**
+
+- **Transactions (`storaged`).** `storaged` drains the ring into batches: a
+  `BEGIN(txn_id)` record, the sample records, a `COMMIT(txn_id)` record, then one
+  `fsync`. A batch is durable only once its `COMMIT` is on disk.
+- **Checkpoints (`analyzed`).** `analyzed` holds the learned per-bin baselines (D-031),
+  so it checkpoints them: now and then, a snapshot of the baselines plus the log offset
+  and the last committed `txn_id` it covers. There are two alternating slots, A and B,
+  each CRC'd and carrying a generation counter, so a checkpoint torn by a power cut never
+  destroys the previous good one.
+- **Recovery at boot.** `storaged` scans its log forward from the last offset it knows was
+  committed, verifying every CRC. The scan stops at the first bad record and truncates the
+  torn tail, and a batch with no `COMMIT` is truncated at its `BEGIN` (**undo**).
+  `analyzed` then loads the newest valid checkpoint slot and re-applies every committed
+  batch after its offset (**redo**), through the same code as live analysis. Both log
+  exactly what was recovered and what was lost, as counts and offsets.
+- **Every session starts with a boot record** that says whether the previous session
+  ended in a clean shutdown or was recovered. That needs a positive marker: a clean
+  shutdown ends the log with a shutdown record after its last `COMMIT`, because a crash
+  just after a `COMMIT` otherwise looks exactly like a clean end.
+
+**Why undo is only truncation.** Nothing is ever overwritten in place (C.1), so there is
+no before-image to restore: undo means discarding an uncommitted tail. Say so plainly at
+the defense, and do not claim an undo log the design does not need.
+
+**Extending a locked decision.** C.1 is 🔒. Camden approved this extension explicitly in
+the 2026-10-21 session (`docs/REVISION_PLAN.md` §1.1, P4), because it ties the storage
+layer to the logging and checkpoint techniques taught in class. C.1 stays 🔒 and gains a
+pointer.
+
+**Provisional numbers (estimates).** One `COMMIT` and one `fsync` per batch of about one
+second of samples. Records of about 48 bytes at 10 to 20 requests a second come to about
+1 KB/s, or about 3.5 MB per running hour. The worst loss from a power cut that beats the
+clean shutdown is then about one second of samples. The argument for the batch size is
+still written in `docs/DESIGN.md` §4 before the code, as C.1 requires (`fsync`).
+
+**Record format.** The new record kinds (transaction begin and commit, boot, clean
+shutdown) and a boot id in the header are settled in `recfmt`. The CRC known-answer test
+does not change.
+
+**Cost.** Recovery now spans two processes, so the crash tests (cut the file at every
+byte offset, then `expcrash` on the device) must cover both. Checkpoint frequency trades
+write load against redo time at boot.
 
 ---
 
@@ -491,7 +810,7 @@ generator. Every comparison happens inside one bin, against genuinely comparable
 conditions. This single step removes more false positives than anything else downstream.
 
 **Why multivariate.** The signal is the *correlation between sensors*, not any single
-sensor's value — oil pressure is supposed to rise with RPM. A measure of anomaly that
+sensor's value — fuel trim is supposed to track load. A measure of anomaly that
 already accounts for normal partnerships, and alarms only when a partnership breaks, is
 what makes this something a threshold provably cannot do (handout §3.3).
 
@@ -524,13 +843,16 @@ adding a diagnostic** — this is checked at the defense.
 `D-021` · Decided M1, 2026-09-23 · **By:** Camden, reopening 🔒 D-003 in session, + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜ · **Supersedes:** D-003 (§G.5)
 
+*Claim reworded 2026-10-21 by D-022 (§A.2), before any review: "this CR-V" became "the
+car it is installed in", since two cars are now testbeds.*
+
 **Decision.** carwatch is a rough-draft demo of one idea: plug it into one car, let it learn
 that car's normal, and have it say when something acts strange. The claim we defend:
 
-> *carwatch learns this CR-V's normal across its Mode 01 engine sensors, flags behavior
-> outside it, and names the likely fault area. We report how often it catches faults we
-> induce — a vacuum leak, a cooling restriction, an unplugged sensor — and how often it
-> false-alarms.*
+> *carwatch learns the normal of the car it is installed in across that car's Mode 01
+> engine sensors, flags behavior outside it, and names the likely fault area. We report
+> how often it catches faults we induce — a vacuum leak, a cooling restriction, an
+> unplugged sensor — and how often it false-alarms.*
 
 Not "predicts failure." Not "generalizes to any car." Not oil life.
 
@@ -566,31 +888,51 @@ recordings:
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
 
-### E.3 — 48-hour soak: live sensors vs. a fake OBD2 port ❓ OPEN
+### E.3 — The 48-hour soak is 48 hours of normal use across key cycles ⚠️ UNREVIEWED
 
-`D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
-· **Must close before M4** · Blocks nothing before M3
+`D-023` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers:** D-006 (§G.7) · **Pending:** the professor's written confirmation
+(`profmail`)
 
-**The conflict.** A car cannot run for 48 hours, so Camden's memo (PROBLEM.md, risk)
-proposes a **fake OBD2 port** that answers Mode 01 requests continuously — board item
-`obdsim`. Handout §5 endorses exactly this kind of harness as "a legitimate systems
-artifact." But the same paragraph says: *"The 48-hour soak and the live demonstration run
-on live sensors; everything else may run on honest replay."* A soak on the fake port is
-synthesized data by definition, and is labeled `src=synth` everywhere regardless.
+**Decision.** The graded soak (handout §3.4) is a **48-hour wall-clock window of the car's
+normal use**. Across that window the box:
 
-**Options.**
+- boots at every key-on, records, and shuts down at every key-off;
+- logs a timestamped start of every session, and a heartbeat at session start, at least
+  hourly while running, and at session end, so a drive shorter than an hour still has
+  one;
+- takes at least one injected fault (the OBD2 dongle unplugged for ten minutes with the
+  engine running, or `kill -9` of a child), with detection, degradation and recovery in
+  the log;
+- ends every session in an orderly state, and the log says whether each session ended in
+  a clean shutdown or was recovered at the next boot.
 
-- **(a)** A written exception from Pallickara for a soak on the fake port. The email text
-  is in the body of board item `soakq`.
-- **(b)** A sensor on the Pi itself (`pisensor`: MPU-6050 and/or DS18B20, ~$8) runs live
-  for all 48 hours while the OBD side comes from the fake port, labeled `synth`.
-- **(c)** The parked CR-V, key in accessory, on the live port with a battery tender. Fully
-  live, but engine-off values barely move, the socket must stay live in accessory (D-011),
-  and it ties up Lance's car for two days.
+The data source is the live car, `src=live`. The fake OBD2 port (`obdsim`) is a
+development tool and never the soak's data source.
 
-**Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
-reason `pisensor` is on the critical path. The `src=` field is in the record format
-regardless.
+**Why.** Professor Pallickara told Camden, verbally, that the 48-hour soak means 48 hours
+of regular use: the car starts and stops, the product handles every cycle, shuts down
+gracefully at key-off and boots again at the next start. Camden chose the wall-clock
+reading (`docs/REVISION_PLAN.md` §1.1, P3). It also dissolves D-006's conflict: the soak
+runs on live sensors, as handout §5 requires.
+
+**Pending.** The handout's text says "48 continuous hours". Until the professor confirms
+this reading in writing (email draft in `docs/REVISION_PLAN.md` §9; Camden sends it),
+build so that a grader reading the handout literally can still follow the logs: every
+off period is a deliberate gap between a logged shutdown and a logged boot.
+
+**Cost.**
+
+- The soak needs a real car driven normally for two days, with margin to do it twice
+  (handout §16).
+- Proving a 48-hour wall-clock span needs wall-clock time that survives the box being
+  off. The Pi has no battery-backed clock, so the box gets one (D-030).
+- Heartbeats exist only while the car runs, so the memory plot is a series of sessions,
+  not one line.
+- Two days of normal driving may hold only a few powered hours, which is thin evidence
+  against a slow leak. A continuous bench run against `obdsim`, labeled `synth`, could
+  add memory evidence alongside the soak, never in place of it. Open: not decided here.
 
 ---
 
@@ -618,19 +960,43 @@ commits, the git history is a graded deliverable, and neither of us will break d
 thousand-line diff. A commit small enough to review in ninety seconds is a commit we will
 actually review — and the defense asks us to answer for individual lines.
 
-### F.2 — Ownership map 🔒
+### F.2 — No pre-assigned owners; a subsystem belongs to its first substantive commit ⚠️ UNREVIEWED
 
-Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+`D-026` · Decided M2, 2026-10-21 · **By:** Camden (in session, reopening 🔒 F.2) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** 🔒 the M0 ownership map (§G.8)
 
-| Owner | Subsystems |
-| --- | --- |
-| **Camden** | `src/obd/`, `src/ipc/` |
-| **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
-| **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
+**Decision.** No task, subsystem or document has a pre-assigned owner. Any open line on
+the board is for whoever is available. For the ownership map the handout requires (§8,
+§10.1), a subsystem belongs to **whoever lands its first substantive commit**, and
+`docs/DESIGN.md` §7 records the map as it is realized. Ownership still means first
+authorship and answerability at the defense, not exclusivity, and each partner must still
+answer one question from across the boundary.
 
-Ownership means **first authorship and answerability at the defense**, not exclusivity.
-Each partner must still be able to answer one question from across the boundary — demo day
-guarantees one.
+**Reopening a locked decision.** The M0 map was 🔒. Camden reopened it explicitly in the
+2026-10-21 session and chose claim-on-first-commit (`docs/REVISION_PLAN.md` §1.1, P2).
+Lance has not reviewed it.
+
+**Why.** Camden's call: work goes to whoever is free, and no document assigns work to
+either partner, least of all while the two of them have not talked it through. The
+handout still needs a map, and the commit history is where a grader can check one.
+
+**What changed with it.**
+
+- `CLAUDE.md` §0 step 3 and §6, and `docs/DESIGN.md` §7.
+- `@owner` markers are gone from open board lines; ticked lines keep theirs as the record
+  of who did the work. `tools/board_sync.py` only ever adds assignees, so removing a
+  marker does not unassign the GitHub issue: a human clears those by hand.
+- `OWNER:` lines are gone from the daemon scaffolds. Owner fields inside earlier decision
+  entries are history, not assignments.
+
+**Cost.** Less structure: two people can start the same task, so say "I'm on this" in a
+comment on the line's issue. The commit balance no longer follows from a map (handout
+§10.1: a partner under a quarter of the substantive commits is probed hard at the
+defense), so both partners have to watch it.
+
+**Alternative rejected.** Keeping the M0 map: it assigned half the open work to a partner
+who had not agreed to the redesign it now serves.
 
 ### F.3 — Milestone dates ⚠️ UNREVIEWED
 
@@ -848,6 +1214,156 @@ We cannot wait a semester for a failure, so we provoke conditions and label the 
 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
+
+### G.6 — (was A.2) One testbed: Lance's 2015 Honda CR-V EX-L 🗑
+
+`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-005 (§G.2)
+· **Superseded 2026-10-21 by D-022 (§A.2)**: Camden's Forester joined as a second
+testbed, and neither car is required of anyone.
+
+**Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
+
+**Why.** Camden's call, 2026-09-21. D-005 itself named the second vehicle as the first
+thing to cut when the schedule slipped, and the CAN detour (PROMPTLOG E-02) spent that
+slack. One car halves the survey, baseline and ground-truth work, and the baseline window
+is the one thing that cannot be compressed by working harder in Week 14.
+
+**Cost.**
+
+- The two-car contrast was the old thesis's strongest demonstration, and it is gone. The
+  thesis is now argued within one car: what it does against its own learned normal
+  (D-021).
+- Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
+  schedule; Camden owns the capture code but not the car.
+
+### G.7 — (was E.3) 48-hour soak: live sensors vs. a fake OBD2 port 🗑
+
+`D-006` · **Owner:** Camden · **Tracked as:** board item `soakq` (label `decision`)
+· **Must close before M4** · Blocks nothing before M3
+· **Answered 2026-10-21 by D-023 (§E.3)**: the soak is 48 hours of normal use across key
+cycles, on the live car, so none of the options below is needed.
+
+**The conflict.** A car cannot run for 48 hours, so Camden's memo (PROBLEM.md, risk)
+proposes a **fake OBD2 port** that answers Mode 01 requests continuously — board item
+`obdsim`. Handout §5 endorses exactly this kind of harness as "a legitimate systems
+artifact." But the same paragraph says: *"The 48-hour soak and the live demonstration run
+on live sensors; everything else may run on honest replay."* A soak on the fake port is
+synthesized data by definition, and is labeled `src=synth` everywhere regardless.
+
+**Options.**
+
+- **(a)** A written exception from Pallickara for a soak on the fake port. The email text
+  is in the body of board item `soakq`.
+- **(b)** A sensor on the Pi itself (`pisensor`: MPU-6050 and/or DS18B20, ~$8) runs live
+  for all 48 hours while the OBD side comes from the fake port, labeled `synth`.
+- **(c)** The parked CR-V, key in accessory, on the live port with a battery tender. Fully
+  live, but engine-off values barely move, the socket must stay live in accessory (D-011),
+  and it ties up Lance's car for two days.
+
+**Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
+reason `pisensor` is on the critical path. The `src=` field is in the record format
+regardless.
+
+### G.8 — (was F.2) Ownership map 🗑
+
+Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-10-21 by D-026 (§F.2)**: reopened by Camden in session; no
+pre-assigned owners, and a subsystem belongs to its first substantive commit.
+
+| Owner | Subsystems |
+| --- | --- |
+| **Camden** | `src/obd/`, `src/ipc/` |
+| **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
+| **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
+
+Ownership means **first authorship and answerability at the defense**, not exclusivity.
+Each partner must still be able to answer one question from across the boundary — demo day
+guarantees one.
+
+### G.9 — (was A.6) Plug-in form: OBD2 port for data, car USB-C for power 🗑
+
+`D-011` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-10-21 by D-024 (§A.6)**: the Pi moved into one box with one USB-C
+input and a seconds-scale supercapacitor, so key-off is a clean shutdown, not a cut.
+
+*Data half revised 2026-09-21 by D-015, before any review: the MCP2515 and Y-splitter
+became a USB OBD2 adapter. Revised again 2026-09-23 by D-019: the adapter talks to the Pi
+over Bluetooth Classic, so no data cable runs to the Pi.*
+
+**Decision.** The device is a box anyone could install without tools:
+
+- **Data:** the Bluetooth OBD2 adapter (D-019) plugs into the OBD2 port; the Pi reads it
+  over RFCOMM. No data cable.
+- **Power:** the car's own USB-C port, or a USB-C adapter in the 12 V socket, into the Pi.
+  No buck converter.
+- **Nothing is cut, spliced, pierced or clamped** on the car.
+
+**Why.** The product thesis is that this is a thing an ordinary owner plugs in, so the
+prototype is built the way the product would be installed. We are building the model to
+prove the idea is worth something, not the finished product — but a prototype that needs
+harness surgery proves a different, less interesting idea. Switched USB power also means
+no battery drain while parked, and it makes mechanism D's defining constraint literally
+true: power is cut, unannounced, at every key-off.
+
+**Alternatives rejected** (discussed 2026-09-21): splicing the bus behind the OBD2 port
+(the same conductors as the port pins, plus a cut harness on a daily driver); an in-line
+harness at the forward camera (the 2015 CR-V EX-L has none, D-007); a contactless bus
+clamp (receive-only, a black box); powering the Pi from OBD2 pin 16 through our own buck
+converter (live with the key off, and more hardware to build and defend).
+
+**Rule this imposes:** **the Pi must not brown out at crank.** The USB-C supply is rated
+≥ 5.1 V / 3 A (Pi 4), and is proven by `vcgencmd get_throttled` after a cold start, not
+by its label (`docs/hardware/wiring.md`).
+
+**Cost.**
+
+- No recording while the key is off — nothing happens then worth recording, but the device
+  also cannot run overnight in a parked car.
+- **The OBD2 adapter itself draws from pin 16, which is live with the key off.** Its
+  key-off current must be measured before it is left plugged in overnight.
+- D-006 option (c), the parked-car soak, now requires a socket that stays live in
+  accessory plus a battery tender.
+- The product is "one box, one power cable, plus the dongle in the port".
+
+### G.10 — (was B.5) One warning light, driven by the supervisor 🗑
+
+`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-10-21 by D-027 (§B.5)**: one tri-color light; the blink-only rule is
+kept.
+
+**Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
+**only by the supervisor**. Every state in which the device is working is a *blink
+pattern*:
+
+| Light | Meaning | Priority |
+| --- | --- | --- |
+| fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
+| double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
+| slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
+| **steady on or steady off** | **the device is not running.** Never a valid state. | — |
+
+**Why a light at all.** The 3 a.m. test: nobody is looking at a phone at the moment that
+matters. It also makes "honest reporting through our own interface" (demo movement 1)
+visible from across the room when a sensor is unplugged.
+
+**Why every live state blinks.** A GPIO keeps its last level after the process driving it
+dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
+alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
+either kind can only mean *not running*. This is mechanism E's principle — a recorder that
+dies silently has harmed its user — applied to the one output a driver actually sees.
+
+**Why the supervisor, not `analyzed`.** The supervisor already knows every child's
+liveness (mechanism E), so it can show "degraded" when `analyzed` itself has died; a light
+owned by `analyzed` would show a stale verdict instead. Verdicts reach the supervisor over
+the existing UDS. One writer, no GPIO contention.
+
+**Cost.** One more thing the supervisor does, and one more thing it must not block on: the
+blink timer must never delay `waitpid` handling. Color, brightness and placement are open
+(M4 enclosure).
 
 ---
 
