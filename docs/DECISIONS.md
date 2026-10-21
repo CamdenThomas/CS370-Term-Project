@@ -43,13 +43,13 @@ Decisions currently awaiting a human signature:
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
-| D-016 | The 2015 CR-V is the only testbed; the Outback is dropped (§A.2, supersedes D-005) | Camden + Claude | 2026-09-21 | Lance — it is your car, and now every live capture runs on it |
 | D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
 | D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation you own now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
+| D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
@@ -108,26 +108,35 @@ records what survives (D and E). Bluetooth costs no further mechanism.
 `/dev/obd`. If Bluetooth proves unreliable in the car, switching back is a provisioning
 change, not a code change.
 
-### A.2 — One testbed: Lance's 2015 Honda CR-V EX-L ⚠️ UNREVIEWED
+### A.2 — Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V ⚠️ UNREVIEWED
 
-`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
-· **Supersedes:** D-005 (§G.2)
+`D-022` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-016 (§G.6) · **Amends:** the claim wording of D-021 (§E.1)
 
-**Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
+**Decision.** Two cars are available as testbeds: Camden's **2008 Subaru Forester**
+(non-turbo) and Lance's **2015 Honda CR-V EX-L** (D-007). Neither car is required of
+anyone, and either partner tests wherever suits them. Every capture records which car it
+came from.
 
-**Why.** Camden's call, 2026-09-21. D-005 itself named the second vehicle as the first
-thing to cut when the schedule slipped, and the CAN detour (PROMPTLOG E-02) spent that
-slack. One car halves the survey, baseline and ground-truth work, and the baseline window
-is the one thing that cannot be compressed by working harder in Week 14.
+**Why.** Camden's call, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P1): a car on Camden's
+own schedule lets live capture start without waiting on anyone, and no document should
+restrict where either partner tests. The device learns whichever car it is installed in,
+so a second car costs no code.
+
+**The claim, reworded.** D-021's *"this CR-V"* becomes *"the car it is installed in"*
+(§E.1). Results are reported per car and labeled with the car.
 
 **Cost.**
 
-- The two-car contrast was the old thesis's strongest demonstration, and it is gone. The
-  thesis is now argued within one car: what it does against its own learned normal
-  (D-021).
-- Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
-  schedule; Camden owns the capture code but not the car.
+- Each car needs its own PID survey (`pidforester`, `pidhonda`). The two sensor lists may
+  differ, and the Forester's OBD protocol is not verified: a 2008 US car is expected to
+  speak CAN (ISO 15765-4), but MAP, for one, may be absent.
+- Baselines are per car. Two cars split the calendar time of normal driving unless one of
+  them carries most of it.
+
+**Alternative rejected.** Keeping D-016 (the CR-V only): every live capture would wait on
+one car's schedule.
 
 ### A.3 — Honda year/model/engine ⚠️ UNREVIEWED
 
@@ -524,13 +533,16 @@ adding a diagnostic** — this is checked at the defense.
 `D-021` · Decided M1, 2026-09-23 · **By:** Camden, reopening 🔒 D-003 in session, + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜ · **Supersedes:** D-003 (§G.5)
 
+*Claim reworded 2026-10-21 by D-022 (§A.2), before any review: "this CR-V" became "the
+car it is installed in", since two cars are now testbeds.*
+
 **Decision.** carwatch is a rough-draft demo of one idea: plug it into one car, let it learn
 that car's normal, and have it say when something acts strange. The claim we defend:
 
-> *carwatch learns this CR-V's normal across its Mode 01 engine sensors, flags behavior
-> outside it, and names the likely fault area. We report how often it catches faults we
-> induce — a vacuum leak, a cooling restriction, an unplugged sensor — and how often it
-> false-alarms.*
+> *carwatch learns the normal of the car it is installed in across that car's Mode 01
+> engine sensors, flags behavior outside it, and names the likely fault area. We report
+> how often it catches faults we induce — a vacuum leak, a cooling restriction, an
+> unplugged sensor — and how often it false-alarms.*
 
 Not "predicts failure." Not "generalizes to any car." Not oil life.
 
@@ -848,6 +860,29 @@ We cannot wait a semester for a failure, so we provoke conditions and label the 
 
 Ten labeled recordings we made beat ten thousand unlabeled samples we found, because we
 know what ours mean — and we will be asked at the defense how we know.
+
+### G.6 — (was A.2) One testbed: Lance's 2015 Honda CR-V EX-L 🗑
+
+`D-016` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Supersedes:** D-005 (§G.2)
+· **Superseded 2026-10-21 by D-022 (§A.2)**: Camden's Forester joined as a second
+testbed, and neither car is required of anyone.
+
+**Decision.** The CR-V is the only testbed. The Subaru Outback is dropped.
+
+**Why.** Camden's call, 2026-09-21. D-005 itself named the second vehicle as the first
+thing to cut when the schedule slipped, and the CAN detour (PROMPTLOG E-02) spent that
+slack. One car halves the survey, baseline and ground-truth work, and the baseline window
+is the one thing that cannot be compressed by working harder in Week 14.
+
+**Cost.**
+
+- The two-car contrast was the old thesis's strongest demonstration, and it is gone. The
+  thesis is now argued within one car: what it does against its own learned normal
+  (D-021).
+- Every live capture, induced fault and soak on real data runs on Lance's car and Lance's
+  schedule; Camden owns the capture code but not the car.
 
 ---
 

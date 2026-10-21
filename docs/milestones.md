@@ -97,12 +97,14 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `designdoc` <!-- #28 -->
 - [ ] **Both sensors alive: real Mode 01 replies from a real car, captured to a file**
       `firstcap` @camden <!-- #20 -->
-- [ ] **Baseline data collection started on the CR-V; the model learns normal from it**
+- [ ] **Baseline data collection started on a real car; the model learns normal from it**
       `baseline` <!-- #21 -->
 - [ ] M2 decision: 48-hour soak on a fake OBD2 port — ask Pallickara `soakq` @camden
       <!-- #7 -->
 - [ ] M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car `bench` @camden
       <!-- #18 -->
+- [ ] M2 hardware: supported-PID survey on the 2008 Forester, with protocol and VIN
+      `pidforester`
 - [x] M2 hardware: two-node bench CAN bus — prove frames move before a car is attached
       (cut) `twonode` @camden <!-- #19 -->
 - [ ] M2 decision: finalize the on-disk record format `recfmt` @lance <!-- #22 -->
@@ -193,7 +195,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M4 experiment: supervision — kill -9 each child, time detection and recovery
       `expkill` <!-- #92 -->
 - [ ] M4 experiment: crash consistency — N power-cut trials `expcrash` @lance <!-- #60 -->
-- [ ] M4 ground truth: induce and label a vacuum leak on the CR-V `fvac` <!-- #62 -->
+- [ ] M4 ground truth: induce and label a vacuum leak on a testbed car `fvac` <!-- #62 -->
 - [ ] M4 ground truth: induce and label a cooling anomaly `fcool` <!-- #63 -->
 - [ ] M4 ground truth: sensor unplug — and demo-day rehearsal `funplug` @camden
       <!-- #64 -->

@@ -10,25 +10,28 @@ replies below the table, dated.
 
 ## What we specifically need to know
 
-Vehicle: Lance's **2015 Honda CR-V EX-L** (D-007, D-016 — engine and transmission still
-to be confirmed from the VIN).
+Vehicles (D-022): Camden's **2008 Subaru Forester** (non-turbo; OBD protocol not yet
+verified, expected CAN) and Lance's **2015 Honda CR-V EX-L** (D-007; engine and
+transmission still to be confirmed from the VIN). For each car, also record the protocol
+the adapter negotiated (`ATDP`) and the VIN (Mode 09, `0902`).
 
-| PID | Signal | CR-V | Notes |
-| --- | --- | --- | --- |
-| 0x0C | RPM | | |
-| 0x04 | Calculated load | | |
-| 0x05 | Coolant temp | | |
-| 0x0F | Intake air temp | | |
-| 0x0B | MAP | | |
-| 0x06/0x07 | Short/long term fuel trim B1 | | |
-| 0x5C | Engine oil temp | | |
-| — | Oil pressure | | Usually not a standard PID; the CR-V likely has only a switch. Nothing depends on it (D-021). |
-| 0x2F | Fuel level | | |
-| 0x31 | Distance since codes cleared | | odometer proxy |
+| PID | Signal | Forester | CR-V | Notes |
+| --- | --- | --- | --- | --- |
+| 0x0C | RPM | | | |
+| 0x04 | Calculated load | | | |
+| 0x05 | Coolant temp | | | |
+| 0x0F | Intake air temp | | | |
+| 0x0B | MAP | | | |
+| 0x06/0x07 | Short/long term fuel trim B1 | | | |
+| 0x5C | Engine oil temp | | | |
+| — | Oil pressure | | | Usually not a standard PID; the CR-V likely has only a switch. Nothing depends on it (D-021). |
+| 0x2F | Fuel level | | | |
+| 0x31 | Distance since codes cleared | | | odometer proxy |
 
 ## After the survey
 
-Every supported PID in the table above becomes an input to the model. Record which ones the
-CR-V answers, with the raw replies, and update the sensor list in `docs/DESIGN.md` §4.
+Every supported PID in the table above becomes an input to the model for that car. Record
+which ones each car answers, with the raw replies, and update the sensor list in
+`docs/DESIGN.md` §4.
 Manufacturer (Mode 22) PIDs are a stretch: try them only if a fault area has too few
 sensors to call.

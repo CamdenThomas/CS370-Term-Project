@@ -27,7 +27,7 @@ fails in Week 14.
 
 ### Critical path A — calendar, not effort: learning the car's normal
 
-The model knows nothing until it has seen the CR-V's normal driving: cold starts, short
+The model knows nothing until it has seen a car's normal driving: cold starts, short
 trips and long pulls, across weeks. **That is calendar time you cannot buy back by working
 harder** (D-021).
 
@@ -36,8 +36,8 @@ baseline collection starts ──── weeks of normal driving ────▶ 
         M2 (mid-Oct)                                               M4                  M5
 ```
 
-**Consequence:** logging must be running on the CR-V by the end of M2, even if the code is
-ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts
+**Consequence:** logging must be running on a real car by the end of M2, even if the code
+is ugly, even if it is just raw adapter replies logged to a file. A crude capture that starts
 on time beats an elegant one that starts three weeks late. Every week it slips is a week
 less of normal to learn from, and a weaker catch rate at M5.
 
@@ -60,10 +60,10 @@ after them.
 
 ### The one cheap experiment that de-risks everything
 
-**The PID survey (`pidhonda`).** Ten minutes, no custom hardware — just the adapter. It
-answers *which engine sensors does the CR-V actually publish?*, which is the model's input
-list. Better to learn in Week 5, with the design still soft, than in Week 11 with the
-analysis half-written around a sensor that does not exist.
+**The PID survey (`pidforester`, `pidhonda`).** Ten minutes per car, no custom hardware —
+just the adapter. It answers *which engine sensors does this car actually publish?*, which
+is the model's input list. Better to learn in Week 5, with the design still soft, than in
+Week 11 with the analysis half-written around a sensor that does not exist.
 
 ---
 
@@ -73,7 +73,7 @@ analysis half-written around a sensor that does not exist.
 | --- | --- | --- | --- |
 | **M0** | 4 | Commit and order | Parts ordered, questions asked, board live |
 | **M1** | 5 | Know the problem | A named user, a named risk, and PID survey results |
-| **M2** | 6–7 | Argue on paper | Design settled, **logging running on the CR-V** |
+| **M2** | 6–7 | Argue on paper | Design settled, **logging running on a real car** |
 | **M3** | 8–10 | Build the spine | Samples → ring → disk, supervised, on a real car |
 | **M4** | 11–14 | Make it smart, then prove it | Analysis done, experiments measured, soak passed |
 | **M5** | 15 | Account for it honestly | Report written, limits named, history clean |

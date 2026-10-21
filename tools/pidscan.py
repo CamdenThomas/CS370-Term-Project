@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Mode 01 supported-PID bitmap scan. Closes D-007.
 
-Run this on the CR-V before M2. Ten minutes through the Bluetooth OBD2 adapter
+Run this on each testbed car (D-022). Ten minutes through the Bluetooth OBD2 adapter
 (/dev/obd, D-019). The supported PIDs become the model's input list (D-021).
 
 Record results in docs/hardware/pid-survey.md.

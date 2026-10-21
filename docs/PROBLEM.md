@@ -7,7 +7,8 @@ how it is doing between services. His car already has a sensor on nearly everyth
 matters, but the only thing that ever reads them for him is the check-engine light, and it
 speaks up only once something has already gone wrong. What he wants is simple: something
 that knows how *his* car normally behaves and tells him when it starts acting differently,
-before a small problem becomes a breakdown.
+before a small problem becomes a breakdown. We also test the same device on Camden's 2008
+Subaru Forester, because it learns whichever car it is installed in.
 
 ## The problem
 
@@ -36,7 +37,7 @@ this person drove.
 
 ## The sensors
 
-The device reads every Mode 01 sensor the CR-V publishes through its OBD2 port, including
+The device reads every Mode 01 sensor the car publishes through its OBD2 port, including
 coolant temperature, intake air temperature, MAP, short- and long-term fuel trims, O2, RPM
 and engine load. These sensors cooperate rather than merely coexist, because **no one of
 them means anything alone.** Fuel trim, for example, is only interpretable against load,
@@ -59,10 +60,10 @@ recording down with it.
 ## The risk
 
 The primary risk, named honestly, is learning time: the model knows nothing until it has
-seen weeks of the CR-V's normal driving, so baseline collection has to start at M2, and
+seen weeks of a car's normal driving, so baseline collection has to start at M2, and
 every week it slips is a week less of normal to compare against. The second risk is the
-OBD2 protocol itself: each manufacturer implements it a little differently, the CR-V may
+OBD2 protocol itself: each manufacturer implements it a little differently, a car may
 not publish every sensor we would like, and some signals may be impossible to decode
 because the manufacturer keeps their meaning proprietary. Finally, the scope is large for
-one semester, so we are building an honest first draft of the idea, one car, one Bluetooth
-adapter and one Pi, rather than a finished product.
+one semester, so we are building an honest first draft of the idea, one car at a time,
+one Bluetooth adapter and one Pi, rather than a finished product.

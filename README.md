@@ -25,8 +25,10 @@ flags something, it names the likely fault area:
 | Sensor or electrical | any sensor against its usual partners | A dead or unplugged sensor reads a plausible value that no longer agrees with the others. |
 | Unusual, area unknown | all of them | Behavior outside the learned normal that matches no known area is still worth a flag. |
 
-We measure how often it catches faults we induce on the CR-V (a vacuum leak, a cooling
-restriction, an unplugged sensor) and how often it false-alarms.
+We measure how often it catches faults we induce (a vacuum leak, a cooling restriction,
+an unplugged sensor) and how often it false-alarms, on our two testbed cars: a 2008 Subaru
+Forester and a 2015 Honda CR-V (decision D-022). Every result is labeled with the car it
+came from.
 
 ## Hardware
 

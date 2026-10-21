@@ -50,7 +50,7 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | --- | --- | --- |
 | [`hardware/BOM.md`](hardware/BOM.md) | What do we buy? | Camden |
 | [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? | Camden |
-| [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does the CR-V actually publish? | Lance's car, either partner |
+| [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does each testbed car actually publish? | either partner |
 | [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? | Lance |
 
 ## Outside `docs/`

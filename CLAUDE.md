@@ -80,7 +80,8 @@ is pasted.** Not "should pass." Output.
 
 ## 3. What we are building
 
-A Raspberry Pi in Lance's **2015 Honda CR-V EX-L**, the only testbed (D-016). A Bluetooth
+A Raspberry Pi in a car. The testbeds are Camden's **2008 Subaru Forester** and Lance's
+**2015 Honda CR-V EX-L**, and neither is required of anyone (D-022). A Bluetooth
 Classic OBD2 adapter in the OBD2 port is read over RFCOMM as `/dev/obd` (D-019); the car's
 USB powers the Pi, nothing cut (D-011). Mode 01 requests (D-012) read every engine sensor
 the car publishes; the device learns *this car's* normal per operating point, flags what
@@ -88,9 +89,10 @@ leaves it, and names the likely fault area. A rough first draft, not a finished 
 The owner reads it on a phone over the device's own Wi-Fi (D-013) or with `obdctl`; one
 warning light blinks while on duty (D-014).
 
-**The claim we defend (D-021):** *"learns this CR-V's normal across its engine sensors,
-flags behavior outside it and names the likely fault area, with measured catch and
-false-alarm rates on faults we induce."* Not "predicts failure" (handout §5).
+**The claim we defend (D-021, D-022):** *"learns the normal of the car it is installed in
+across its engine sensors, flags behavior outside it and names the likely fault area, with
+measured catch and false-alarm rates on faults we induce."* Not "predicts failure"
+(handout §5).
 
 ## 4. Mechanisms
 
