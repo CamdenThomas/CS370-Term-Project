@@ -1,6 +1,6 @@
 /* obdd — capture daemon: Mode 01 requests over the Bluetooth OBD2 adapter (D-012, D-019).
  *
- * OWNER: Camden.  M3 target: real Mode 01 replies from a real car into the ring.
+ * M3 target: real Mode 01 replies from a real car into the ring.
  *
  * Design intent (see docs/DESIGN.md §1): open /dev/obd, a udev symlink to the RFCOMM
  * tty the kernel binds to the adapter (/dev/rfcomm0); initialise the adapter (ATZ, ATE0, ATSP0); then round-robin the PID list at a fixed

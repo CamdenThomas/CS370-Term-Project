@@ -1,7 +1,5 @@
 /* analyzed — the intelligence. All of it ours (handout §3.3, D-004).
  *
- * OWNER: Lance.
- *
  * Pipeline:
  *   operating-point bin (RPM x load x coolant temp)
  *     -> per-bin running mean/variance

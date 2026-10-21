@@ -1,6 +1,6 @@
 # Schematic conventions
 
-**Owner: Lance.** The KiCad project lives in `electricalDrawing/`.
+**Owner:** unclaimed (D-026). The KiCad project lives in `electricalDrawing/`.
 `make hwcheck` must pass before any PR touching it is opened.
 
 ## Scope: schematic yes, PCB probably no

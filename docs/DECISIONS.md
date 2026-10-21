@@ -43,18 +43,19 @@ Decisions currently awaiting a human signature:
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
 | D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
-| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is yours, and it is now half of what we are graded on |
+| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
-| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation you own now target fault areas, not three diagnostics |
+| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
+| D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
-> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind your
-> subsystems.
+> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind storage
+> and analysis.
 
 ---
 
@@ -648,19 +649,43 @@ commits, the git history is a graded deliverable, and neither of us will break d
 thousand-line diff. A commit small enough to review in ninety seconds is a commit we will
 actually review — and the defense asks us to answer for individual lines.
 
-### F.2 — Ownership map 🔒
+### F.2 — No pre-assigned owners; a subsystem belongs to its first substantive commit ⚠️ UNREVIEWED
 
-Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+`D-026` · Decided M2, 2026-10-21 · **By:** Camden (in session, reopening 🔒 F.2) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** 🔒 the M0 ownership map (§G.8)
 
-| Owner | Subsystems |
-| --- | --- |
-| **Camden** | `src/obd/`, `src/ipc/` |
-| **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
-| **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
+**Decision.** No task, subsystem or document has a pre-assigned owner. Any open line on
+the board is for whoever is available. For the ownership map the handout requires (§8,
+§10.1), a subsystem belongs to **whoever lands its first substantive commit**, and
+`docs/DESIGN.md` §7 records the map as it is realized. Ownership still means first
+authorship and answerability at the defense, not exclusivity, and each partner must still
+answer one question from across the boundary.
 
-Ownership means **first authorship and answerability at the defense**, not exclusivity.
-Each partner must still be able to answer one question from across the boundary — demo day
-guarantees one.
+**Reopening a locked decision.** The M0 map was 🔒. Camden reopened it explicitly in the
+2026-10-21 session and chose claim-on-first-commit (`docs/REVISION_PLAN.md` §1.1, P2).
+Lance has not reviewed it.
+
+**Why.** Camden's call: work goes to whoever is free, and no document assigns work to
+either partner, least of all while the two of them have not talked it through. The
+handout still needs a map, and the commit history is where a grader can check one.
+
+**What changed with it.**
+
+- `CLAUDE.md` §0 step 3 and §6, and `docs/DESIGN.md` §7.
+- `@owner` markers are gone from open board lines; ticked lines keep theirs as the record
+  of who did the work. `tools/board_sync.py` only ever adds assignees, so removing a
+  marker does not unassign the GitHub issue: a human clears those by hand.
+- `OWNER:` lines are gone from the daemon scaffolds. Owner fields inside earlier decision
+  entries are history, not assignments.
+
+**Cost.** Less structure: two people can start the same task, so say "I'm on this" in a
+comment on the line's issue. The commit balance no longer follows from a map (handout
+§10.1: a partner under a quarter of the substantive commits is probed hard at the
+defense), so both partners have to watch it.
+
+**Alternative rejected.** Keeping the M0 map: it assigned half the open work to a partner
+who had not agreed to the redesign it now serves.
 
 ### F.3 — Milestone dates ⚠️ UNREVIEWED
 
@@ -929,6 +954,22 @@ synthesized data by definition, and is labeled `src=synth` everywhere regardless
 **Posture.** Build as if (a) is refused. (b) is the default fallback, which is one more
 reason `pisensor` is on the critical path. The `src=` field is in the record format
 regardless.
+
+### G.8 — (was F.2) Ownership map 🗑
+
+Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-10-21 by D-026 (§F.2)**: reopened by Camden in session; no
+pre-assigned owners, and a subsystem belongs to its first substantive commit.
+
+| Owner | Subsystems |
+| --- | --- |
+| **Camden** | `src/obd/`, `src/ipc/` |
+| **Lance** | `src/store/`, `src/analysis/`, `tools/train/` |
+| **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, build, docs |
+
+Ownership means **first authorship and answerability at the defense**, not exclusivity.
+Each partner must still be able to answer one question from across the boundary — demo day
+guarantees one.
 
 ---
 

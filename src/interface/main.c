@@ -1,4 +1,4 @@
-/* obdctl — query CLI over a Unix domain socket. Shared ownership.
+/* obdctl — query CLI over a Unix domain socket.
  *
  * The handout is explicit that a crisp CLI with exact semantics beats a pretty
  * dashboard, and it is far more extensible at the live-modification station on demo

@@ -129,13 +129,24 @@ the measured numbers that justify it.
 
 ## 7. Ownership map
 
-| Owner | Subsystems |
-| --- | --- |
-| Camden | `src/obd/`, `src/ipc/` |
-| Lance | `src/store/`, `src/analysis/`, `tools/train/`, `electricalDrawing/` |
-| Shared | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
+Nothing is pre-assigned (D-026). A subsystem belongs to whoever lands its first
+substantive commit, and this table records the map as it is realized. Ownership means
+first authorship and answerability at the defense, not exclusivity.
 
-Ownership means first authorship and answerability at the defense, not exclusivity.
+| Subsystem | Owner | Claimed by |
+| --- | --- | --- |
+| `src/ipc/` | Camden | the SPSC ring and its tests (M0) |
+| `src/obd/` | unclaimed | |
+| `src/store/` | unclaimed | |
+| `src/analysis/` | unclaimed | |
+| `src/supervisor/` | unclaimed | |
+| `src/interface/` | unclaimed | |
+| `src/common/` | unclaimed | |
+| `tools/train/` | unclaimed | |
+| `electricalDrawing/` | unclaimed | |
+
+Helpers written as scaffolding (the CRC32 in `src/store/`, the logger in `src/common/`)
+are not a claim on their subsystem.
 
 ## 8. AI-use plan
 >

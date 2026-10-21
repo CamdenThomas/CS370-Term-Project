@@ -21,8 +21,9 @@ You (Claude) are required in our **workflow** and forbidden in our **product** (
    `docs/DECISIONS.md` (what is settled, what awaits review).
 2. `python tools/board_sync.py --status`. Pick work from the open boxes in
    `docs/milestones.md`, nowhere else.
-3. State whose session this is. Do not edit outside that owner's area (§6) without being
-   told.
+3. State whose session this is (Camden's or Lance's), for transcripts and attribution.
+   Any open task may be taken (D-026); do not edit a subsystem the other partner has
+   claimed (§6) without being told.
 4. `git status` clean, `git pull` on `main`, create the branch **before** the first edit.
 
 **End, every time:**
@@ -108,12 +109,8 @@ two cooperating sensors (the threshold test). Why: DECISIONS §D.
 
 ## 6. Ownership
 
-| Owner | Subsystems |
-| --- | --- |
-| **Camden** | `src/obd/`, `src/ipc/` |
-| **Lance** | `src/store/`, `src/analysis/`, `tools/train/`, `electricalDrawing/` |
-| **Shared** | `src/supervisor/`, `src/interface/`, `src/common/`, `Makefile`, docs |
-
+No pre-assigned owners (D-026). Any open task is for whoever is free. A subsystem belongs
+to whoever lands its first substantive commit; the realized map is `docs/DESIGN.md` §7.
 First authorship and answerability at the defense, not exclusivity.
 
 ## 7. Git and pull-request law

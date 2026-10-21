@@ -85,7 +85,7 @@ tools/              Python only here: board sync, PID scan, replay, training
 scripts/            provision a clean Pi; install the service
 soak/               48-hour soak runner and fault injection
 docs/               everything written — start at docs/README.md
-electricalDrawing/  KiCad schematic (Lance)
+electricalDrawing/  KiCad schematic
 partners/           each partner's PROMPTLOG, REFLECTION, raw transcripts
 ```
 

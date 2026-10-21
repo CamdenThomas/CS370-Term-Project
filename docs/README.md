@@ -16,7 +16,7 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | Milestone dates | the table in [`milestones.md`](milestones.md) | GitHub milestone due dates (synced) |
 | Milestone exit criteria and the M5 deliverables | [`milestones.md`](milestones.md) (bold lines) | — |
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
-| Ownership map | [`../CLAUDE.md`](../CLAUDE.md) §6 | `DESIGN.md` §7, `DECISIONS.md` §F.2 |
+| Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §7 | `DECISIONS.md` §F.2 |
 | Hardware data path (Bluetooth OBD2 adapter) | `DECISIONS.md` §A.1 (D-019) | README, DESIGN, `hardware/` |
 | Commit message format | [`../.gitmessage`](../.gitmessage) | `CLAUDE.md` §7.4 |
 | PR body | [`../.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md) | `CLAUDE.md` §7.5 |
@@ -48,10 +48,10 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 
 | Document | Answers | Owner |
 | --- | --- | --- |
-| [`hardware/BOM.md`](hardware/BOM.md) | What do we buy? | Camden |
-| [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? | Camden |
+| [`hardware/BOM.md`](hardware/BOM.md) | What do we buy? | shared |
+| [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? | shared |
 | [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does each testbed car actually publish? | either partner |
-| [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? | Lance |
+| [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? | shared |
 
 ## Outside `docs/`
 
