@@ -240,10 +240,11 @@ car's OBD2 port.
   disappears; the box sees it on a source-present GPIO, waits out a short grace period,
   commits and checkpoints its storage, and halts. The power stage then cuts the Pi's
   supply, and the box stays dark until the next start, when it boots by itself.
-- **A small supercapacitor bank** supplements a weak source, rides through the dip at
-  engine start where it can, and powers the clean shutdown. It is short-lived by design:
-  the goal is seconds to tens of seconds of runtime, about one minute is the ceiling, and
-  it is never an always-on supply.
+- **A small supercapacitor bank** covers brief shortfalls, rides through the dip at
+  engine start where it can, and powers the clean shutdown. A seconds-scale bank cannot
+  make up for a source that is too weak for a whole drive; see the limits below. It is
+  short-lived by design: the goal is seconds to tens of seconds of runtime, about one
+  minute is the ceiling, and it is never an always-on supply.
 - **Clean shutdown is the normal path; crash consistency is the guarantee.** If the bank
   is empty, the cable is pulled or the Pi resets at crank, storage recovers at the next
   boot (mechanism D).
@@ -255,7 +256,8 @@ car's OBD2 port.
 2. An input current limit below what the source advertises, and an inrush limiter,
    because an empty bank looks like a short circuit. A plain sink does not know the
    source's rating, so the box reads the source's CC advertisement (USB default, 1.5 A or
-   3 A).
+   3 A). The Pi has no analog inputs, so that takes a detector part (comparators or a
+   USB-C controller IC) that reports the level on GPIOs.
 3. Power path: the source feeds the Pi first; the bank covers only the shortfall or the
    gap.
 4. A source-present signal on a GPIO, divided down to 3.3 V.
@@ -272,10 +274,15 @@ in `docs/DESIGN.md` as anything but an estimate (`powerspec`, `capbench`).
 | Quantity | Estimate |
 | --- | --- |
 | Pi 4 draw during boot and shutdown | 3 to 5 W |
+| Grace period before shutdown starts (longer than a crank dip) | about 3 s × 4 W ÷ 0.85 ≈ 15 J |
 | Clean-shutdown energy | 10–15 s × 4 W ÷ 0.85 converter efficiency ≈ 50–70 J |
 | Crank-bridge energy | 1–3 s × 5 W ≈ 5–15 J |
 | Two 2.7 V cells in series, 10 F total, charged to about 5 V | ½·C·V² ≈ 125 J stored; about 105 J usable above a 2 V converter floor, about 20 s at 4 W |
-| Charge time from empty at a 1 A budget | 10 F × 5 V ÷ 1 A ≈ 50 s |
+| Charge time from empty at a 1 A budget | 10 F × 5 V ÷ 1 A ≈ 50 s; slower on a 1.5 A source that is also running the Pi |
+
+The margin is thin: grace plus shutdown come to about 65–85 J against about 105 J usable,
+before the radios' draw is counted. `powerspec` replaces every row with a measurement and
+states the margin.
 
 **Limits, stated plainly.**
 
@@ -284,8 +291,14 @@ in `docs/DESIGN.md` as anything but an estimate (`powerspec`, `capbench`).
   storage is crash-consistent. Crank bridging is best-effort; the key-off shutdown is the
   reliable path.
 - **Always-live sources are not supported.** On a charger that stays live with the key
-  off, the box simply stays on. This is an installation requirement, not a mode we
-  engineer around.
+  off, the box stays on, and the Pi plus the dongle can drain the car's battery over a few
+  days. This is an installation requirement, not a mode we engineer around, but whether
+  the box should halt itself after a long stretch with the engine silent is open
+  (`shutfsm`).
+- **Weak sources.** A charger that advertises only default USB current (500 or 900 mA)
+  cannot run a Pi 4 with both radios, and the bank cannot make up the difference for a
+  whole drive. What the box does then (refuse to start and show red, or run degraded) is
+  open (`powerspec`).
 - **Boot time.** A stock Pi 4 boots in roughly half a minute (estimate, `bootbudget`), so
   the start of each drive's warm-up goes unrecorded.
 - **The dongle still draws from OBD2 pin 16 with the key off** (D-019). Its key-off

@@ -97,8 +97,8 @@ sensor is added, so nothing in the design needs them (D-029).
 | power | source returns during shutdown | source-present rises in `SHUTTING_DOWN` | finish the clean shutdown; the power stage power-cycles the Pi, which boots again | |
 | power | bank empty at key-off or at a cold-start crank | failed shutdown timing; next boot finds an unclean end | crash-consistent recovery at the next boot (mechanism D) | |
 | power | charger pulled mid-drive | source-present GPIO | as key-off, logged as unplanned | |
-| power | weak source; Pi undervolts but keeps running | `vcgencmd get_throttled` polled by supervisor | degrade; log; the bank supplements | |
-| power | charger stays live with the key off (unsupported install) | source present while the engine reports nothing for a long time | log it; the box stays on; the report says so | |
+| power | weak source; Pi undervolts but keeps running | CC advertisement at start; `vcgencmd get_throttled` polled by supervisor | degrade and log; the bank covers only brief dips; a source too weak for a drive is open (`powerspec`) | |
+| power | charger stays live with the key off (unsupported install) | source present while the engine reports nothing for a long time | log it; the report says so; whether to halt to save the car's battery is open (`shutfsm`) | |
 | thermal | Pi throttles in a hot cabin | `vcgencmd get_throttled`, SoC temperature | degrade; log; the report shows it | |
 | storage | SD card fails | write error | degrade and log; do not crash | |
 | radio | Bluetooth and Wi-Fi contend on the Pi 4's one chip | `btcoex` measurement | measure and document | |

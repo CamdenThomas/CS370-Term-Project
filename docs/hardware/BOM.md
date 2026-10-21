@@ -31,7 +31,8 @@ a human (`CLAUDE.md` §8.4). Sizes marked *estimate* come from the power workshe
 | --- | --- | --- |
 | 1 | USB-C receptacle, wired as a sink: 5.1 kΩ on CC1 and CC2 | The only power input. |
 | 1 | Input protection: transient suppressor, reverse-polarity protection, fuse | |
-| 1 | Input current limit and inrush limiter | Reads the source's CC advertisement (default, 1.5 A or 3 A). |
+| 1 | Input current limit and inrush limiter | |
+| 1 | CC-level detector: comparators or a USB-C controller IC | Reports the source's advertisement (default, 1.5 A or 3 A) on GPIOs; the Pi has no analog inputs. |
 | 2 | Supercapacitor cells, 2.7 V, about 20 F each (about 10 F in series) | *Estimate.* Needs cell balancing and a fuse; the temperature rating must cover a parked car's cabin. |
 | 1 | Power-path controller | The source feeds the Pi first; the bank fills only the gap. |
 | 1 | 5 V / 3 A converter that can step up | The bank's voltage falls as it discharges. |
