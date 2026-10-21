@@ -17,11 +17,11 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 2/22 |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/17 |
-| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/26 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 2/35 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/23 |
+| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/29 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
-| M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/3 |
+| M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
 
 <sub>Edit Deliverable, Week, Due and hours by hand; sync fills Progress and sets the GitHub
 milestone due dates. Dates verified against the syllabus 2026-09-21 (D-008).</sub>
@@ -103,13 +103,13 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 decision: 48-hour soak on a fake OBD2 port — ask Pallickara `soakq`
       <!-- #7 -->
 - [ ] M2 decision: get the professor's 48-hour soak definition (D-023) in writing
-      `profmail`
+      `profmail` <!-- #131 -->
 - [ ] M2 docs: record the box redesign as D-022 to D-031 and bring every doc in line
-      `boxdocs`
+      `boxdocs` <!-- #132 -->
 - [ ] M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car `bench`
       <!-- #18 -->
 - [ ] M2 hardware: supported-PID survey on the 2008 Forester, with protocol and VIN
-      `pidforester`
+      `pidforester` <!-- #133 -->
 - [x] M2 hardware: two-node bench CAN bus — prove frames move before a car is attached
       (cut) `twonode` @camden <!-- #19 -->
 - [ ] M2 decision: finalize the on-disk format, including transaction, boot and shutdown
@@ -139,19 +139,23 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 hardware: prove the box's USB-C input: charger dead at key-off, crank dip,
       undervoltage `keyoff` <!-- #61 -->
 - [ ] M2 hardware: measure the OBD2 dongle's key-off current from pin 16 `dongledrain`
+      <!-- #134 -->
 - [ ] M2 docs: power worksheet: Pi draw by state, shutdown and crank energy, bank size
-      `powerspec`
-- [ ] M2 docs: power-event state machine and the grace period `shutfsm`
+      `powerspec` <!-- #135 -->
+- [ ] M2 docs: power-event state machine and the grace period `shutfsm` <!-- #136 -->
 - [ ] M2 docs: tri-color light patterns, priority, the boot state and the LED part
-      `ledspec`
+      `ledspec` <!-- #137 -->
 - [ ] M2 docs: report contents and format, box fault versus car fault `reportspec`
+      <!-- #138 -->
 - [ ] M2 docs: real-time clock: part, backup cell, cabin temperature rating `rtcspec`
+      <!-- #139 -->
 - [ ] M2 docs: boot-time budget and what the first minute of a drive loses `bootbudget`
+      <!-- #140 -->
 - [ ] M2 docs: box mechanical spec: size, vents, heat-rated plastic, antenna clearance
-      `enclspec`
-- [ ] M2 hardware: record the supply dip at crank with a meter `cranklog`
+      `enclspec` <!-- #141 -->
+- [ ] M2 hardware: record the supply dip at crank with a meter `cranklog` <!-- #142 -->
 - [ ] M2 hardware: supercapacitor bench test into a dummy load, no Pi, after the design
-      is signed `capbench`
+      is signed `capbench` <!-- #143 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -169,6 +173,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 obd: rate-limited Mode 01 requester on the adapter tty `canreq`
       <!-- #88 -->
 - [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
+      <!-- #144 -->
 - [ ] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`
       <!-- #38 -->
 - [ ] M3 store: write path: BEGIN, records, COMMIT, one fsync per batch `storewrite`
@@ -183,11 +188,14 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 interface: obdctl UDS transport + status verb `obdstatus` <!-- #44 -->
 - [ ] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim`
       <!-- #90 -->
-- [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon`
+- [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon` <!-- #145 -->
 - [ ] M3 supervisor: set the clock from the RTC at boot; flag invalid time `rtcboot`
+      <!-- #146 -->
 - [ ] M3 interface: the box's own Wi-Fi access point, WPA2, no upstream `wifiap`
+      <!-- #147 -->
 - [ ] M3 interface: report generator (HTML and CSV), labeled by data source `report`
-- [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg`
+      <!-- #148 -->
+- [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg` <!-- #149 -->
 - [ ] M3 process: transcript copy-out `tx3` <!-- #48 -->
 
 ## M4 — Feature freeze; 48-hour soak begins
@@ -230,10 +238,11 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [x] M4: capture across a real oil change on the CR-V (cut, D-021) `foil` <!-- #65 -->
 - [ ] M4 hardware: the box: shell, vents, USB-C port, light, mounting `encl` <!-- #66 -->
 - [ ] M4 experiment: clean-shutdown time distribution and supercapacitor margin `expshut`
+      <!-- #150 -->
 - [ ] M4 experiment: key-cycle recovery: N real cycles, unclean endings, records lost
-      `keycyc`
+      `keycyc` <!-- #151 -->
 - [ ] M4 hardware: Pi and supercapacitor temperature in a sealed shell in a hot cabin
-      `thermal`
+      `thermal` <!-- #152 -->
 - [ ] M4 soak: 48-hour key-cycle run #2 (the margin) `soak2` <!-- #69 -->
 - [ ] M4 process: transcript copy-out `tx4` <!-- #71 -->
 
@@ -263,7 +272,7 @@ modification** (each partner alone at the keyboard makes one small unseen change
 own subsystem).
 
 - [ ] M6 demo: a running car with live sensors at the demo, since the box is off at rest
-      `democar`
+      `democar` <!-- #153 -->
 - [ ] M6 demo: full rehearsal with surprise fault injection `demorehearse` <!-- #80 -->
 - [ ] M6 demo: live-modification practice `livemod` <!-- #81 -->
 - [ ] M6 demo: cross-boundary quiz `crossquiz` <!-- #82 -->
