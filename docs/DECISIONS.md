@@ -301,6 +301,9 @@ states the margin.
   open (`powerspec`).
 - **Boot time.** A stock Pi 4 boots in roughly half a minute (estimate, `bootbudget`), so
   the start of each drive's warm-up goes unrecorded.
+- **Demo day.** The box is off unless powered, and the handout's live demonstration runs
+  on live sensors (§5, §11), so the demo needs a running testbed car on site, or an
+  arrangement with the professor (`democar`).
 - **The dongle still draws from OBD2 pin 16 with the key off** (D-019). Its key-off
   current is measured before it stays plugged in overnight (`dongledrain`).
 
@@ -488,6 +491,9 @@ of scope. **A**, **C** and raw CAN stay stretch goals.
   ask.
 - The SPSC ring stays, because B.3 binds it and it is the capture-to-storage handoff
   mechanism E needs. It is not claimed as mechanism F: Mode 01 rates never stress it.
+- The handout words mechanism E as "sensors isolated in separate processes". Here one
+  `obdd` reads every sensor, because they share one dongle. The isolation we defend is
+  between capture, storage and analysis (B.2); `docs/DESIGN.md` §2 must say so.
 
 **Alternative rejected.** An MPU-6050 to bring back B and F (D-017's option): more
 hardware, for a sensor the user's problem does not need.
@@ -924,6 +930,9 @@ off period is a deliberate gap between a logged shutdown and a logged boot.
   off. The Pi has no battery-backed clock, so the box gets one (D-030).
 - Heartbeats exist only while the car runs, so the memory plot is a series of sessions,
   not one line.
+- Two days of normal driving may hold only a few powered hours, which is thin evidence
+  against a slow leak. A continuous bench run against `obdsim`, labeled `synth`, could
+  add memory evidence alongside the soak, never in place of it. Open: not decided here.
 
 ---
 

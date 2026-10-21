@@ -262,6 +262,8 @@ one PROMPTLOG judgment call, one question from across the ownership boundary), a
 modification** (each partner alone at the keyboard makes one small unseen change to their
 own subsystem).
 
+- [ ] M6 demo: a running car with live sensors at the demo, since the box is off at rest
+      `democar`
 - [ ] M6 demo: full rehearsal with surprise fault injection `demorehearse` <!-- #80 -->
 - [ ] M6 demo: live-modification practice `livemod` <!-- #81 -->
 - [ ] M6 demo: cross-boundary quiz `crossquiz` <!-- #82 -->
