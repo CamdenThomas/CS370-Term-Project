@@ -297,7 +297,7 @@ must cover the cabin's range.
 
 | State | Entered when | The supervisor does | Light |
 | --- | --- | --- | --- |
-| `BOOTING` | Linux up, supervisor starts | Starts children, waits for first heartbeats | steady yellow until it owns the GPIOs (R4), then yellow blink |
+| `BOOTING` | Linux up, supervisor starts | Starts children, waits for first heartbeats | steady yellow until it owns the GPIOs (R4), then open: D-027 reserves yellow blink for stored energy (`ledspec`) |
 | `RUNNING` | All children healthy, source present | Normal operation | green pulse |
 | `DEGRADED` | A child is down or restart-limited, adapter silent, storage or power fault | Keeps recording what it can, logs the distinction between absent and crashed | red blink |
 | `GRACE` | Source-present signal lost | Starts a timer. Keeps recording. If the source returns, return to `RUNNING` | yellow blink |

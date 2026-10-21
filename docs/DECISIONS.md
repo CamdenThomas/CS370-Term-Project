@@ -659,6 +659,11 @@ pull keeps it lit while its GPIO is still an input, and once the supervisor driv
 pin, the pin wins. Camden's choice (R4). The firmware's `gpio=` setting in `config.txt`
 might do the same with no parts; confirm on the board before relying on it.
 
+**Open (`ledspec`).** What the light shows after the supervisor takes the GPIOs but before
+every child's first heartbeat. Yellow blink is taken (stored energy). Claude's
+recommendation, not decided: the supervisor keeps yellow steady until its first
+all-healthy check, so the light still reads "not running yet".
+
 **The part.** Whether yellow is its own die or red and green mixed is a part choice (two
 GPIOs or three), made in `ledspec` from the LED's datasheet, which also sets the
 resistors. Pins are assigned in the schematic (`schpi`).
