@@ -90,7 +90,7 @@ is, and nothing is cut (D-024). Mode 01 requests (D-012) read every engine senso
 the car publishes; the device learns *this car's* normal per operating point, flags what
 leaves it, and names the likely fault area. A rough first draft, not a finished product.
 The owner reads it on a phone over the device's own Wi-Fi (D-013) or with `obdctl`; one
-warning light blinks while on duty (D-014).
+tri-color light pulses while on duty (D-027).
 
 **The claim we defend (D-021, D-022):** *"learns the normal of the car it is installed in
 across its engine sensors, flags behavior outside it and names the likely fault area, with

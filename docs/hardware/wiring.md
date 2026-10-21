@@ -9,11 +9,11 @@ in the car's OBD2 port (D-019, D-024). Nothing on the car is cut, spliced or pie
   owner's USB-C charger ──USB-C──▶ [box: power block, supercapacitor] ──5 V──▶ Pi
                                         │  source-present (divided to 3.3 V) ──▶ GPIO
                                         ◀── halt-done ─────────────────────── GPIO
-  Pi GPIO17 ──330 Ω──▶ LED ──▶ GND          (warning light)
+  Pi GPIOs ──resistors──▶ tri-color LED ──▶ GND    (the light, D-027)
 ```
 
-GPIO numbers for source-present and halt-done are set in the schematic (`schpi`), not
-here.
+GPIO numbers for source-present, halt-done and the light are set in the schematic
+(`schpi`), not here.
 
 > **The Pi's GPIO is 3.3 V and has zero over-voltage protection.** Source-present comes
 > from the 5 V USB input, so it reaches the header only through a divider; meter it
@@ -64,15 +64,16 @@ trust its label.
 | Pi and bank temperature in a sealed shell, hot cabin | Pi sensor, thermometer | `thermal` | | |
 | Dongle key-off current from pin 16 | meter | `dongledrain` | | |
 
-## Warning light → Pi (D-014)
+## The light → Pi (D-027)
 
-| Part | Pi pin | Pi signal | Note |
-| --- | --- | --- | --- |
-| LED anode, via 330 Ω | 11 | GPIO17 (proposed) | ~4 mA at 3.3 V — well inside the pin's limit. Written only by the supervisor. |
-| LED cathode | 9 | GND | |
+One tri-color LED, written only by the supervisor. Two or three GPIOs, depending on
+whether the part has its own yellow die or mixes red and green (`ledspec`). Each GPIO
+drives its color through a resistor sized from the LED's datasheet, keeping the current
+well inside the pin's limit. A pull holds yellow on from power-up, while the GPIO is still
+an input, so a booting box shows steady yellow.
 
-Every live state is a blink pattern; a **steady** light, on or off, means the device is not
-running (DECISIONS §B.5).
+Every live state is a pulse or blink; a **steady** light, other than yellow while booting,
+or a dark one while the car runs, means the device is not running (DECISIONS §B.5).
 
 ## Bring-up order
 

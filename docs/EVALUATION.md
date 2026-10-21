@@ -43,7 +43,7 @@ separately because a monitor that cries wolf twice gets unplugged.
 > For each failure mode in the design document's table: what we injected, what the
 > system did, and **the log excerpt proving it**.
 
-| Injected | Expected | Observed | Warning light (D-014) | Log excerpt |
+| Injected | Expected | Observed | Light (D-027) | Log excerpt |
 | --- | --- | --- | --- | --- |
 | Sensor unplugged 10 min | | | | |
 | `kill -9 obdd` | | | | |

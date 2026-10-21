@@ -139,6 +139,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 docs: power worksheet: Pi draw by state, shutdown and crank energy, bank size
       `powerspec`
 - [ ] M2 docs: power-event state machine and the grace period `shutfsm`
+- [ ] M2 docs: tri-color light patterns, priority, the boot state and the LED part
+      `ledspec`
 - [ ] M2 docs: boot-time budget and what the first minute of a drive loses `bootbudget`
 - [ ] M2 docs: box mechanical spec: size, vents, heat-rated plastic, antenna clearance
       `enclspec`
@@ -169,8 +171,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #40 -->
 - [ ] M3 supervisor: fork/exec, waitpid, fd hygiene across restart `supfork` <!-- #41 -->
 - [ ] M3 supervisor: backoff and restart-storm guard `supbackoff` <!-- #42 -->
-- [ ] M3 supervisor: drive the warning light from child health and verdicts `led`
-      <!-- #89 -->
+- [ ] M3 supervisor: drive the tri-color light from child health, verdicts and power
+      events `led` <!-- #89 -->
 - [ ] M3 common: wire hourly heartbeats through every daemon `heartbeat` <!-- #43 -->
 - [ ] M3 interface: obdctl UDS transport + status verb `obdstatus` <!-- #44 -->
 - [ ] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim`

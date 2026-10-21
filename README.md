@@ -41,9 +41,19 @@ supercapacitor. Plug the dongle into the OBD2 port and the box into any USB-C ch
 the car; nothing is cut or wired into the car (decision D-024). The box runs only while
 the car does: at key-off it shuts itself down cleanly on its stored energy and stays dark
 until the next start. The Pi pairs with the dongle and reads it over RFCOMM as `/dev/obd`
-(decision D-019). One LED on GPIO17 is
-the warning light: slow blink = recording, double-blink = a finding, fast blink =
-degraded, **steady on or off = not running** (decision D-014).
+(decision D-019).
+
+**The light** (decision D-027). Every live state pulses, so a light that is stuck can only
+mean the box is not running:
+
+| Light | Meaning |
+| --- | --- |
+| green, slow pulse | ready: recording, all systems go |
+| yellow, blinking | running on stored energy: riding a supply dip, or shutting down |
+| red, fast blink | an issue in the box or in the car; the phone report says which |
+| steady yellow | booting |
+| any other steady light, or dark while the car runs | **not running** |
+| dark while the car is off | normal: the box is off |
 
 ## Quick start (clean Raspberry Pi OS)
 
@@ -81,7 +91,7 @@ src/                systems core, C17, -Wall -Wextra -Werror clean
   ipc/              SPSC ring + Unix-socket protocol between processes   [mechanism E]
   store/            append-only crash-consistent log                     [mechanism D]
   analysis/         binning, baselines, residuals, trends, model, state machine
-  supervisor/       spawn, restart with backoff, heartbeats, warning light [mechanism E]
+  supervisor/       spawn, restart with backoff, heartbeats, the light  [mechanism E]
   interface/        obdctl CLI + read-only phone status page (D-013)
   common/           logging and shared helpers
 include/            headers shared between subsystems (common, ipc, store)

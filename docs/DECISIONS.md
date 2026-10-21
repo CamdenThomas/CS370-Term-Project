@@ -41,7 +41,6 @@ Decisions currently awaiting a human signature:
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
-| D-014 | One warning light, driven by the supervisor; every live state blinks (§B.5) | Camden + Claude | 2026-09-21 | Lance — Pi interface schematic block |
 | D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
@@ -51,6 +50,7 @@ Decisions currently awaiting a human signature:
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
+| D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -448,40 +448,57 @@ remains demonstrable through `obdctl` alone.
   interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
   §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
 
-### B.5 — One warning light, driven by the supervisor ⚠️ UNREVIEWED
+### B.5 — One tri-color status light, and every live state pulses ⚠️ UNREVIEWED
 
-`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
+`D-027` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-014 (§G.10)
 
-**Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
-**only by the supervisor**. Every state in which the device is working is a *blink
-pattern*:
+**Decision.** One LED, visible through the shell, shows red, yellow or green. It is
+written **only by the supervisor** (D-014's rule, kept).
 
-| Light | Meaning | Priority |
-| --- | --- | --- |
-| fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
-| double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
-| slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
-| **steady on or steady off** | **the device is not running.** Never a valid state. | — |
+| Light | Meaning |
+| --- | --- |
+| green, slow pulse (about 1 Hz) | Ready: booted, recording, all systems go |
+| yellow, medium blink (about 2 Hz) | Running on stored energy: riding a supply dip, or shutting down |
+| red, fast blink (about 4 Hz) | An issue, in the box **or** in the car; the report says which |
+| steady yellow | Booting: held on from power-up, before the supervisor runs |
+| any other steady light, or dark while the car runs | **Not running.** Never a valid live state |
+| dark while the car is off | Normal: the box is off |
 
-**Why a light at all.** The 3 a.m. test: nobody is looking at a phone at the moment that
-matters. It also makes "honest reporting through our own interface" (demo movement 1)
-visible from across the room when a sensor is unplugged.
+Priority when more than one applies: red over yellow over green. Steady yellow for more
+than about a minute means the boot never finished.
 
-**Why every live state blinks.** A GPIO keeps its last level after the process driving it
-dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
-alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
-either kind can only mean *not running*. This is mechanism E's principle — a recorder that
-dies silently has harmed its user — applied to the one output a driver actually sees.
+**What counts as red.** In the box: a child down or restart-limited; the dongle silent
+while the engine runs; storage failing or nearly full; undervoltage or thermal
+throttling; the supercapacitor's self-check failed. In the car: a verdict has surfaced
+after hysteresis and dwell (D.3), or a sensor the car stopped answering.
 
-**Why the supervisor, not `analyzed`.** The supervisor already knows every child's
-liveness (mechanism E), so it can show "degraded" when `analyzed` itself has died; a light
-owned by `analyzed` would show a stale verdict instead. Verdicts reach the supervisor over
-the existing UDS. One writer, no GPIO contention.
+**Why every live state pulses.** D-014's reasoning, applied to three colors: a GPIO keeps
+its last level after the process driving it dies, so a steady green would freeze into a
+false all-clear if the supervisor crashed. If every live state blinks, a frozen light of
+any color can only mean "not running". Camden asked for whichever pattern is safer (P11),
+and this is.
 
-**Cost.** One more thing the supervisor does, and one more thing it must not block on: the
-blink timer must never delay `waitpid` handling. Color, brightness and placement are open
-(M4 enclosure).
+**The boot state.** The Pi spends roughly half a minute (estimate, `bootbudget`) booting
+before any software can drive the light. Yellow is held on from power-up in hardware: a
+pull keeps it lit while its GPIO is still an input, and once the supervisor drives the
+pin, the pin wins. Camden's choice (R4). The firmware's `gpio=` setting in `config.txt`
+might do the same with no parts; confirm on the board before relying on it.
+
+**The part.** Whether yellow is its own die or red and green mixed is a part choice (two
+GPIOs or three), made in `ledspec` from the LED's datasheet, which also sets the
+resistors. Pins are assigned in the schematic (`schpi`).
+
+**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P10, P11): one light, three
+colors, and red means an issue in either the box or the car.
+
+**Cost.** Two or three GPIOs instead of one; the supervisor's blink timer still must never
+delay `waitpid` handling; the colors must stay distinguishable through the shell
+(`enclspec`). Red merges box and car issues, so the report must say which.
+
+**Alternative rejected.** D-014's single-color patterns (a double-blink for a verdict): a
+pattern code the owner has to learn.
 
 ---
 
@@ -1068,6 +1085,43 @@ by its label (`docs/hardware/wiring.md`).
 - D-006 option (c), the parked-car soak, now requires a socket that stays live in
   accessory plus a battery tender.
 - The product is "one box, one power cable, plus the dongle in the port".
+
+### G.10 — (was B.5) One warning light, driven by the supervisor 🗑
+
+`D-014` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+· **Superseded 2026-10-21 by D-027 (§B.5)**: one tri-color light; the blink-only rule is
+kept.
+
+**Decision.** One LED on a GPIO (proposed GPIO17, header pin 11, through 330 Ω), written
+**only by the supervisor**. Every state in which the device is working is a *blink
+pattern*:
+
+| Light | Meaning | Priority |
+| --- | --- | --- |
+| fast blink (~4 Hz) | **degraded** — a child is down, the adapter silent while the engine runs, storage failing, or undervoltage | highest |
+| double-blink, pause | **a verdict has surfaced** (after D.3 hysteresis and dwell) — look at the phone | |
+| slow blink (~1 Hz) | on duty, recording, nothing to report | lowest |
+| **steady on or steady off** | **the device is not running.** Never a valid state. | — |
+
+**Why a light at all.** The 3 a.m. test: nobody is looking at a phone at the moment that
+matters. It also makes "honest reporting through our own interface" (demo movement 1)
+visible from across the room when a sensor is unplugged.
+
+**Why every live state blinks.** A GPIO keeps its last level after the process driving it
+dies. If "verdict" were solid-on, a crashed supervisor would freeze the light into a false
+alarm, or into a false all-clear if it froze off. With blink-only states, a stuck light of
+either kind can only mean *not running*. This is mechanism E's principle — a recorder that
+dies silently has harmed its user — applied to the one output a driver actually sees.
+
+**Why the supervisor, not `analyzed`.** The supervisor already knows every child's
+liveness (mechanism E), so it can show "degraded" when `analyzed` itself has died; a light
+owned by `analyzed` would show a stale verdict instead. Verdicts reach the supervisor over
+the existing UDS. One writer, no GPIO contention.
+
+**Cost.** One more thing the supervisor does, and one more thing it must not block on: the
+blink timer must never delay `waitpid` handling. Color, brightness and placement are open
+(M4 enclosure).
 
 ---
 

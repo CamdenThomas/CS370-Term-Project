@@ -36,7 +36,7 @@ a human (`CLAUDE.md` §8.4). Sizes marked *estimate* come from the power workshe
 | 1 | Power-path controller | The source feeds the Pi first; the bank fills only the gap. |
 | 1 | 5 V / 3 A converter that can step up | The bank's voltage falls as it discharges. |
 | 1 | Source-present divider and halt-done switch | GPIOs chosen in the schematic (`schpi`). |
-| 1 | 5 mm LED + 330 Ω resistor + 2 jumper wires | The warning light (D-014). Any color; pick it for the enclosure. |
+| 1 | Tri-color LED (red, yellow, green) + its resistors + the boot-time pull | The light (D-027). Two or three GPIOs, depending on the part; resistor values from its datasheet (`ledspec`). |
 | 1 | Heatsink for the Pi | A Pi 4 throttles near 80 °C (`thermal`). |
 | 1 | Shell: heat-resistant plastic (ABS, ASA or similar), vent slots, no metal near the antenna | `enclspec`. PLA softens near 60 °C, below a parked cabin's temperature. A food container is an acceptable prototype (handout). |
 
