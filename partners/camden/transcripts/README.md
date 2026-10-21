@@ -14,7 +14,15 @@ terminal at the repository root:
 
 On this Mac the repository is `~/dev/school/cs370/car-watch`, so Claude Code stores its
 sessions in `~/.claude/projects/-Users-crash-dev-school-cs370-car-watch/`. The folder name
-contains `car-watch`, not `CS370-Term-Project`, so use this pattern. Open Ghostty and run:
+contains `car-watch`, not `CS370-Term-Project`, so use this pattern. Exit Claude Code
+(`/exit`), open Ghostty, and paste this one line. It copies every session, stages them,
+and shows what is staged:
+
+```sh
+cd ~/dev/school/cs370/car-watch && ls -d ~/.claude/projects/*car-watch*/ && cp ~/.claude/projects/*car-watch*/*.jsonl partners/camden/transcripts/ && git add partners/camden/transcripts/*.jsonl && git status --short partners/camden/transcripts/
+```
+
+The same thing, one step at a time, if you want to check the folder first:
 
 ```sh
 cd ~/dev/school/cs370/car-watch
