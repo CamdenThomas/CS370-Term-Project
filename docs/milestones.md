@@ -165,6 +165,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #37 -->
 - [ ] M3 obd: rate-limited Mode 01 requester on the adapter tty `canreq`
       <!-- #88 -->
+- [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
 - [ ] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`
       <!-- #38 -->
 - [ ] M3 store: record write path with the chosen fsync policy `storewrite`

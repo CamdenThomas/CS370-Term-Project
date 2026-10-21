@@ -20,7 +20,9 @@ int main(void)
     log_init("analyzed", LOG_INFO);
     LOG_I("start");
 
-    /* TODO(M3): operating-point binning + running statistics (Welford).
+    /* TODO(M3): read committed records from storaged's log as it grows, never the ring
+     *           (D-031); stop at the last committed record.
+     * TODO(M3): operating-point binning + running statistics (Welford).
      * TODO(M4): Mahalanobis residual; Theil-Sen trend; state machine.
      * TODO(M4): load weights from models/; inference in C. NO network, ever. */
 

@@ -90,6 +90,7 @@
     "lancesign",
     "ledspec",
     "livemod",
+    "logread",
     "LOGDIR",
     "lpthread",
     "lsusb",

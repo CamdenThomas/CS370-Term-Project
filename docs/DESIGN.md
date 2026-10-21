@@ -23,27 +23,35 @@
   │ OBD2 adapter │◀ ~ ~ ~ ~ ~ ~ ~ ~ ~ ▶│      obdd      │  Mode 01 requests,
   │ (D-019)      │  /dev/obd           │  tty reader    │  [N] req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
-                                               │ SPSC ring, [N] samples/s
-                                               │ shm, sequence-accounted
-                    ┌──────────────────────────┼──────────────────────┐
-                    ▼                          ▼                      ▼
-            ┌───────────────┐         ┌────────────────┐     ┌────────────────┐
-            │   storaged    │         │   analyzed     │     │   obdctl       │
-            │ append-only   │◀────────│ features →     │────▶│ query CLI      │
-            │ CRC, fsync    │  read   │ baseline →     │ UDS │ 5 verbs        │
-            │   [mech D]    │         │ model → FSM    │     └────────────────┘
-            └───────────────┘         └───────┬────────┘     ┌────────────────┐
-                                              └─────────────▶│ status page    │──▶ phone
-                                                        UDS  │ read-only,     │  own Wi-Fi AP,
-                                                             │ verdicts+report│  no upstream
-                                                             └────────────────┘  (D-013, D-028)
-                    ▲                          ▲
-                    └──────────┬───────────────┘
-                               │ spawn / heartbeat / restart-with-backoff
-                        ┌──────────────┐  GPIOs
-                        │  supervisor  │──────────▶ tri-color light (D-027)
-                        └──────────────┘  [mech E]  pulse = alive; steady = not running
+                                               │ SPSC ring in shm, [N] samples/s,
+                                               │ sequence-accounted; one consumer (D-031)
+                                               ▼
+                                       ┌────────────────┐
+                                       │    storaged    │  append-only log, CRC'd,
+                                       │    [mech D]    │  fsync per batch
+                                       └───────┬────────┘
+                                               │ committed records only, read from
+                                               │ the log, [N] records/s (D-031)
+                                               ▼
+                                       ┌────────────────┐
+                                       │    analyzed    │  bins → baselines → residuals
+                                       │                │  → trends → model → FSM
+                                       └───────┬────────┘
+                                               │ verdicts, UDS
+                                               ▼
+   ┌────────────────┐       UDS        ┌────────────────┐  GPIOs
+   │ obdctl         │◀────────────────▶│   supervisor   │──────────▶ tri-color light (D-027)
+   │ query CLI,     │                  │   [mech E]     │            pulse = alive;
+   │ 5 verbs        │       ┌─────────▶│                │            steady = not running
+   └────────────────┘       │   UDS    └────────────────┘
+   ┌────────────────┐       │          spawns, heartbeats and restarts, with backoff,
+   │ status page    │◀──────┘          every process in this figure
+   │ verdicts+report│──▶ phone: the box's own Wi-Fi AP, no upstream (D-013, D-028)
+   └────────────────┘
 ```
+
+`obdctl` and the status page never read samples themselves: they ask the supervisor, which
+asks the process that holds the answer (D-013). `analyzed` never reads the ring (D-031).
 
 **TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
 

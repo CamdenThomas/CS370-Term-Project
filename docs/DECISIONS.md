@@ -54,6 +54,7 @@ Decisions currently awaiting a human signature:
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
+| D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -474,6 +475,41 @@ of scope. **A**, **C** and raw CAN stay stretch goals.
 
 **Alternative rejected.** An MPU-6050 to bring back B and F (D-017's option): more
 hardware, for a sensor the user's problem does not need.
+
+### B.8 — One ring, capture to storage; analysis reads the committed log ⚠️ UNREVIEWED
+
+`D-031` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Fixes:** `docs/DESIGN.md` §1, which fanned one single-consumer ring out to three
+readers
+
+**Decision.** The shared-memory SPSC ring has exactly one producer, `obdd`, and one
+consumer, `storaged`. `analyzed` does not read the ring: it reads `storaged`'s log, in
+order, and only records whose batch has been committed to disk. `obdctl` and the status
+page never read samples themselves; they ask the supervisor over its Unix socket, and the
+supervisor asks the process that holds the answer.
+
+**Why.** An SPSC ring has one consumer, so the old diagram could not be built as drawn.
+Camden chose this over two rings, 2026-10-21:
+
+- the ring stays truly single-producer, single-consumer, which B.3 and its tests assume;
+- `analyzed` learns only from what is durable, so a baseline never absorbs a sample that
+  a power cut later erased;
+- rebuilding baselines after a crash reads the same log through the same code as live
+  analysis, so recovery is not a second implementation to test;
+- `analyzed` can crash or restart without losing input: it resumes from where it last
+  read.
+
+**Cost.** Analysis lags capture by about one commit batch (about a second, provisional:
+`fsync`), which is nothing for signals that move over minutes. `analyzed` depends on the
+log format, so a format change touches both processes. If `storaged` is down, analysis
+stalls rather than running on unrecorded data, and the light shows red. A reader of a file
+that is still growing must stop at the last committed record and treat anything after it
+as not there yet.
+
+**Alternative rejected.** Two rings, `obdd` pushing every sample into both: lower
+analysis latency, but the analysis ring overruns whenever `analyzed` restarts, and
+recovery would need its own replay path.
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 
