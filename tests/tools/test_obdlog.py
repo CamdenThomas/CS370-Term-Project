@@ -400,6 +400,16 @@ class Naming(unittest.TestCase):
                 obdlog.LogWriter(p, "synth", 50, 1.0)
 
 
+class Provenance(unittest.TestCase):
+    def test_one_src_is_returned(self):
+        self.assertEqual(obdlog.session_src([{"src": "live"}, {"src": "live"}]), "live")
+
+    def test_mixed_missing_or_no_src_is_refused(self):
+        for records in ([{"src": "live"}, {"src": "synth"}], [{"src": "live"}, {}], []):
+            with self.subTest(records=records), self.assertRaises(ValueError):
+                obdlog.session_src(records)
+
+
 class Reader(unittest.TestCase):
     def test_torn_last_line_is_dropped_and_reported(self):
         with tempfile.TemporaryDirectory() as d:

@@ -151,7 +151,7 @@ def build(path, out):
     unit = {r["pid"]: r.get("unit", "") for r in records if r["type"] == "sample"}
     seconds = max((max(t) for t, _ in data.values()), default=0.0)
     drive = {
-        "file": os.path.basename(path), "src": records[0]["src"] if records else "?",
+        "file": os.path.basename(path), "src": obdlog.session_src(records),
         "adapter": header.get("adapter"), "protocol": header.get("protocol"),
         "vin_hash": header.get("vin_hash"), "seconds": seconds,
         "samples": sum(len(t) for t, _ in data.values()),

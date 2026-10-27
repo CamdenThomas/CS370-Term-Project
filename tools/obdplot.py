@@ -47,7 +47,7 @@ def series(records, t0=None):
 
 
 def title_for(records, path):
-    src = records[0]["src"] if records else "?"
+    src = obdlog.session_src(records)
     tag = "" if src == "live" else f"  [{src.upper()} DATA, not a real car]"
     return f"{os.path.basename(path)}{tag}"
 

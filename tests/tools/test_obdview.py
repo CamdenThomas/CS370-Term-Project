@@ -45,6 +45,21 @@ def embedded(html):
     return json.loads(m.group(1))
 
 
+class Provenance(unittest.TestCase):
+    def test_a_log_with_mixed_src_is_refused(self):
+        with open(FIXTURE, encoding="utf-8") as f:
+            lines = f.read().splitlines()
+        rec = json.loads(lines[5])
+        rec["src"] = "live"
+        lines[5] = json.dumps(rec)
+        with tempfile.TemporaryDirectory() as d:
+            log = os.path.join(d, "drive-x-synth.jsonl")
+            with open(log, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines) + "\n")
+            with self.assertRaises(ValueError):
+                obdview.build(log, os.path.join(d, "view.html"))
+
+
 class TimeZero(unittest.TestCase):
     def test_an_event_lines_up_with_the_sample_it_happened_at(self):
         # PID 01 does not decode, and on a real car it is the first PID asked.

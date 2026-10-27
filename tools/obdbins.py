@@ -54,7 +54,7 @@ def bin_pid(snaps, pid, rpm_step, load_step):
 
 
 def render(records, path, pids, rpm_step, load_step, min_n, max_age=1.5):
-    src = records[0]["src"] if records else "?"
+    src = obdlog.session_src(records)
     snaps = snapshots(records, max_age)
     lines = [f"== {path}"]
     if src != "live":

@@ -18,9 +18,7 @@ FAILURES = ("no_data", "timeout", "adapter_error")
 
 
 def summarize(records):
-    srcs = {r["src"] for r in records}
-    if len(srcs) != 1:
-        raise ValueError(f"one session must have one src, found {sorted(srcs)}")
+    src = obdlog.session_src(records)
     header = next((r for r in records if r["type"] == "header"), {})
     footer = next((r for r in records if r["type"] == "footer"), None)
     samples = [r for r in records if r["type"] == "sample"]
@@ -56,7 +54,7 @@ def summarize(records):
             "no_data": p["no_data"], "errors": p["errors"],
         }
     return {
-        "src": srcs.pop(), "adapter": header.get("adapter"),
+        "src": src, "adapter": header.get("adapter"),
         "protocol": header.get("protocol"), "vin_hash": header.get("vin_hash"),
         "seconds": seconds, "samples": len(samples),
         "rate": len(samples) / seconds if seconds else 0.0,

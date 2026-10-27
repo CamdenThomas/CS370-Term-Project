@@ -51,6 +51,12 @@ class Plots(unittest.TestCase):
         records, _ = obdlog.read_log(FIXTURE)
         self.assertIn("SYNTH", obdplot.title_for(records, "x.jsonl"))
 
+    def test_mixed_src_is_refused(self):
+        records, _ = obdlog.read_log(FIXTURE)
+        records[5] = dict(records[5], src="live")
+        with self.assertRaises(ValueError):
+            obdplot.title_for(records, "x.jsonl")
+
     def test_series_are_relative_seconds(self):
         records, _ = obdlog.read_log(FIXTURE)
         series = obdplot.series(records)

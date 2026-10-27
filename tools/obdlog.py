@@ -134,6 +134,15 @@ def read_log(path):
     return records, torn
 
 
+def session_src(records):
+    """The one `src` every record of a session carries. ValueError if any record lacks it
+    or two disagree: a mixed file must never be shown as one kind (CLAUDE.md 2.7)."""
+    srcs = {r.get("src") for r in records}
+    if len(srcs) != 1 or None in srcs:
+        raise ValueError(f"one session must have one src, found {sorted(map(str, srcs))}")
+    return next(iter(srcs))
+
+
 class Stop:
     """The first Ctrl-C or SIGTERM asks the loop to finish its request and stop. A second
     one raises KeyboardInterrupt, which ends a blocked open or a long reconnect wait at
