@@ -137,7 +137,9 @@ through the shared logger in `src/common/`; every one also carries `src` (C.2).
   request at a time, about 15 to 25 a second (D-012; `obdsim` at a 40 ms reply time gives
   22). Round-robin over the supported PIDs, about 17 on the simulator, gives each PID
   about 1 Hz. That is 0.8 to 1.4 KB/s, or 3 to 5 MB per running hour.
-- **Retention and rollup:** [fill — raw window, then binned aggregates?]
+- **Retention and rollup:** open (`retention`). The segment layout (D-034) lets retention
+  delete whole segments, oldest first, without editing any file; how long raw data stays
+  before only binned aggregates remain is not decided.
 - **fsync discipline (draft, D-035):** one `COMMIT` and one `fsync` when a batch is one
   second old or holds 64 samples, and always at a clean shutdown. The argument: a cut
   that beats the clean shutdown (cold-start crank, pulled cable) then loses at most a
