@@ -38,7 +38,9 @@ one that is graded and the one I will be asked to defend.
 
 ---
 
-## E-01 — The board that never populated
+## Episodes
+
+### E-01 — The board that never populated
 
 **Milestone:** M0  **Date:** 2026-09-11  **Category:** revised plan
 
@@ -108,7 +110,7 @@ Items absent from the manifest are never touched.
 
 ### E-02 — Avoid Overcomplicating CAN
 
-**Milestone:** 1?  **Date:9/21/2026**  **Category:** plan change
+**Milestone:** M1  **Date:** 2026-09-21  **Category:** plan change
 
 **Context.**
 
