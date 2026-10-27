@@ -60,6 +60,7 @@ Decisions currently awaiting a human signature:
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
+| D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
@@ -550,7 +551,8 @@ there yet.
 **Open, for the stage-2 architecture (`archdiag`).** The ring carries only samples, so this
 entry does not yet say how `analyzed`'s verdicts and the supervisor's fault and heartbeat
 events reach durable storage, which the report and `obdctl verdicts --since` need. The
-obvious answer is a Unix socket to `storaged`; it is not decided here.
+obvious answer is a Unix socket to `storaged`; it is not decided here. *Answered in draft
+2026-10-27 by D-042 (§B.10).*
 
 **Alternative rejected.** Two rings, `obdd` pushing every sample into both: lower
 analysis latency, but the analysis ring overruns whenever `analyzed` restarts, and
@@ -618,6 +620,52 @@ second never stresses a ring. D and E remain the committed pair (D-017).
 **Alternative rejected.** An MPU-6050 (D-017's option): it would bring back B and F, but
 it is more parts and a sensor the user's problem does not need. The written defense
 alone ("the dongle is only transport"): it leaves the §3.1 question to the grader.
+
+### B.10 — Events reach storage over one Unix socket to `storaged` (draft) ⚠️ UNREVIEWED
+
+`D-042` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** D-031's open item (§B.8) and board item `verdictpath`
+
+**Decision (draft).** Samples travel by the rings; everything else that must be durable
+is an **event**, and events travel by one socket.
+
+- **The socket.** `storaged` listens on a Unix domain socket of type `SOCK_SEQPACKET`,
+  `/run/carwatch/events.sock`, created by the supervisor's runtime directory, mode 0600.
+  One packet is one event: `code` u16, then up to 200 bytes of `key=value` text. A
+  sequenced packet socket keeps message boundaries and order and never splits an event.
+- **Who sends.** Every daemon sends its own events: `analyzed` its verdicts (and also
+  tells the supervisor, which drives the light), the supervisor its child, power and
+  clock events, `obdd` and `ambientd` their link and sensor events. The event names are
+  the failure table's log events (`docs/DESIGN.md` §4).
+- **What `storaged` does.** It writes each event as an `event` record (D-034) in the next
+  batch, so an event is durable at the same commit as the samples around it and is
+  ordered with them by `seq`.
+- **When `storaged` is down.** A sender keeps up to 64 unsent events in memory and drops
+  the oldest beyond that, counting the drops; the count is in its heartbeat. Every event
+  is also a log line in the journal at the moment it happens, so the journal is the
+  record of last resort and the socket never blocks a sender (`MSG_DONTWAIT`).
+
+**Event codes.** High byte by sender, low byte by event: `0x01` supervisor, `0x02`
+`obdd`, `0x03` `ambientd`, `0x04` `analyzed` (verdicts), `0x05` `storaged` itself (for
+example `recovered`, `segment_dropped`). The table of codes lives in one header,
+`include/common/events.h`, and nowhere else.
+
+**Why.** D-031 left this open, and the report (D-028) and `obdctl verdicts --since` need
+verdicts and faults on disk, in order with the samples. One socket keeps `storaged` the
+only writer of the log (C.1). A packet socket is the simplest IPC that keeps one event
+one message. A sender that blocked on a dead `storaged` would let a storage fault stop
+capture or analysis, which B.2 exists to prevent.
+
+**Cost.** One more listener in `storaged` and one more fd per sender. Events that arrive
+while `storaged` is down and overflow the 64-event queue are lost from the log (but not
+from the journal), and the drop count says how many. The socket is `AF_UNIX`, so the
+boundary rule must allow it outside `src/interface/` (`make boundary`).
+
+**Alternative rejected.** Each process writing its own event file: several writers, no
+common order with the samples, and one more crash-recovery story per file. Events in the
+rings: the slot type is sized for a reply, and the supervisor, which has no ring, could
+not send.
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 

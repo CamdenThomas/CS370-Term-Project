@@ -29,6 +29,7 @@ OBD2 port -- OBDLink LX (Bluetooth SPP, D-019)   DS18B20 cabin probe (D-037)
     +------------------------+------------------------+  shared memory, refuse when full
                              v
   storaged [D]  BEGIN..COMMIT batches, 1 fsync/s, ~1 KB/s -> ext4 on SD (D-025)
+    ^           events from every daemon: one SEQPACKET Unix socket, a few a drive (D-042)
     | committed records only, read back from the log, ~1 s behind (D-031)
     v
   analyzed      bins -> baselines -> residuals -> trends -> model -> FSM
