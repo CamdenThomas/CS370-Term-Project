@@ -46,7 +46,11 @@ bool ring_push(ring_t *r, const ring_slot_t *in)
         return false;
     }
 
+    /* The ring numbers its own slots. head lives with the ring, so the numbering stays
+     * continuous when a producer restarts, and a gap seen by the consumer is a real
+     * loss, never a producer that started again from zero. */
     r->slot[head & MASK] = *in;
+    r->slot[head & MASK].seq = head;
     atomic_store_explicit(&r->head, head + 1, memory_order_release);
     return true;
 }

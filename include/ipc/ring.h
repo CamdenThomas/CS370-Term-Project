@@ -23,7 +23,7 @@
 #define RING_PAYLOAD    16u   /* bytes; a Mode 01 reply's data (<= 4 bytes) fits with room */
 
 typedef struct {
-    uint64_t seq;                    /* monotonic, never reused */
+    uint64_t seq;                    /* set by ring_push: the slot's position, never reused */
     uint64_t mono_ns;                /* CLOCK_MONOTONIC at capture */
     uint32_t pid;                    /* (mode << 16) | PID — room for 16-bit Mode 22 PIDs */
     uint8_t  len;

@@ -166,8 +166,22 @@ static void test_unlabeled_slot_is_refused(void)
     free(r);
 }
 
+static void test_ring_numbers_its_slots(void)
+{
+    ring_t *r = aligned_alloc(RING_LINE, sizeof *r);   /* ring_t is cache-line aligned */
+    if (r == NULL) { failures++; return; }
+    ring_init(r);
+
+    ring_slot_t s = mk(12345), out;   /* whatever seq the producer sets is replaced */
+    CHECK(ring_push(r, &s) && ring_push(r, &s), "two pushes");
+    CHECK(ring_pop(r, &out) && out.seq == 0, "first slot is seq 0");
+    CHECK(ring_pop(r, &out) && out.seq == 1, "second slot is seq 1");
+    free(r);
+}
+
 int main(void)
 {
+    test_ring_numbers_its_slots();
     test_unlabeled_slot_is_refused();
     test_concurrent_order_and_depth();
     test_empty_then_fifo();
