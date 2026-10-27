@@ -22,7 +22,7 @@ What sync does, and never does:
   * issue bodies and labels are left alone: GitHub owns them
   * an open issue that no line mentions is reported, never closed
 
-Usage (Python 3.11+, `gh` authenticated):
+Usage (Python 3, standard library only; `gh` authenticated):
 
     python tools/board_sync.py              reconcile, then write tags/ticks back
     python tools/board_sync.py --check      report drift; exit 1 if anything would change
