@@ -65,6 +65,7 @@ Decisions currently awaiting a human signature:
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
 | D-038 | `make boundary` allows Unix sockets through `src/ipc/uds.c`, bans every network family outside `src/interface/`, and tests itself (§F.7) | Claude, Camden's session | 2026-10-27 | Both — it is the 60-second check of handout §10.3 |
+| D-039 | The rings live in shared memory the supervisor creates; `storaged` frees slots only after `fsync`, so a `kill -9` loses nothing (§B.12) | Claude, Camden's session | 2026-10-27 | Both — it is what makes mechanism E's restart lossless |
 | D-040 | Draft: `src` 0 is invalid; 1 live, 2 replay, 3 synth, so unlabeled memory is never live (§C.9) | Claude, Camden's session | 2026-10-27 | Both — it is the integrity boundary of CLAUDE.md §2.7 |
 | D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
@@ -879,6 +880,43 @@ input. History queries cost `storaged` reads while it writes, which the CPU meas
 **Alternative rejected.** `obdctl` reading the log files itself: simpler, but it breaks
 D-031's rule that only the process holding the answer reads it, and the page would need a
 second copy of that reader.
+
+### B.12 — The rings live in shared memory the supervisor creates; `storaged` frees a slot only after `fsync` ⚠️ UNREVIEWED
+
+`D-039` · Decided M3, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** 🔒 B.3 (refuse, never overwrite), whose rule is unchanged; D-031 and
+D-037 (one producer and one consumer per ring) · **Answers:** board item `ringshm`
+
+**Decision.**
+
+- **Peek, then release.** The consumer reads slots with `ring_peek` and frees them with
+  `ring_release(n)`. `storaged` releases a batch's slots only after that batch's
+  `COMMIT` has been `fsync`'d, so a `kill -9` of `storaged` before then loses nothing:
+  the restarted `storaged` finds the same slots still in the ring.
+- **The ring numbers its slots.** `ring_push` sets each slot's `seq` from the ring's own
+  head, so numbering survives a producer restart and a gap is a real loss.
+- **Lifecycle.** The supervisor creates each ring at start with `shm_open` and `mmap`
+  (`ring_create`), removing a stale object left by a previous boot first. `obdd`,
+  `ambientd` and `storaged` attach to it (`ring_attach`), which checks a header (magic,
+  layout version, capacity, slot size) and refuses an object written by a different
+  build. Only the creator initializes; a restarted child attaches and never resets the
+  indices the other side is using.
+- **Duplicates after a restart.** If `storaged` dies after `fsync` returns but before the
+  release, the restarted process sees that batch again. Recovery knows the last committed
+  sample's `mono_ns` for each ring in the current boot, and `storaged` skips ring slots
+  at or before it, so a batch is never written twice.
+
+**Why.** With `ring_pop`, a slot left the ring the moment `storaged` read it, up to a
+second before it was durable (D-035), so killing `storaged` (the soak's injected fault,
+mechanism E's test) silently lost those samples, the loss B.3 exists to prevent. A
+shared-memory ring that any child re-initializes on restart would reset the other side's
+indices; a header check stops a ring left over from an older build being read with a new
+layout.
+
+**Cost.** A ring holds at most 4096 slots, about 200 s at 20 samples a second, so a
+`storaged` that is down longer makes the producer refuse (counted, B.3). The duplicate
+rule relies on `mono_ns` growing within a boot, which `CLOCK_MONOTONIC` guarantees.
 
 ---
 

@@ -50,7 +50,17 @@ void     ring_init(ring_t *r);
  * the slot carries no valid src (counts a rejection, D-040). */
 bool     ring_push(ring_t *r, const ring_slot_t *in);
 
-/* Returns false when empty. */
+/* Copies the i-th unread slot (0 is the oldest) without consuming it. Returns false when
+ * fewer than i + 1 slots are unread. Consumer only. */
+bool     ring_peek(const ring_t *r, size_t i, ring_slot_t *out);
+
+/* Consumes the n oldest unread slots, freeing them for the producer. Returns false, and
+ * consumes nothing, if fewer than n are unread. storaged calls it only after the batch
+ * holding those slots is fsync'd, so a crash before that loses nothing (D-039).
+ * Consumer only. */
+bool     ring_release(ring_t *r, size_t n);
+
+/* ring_peek(r, 0, out) then ring_release(r, 1). Returns false when empty. */
 bool     ring_pop(ring_t *r, ring_slot_t *out);
 
 uint64_t ring_overruns(const ring_t *r);

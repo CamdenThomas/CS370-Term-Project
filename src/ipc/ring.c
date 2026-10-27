@@ -55,16 +55,34 @@ bool ring_push(ring_t *r, const ring_slot_t *in)
     return true;
 }
 
-bool ring_pop(ring_t *r, ring_slot_t *out)
+bool ring_peek(const ring_t *r, size_t i, ring_slot_t *out)
+{
+    /* tail is ours (relaxed); head is the producer's, and acquire makes the slot it
+     * published visible before we copy it. */
+    uint64_t tail = atomic_load_explicit(&r->tail, memory_order_relaxed);
+    uint64_t head = atomic_load_explicit(&r->head, memory_order_acquire);
+
+    if (head - tail <= (uint64_t)i) return false;
+
+    *out = r->slot[(tail + i) & MASK];
+    return true;
+}
+
+bool ring_release(ring_t *r, size_t n)
 {
     uint64_t tail = atomic_load_explicit(&r->tail, memory_order_relaxed);
     uint64_t head = atomic_load_explicit(&r->head, memory_order_acquire);
 
-    if (tail == head) return false;
+    if ((uint64_t)n > head - tail) return false;
 
-    *out = r->slot[tail & MASK];
-    atomic_store_explicit(&r->tail, tail + 1, memory_order_release);
+    /* release: our reads of these slots finish before the producer may reuse them. */
+    atomic_store_explicit(&r->tail, tail + n, memory_order_release);
     return true;
+}
+
+bool ring_pop(ring_t *r, ring_slot_t *out)
+{
+    return ring_peek(r, 0, out) && ring_release(r, 1);
 }
 
 uint64_t ring_overruns(const ring_t *r)

@@ -179,8 +179,45 @@ static void test_ring_numbers_its_slots(void)
     free(r);
 }
 
+/* storaged's pattern (D-039): look at a batch, write it, fsync, and only then free it.
+ * Until the release, the slots stay put and the producer cannot reuse them. */
+static void test_peek_then_release(void)
+{
+    ring_t *r = aligned_alloc(RING_LINE, sizeof *r);   /* ring_t is cache-line aligned */
+    if (r == NULL) { failures++; return; }
+    ring_init(r);
+
+    for (uint64_t i = 0; i < 5; i++) {
+        ring_slot_t s = mk(i);
+        CHECK(ring_push(r, &s), "push");
+    }
+
+    ring_slot_t out;
+    CHECK(ring_peek(r, 0, &out) && out.seq == 0, "peek oldest");
+    CHECK(ring_peek(r, 4, &out) && out.seq == 4, "peek newest");
+    CHECK(!ring_peek(r, 5, &out), "peek past the newest");
+    CHECK(ring_depth(r) == 5, "peeking consumes nothing");
+
+    CHECK(!ring_release(r, 6), "release more than is unread");
+    CHECK(ring_depth(r) == 5, "a refused release consumes nothing");
+    CHECK(ring_release(r, 3), "release a batch of three");
+    CHECK(ring_depth(r) == 2, "depth after release");
+    CHECK(ring_peek(r, 0, &out) && out.seq == 3, "next unread after release");
+
+    /* A full ring whose slots are peeked but not released still refuses the producer. */
+    for (uint64_t i = 0; ring_depth(r) < RING_CAPACITY; i++) {
+        ring_slot_t s = mk(i);
+        CHECK(ring_push(r, &s), "fill");
+    }
+    ring_slot_t extra = mk(0);
+    CHECK(ring_peek(r, 0, &out), "peek on full ring");
+    CHECK(!ring_push(r, &extra), "peeked but unreleased slots must not be overwritten");
+    free(r);
+}
+
 int main(void)
 {
+    test_peek_then_release();
     test_ring_numbers_its_slots();
     test_unlabeled_slot_is_refused();
     test_concurrent_order_and_depth();
