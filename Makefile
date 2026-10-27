@@ -63,13 +63,12 @@ test: all $(TEST_BIN) boundary boardcheck toolcheck
 		if $$t; then echo PASS; else echo FAIL; fail=1; fi; done; \
 	exit $$fail
 
-# CLAUDE.md §2.1 — a grader must be able to confirm the boundary in sixty seconds.
-# No network client anywhere in the product except src/interface/.
+# CLAUDE.md §2.1 — a grader must be able to confirm the boundary in sixty seconds (D-038).
+# Network code only in src/interface/; Unix sockets only through src/ipc/uds.c. The
+# check tests itself first: every case under tests/boundary/cases/bad_* must fail.
 boundary:
-	@if grep -rnE '\b(curl_|SSL_|getaddrinfo|gethostbyname|socket)\b' src \
-	     --include='*.c' --include='*.h' | grep -v '^src/interface/'; then \
-		echo "BOUNDARY VIOLATION: network symbol outside src/interface/"; exit 1; \
-	else echo "boundary                     PASS"; fi
+	@tests/boundary/check.sh --selftest tests/boundary/cases
+	@tests/boundary/check.sh . && echo "boundary                     PASS"
 
 # docs/milestones.md is the board (D-020) - every task, question and decision
 # in the project is a checkbox there. Validate it in the same gate as the C.
