@@ -105,6 +105,18 @@ class Sync(unittest.TestCase):
                                                              "milestones"]],
                          "an unreadable milestone list looked empty, so M1 was created")
 
+    def test_check_shows_a_retitle_old_and_new(self):
+        with open(self.doc, "w", encoding="utf-8") as f:
+            f.write(DOC.replace("- [ ] First new line", "- [ ] First new line <!-- #7 -->")
+                    .replace("- [ ] Second new line\n", ""))
+        fake = FakeGh(issues=[{"number": 7, "title": "M1: Someone else's task",
+                               "state": "OPEN", "milestone": {"title": "M1"},
+                               "assignees": []}])
+        code, out = self.run_sync(fake, "--check")
+        self.assertEqual(code, 1)
+        self.assertIn("edit #7: title \"M1: Someone else's task\" -> 'M1: First new line'",
+                      out)
+
     def test_check_writes_nothing(self):
         code, _ = self.run_sync(FakeGh(), "--check")
         self.assertEqual(code, 1)

@@ -294,8 +294,13 @@ def sync_issues(gh: Gh, b: Board, save=lambda: None) -> list[str]:
         if it.owner and PEOPLE[it.owner] not in {a["login"] for a in issue["assignees"]}:
             edit += ["--add-assignee", PEOPLE[it.owner]]
         if edit:
-            gh.write(["issue", "edit", str(it.number), *edit],
-                     f"edit #{it.number}: {' '.join(e for e in edit if e.startswith('--'))}")
+            # Show a retitle in full: a tag typed on the wrong line retitles another
+            # issue, and --check is where a human sees that before it happens.
+            what = " ".join(e for e in edit if e.startswith("--") and e != "--title")
+            if "--title" in edit:
+                what = f"title {issue['title']!r} -> {it.title!r}" + (f", {what}"
+                                                                     if what else "")
+            gh.write(["issue", "edit", str(it.number), *edit], f"edit #{it.number}: {what}")
         closed = issue["state"].upper() == "CLOSED"
         if it.checked and not closed:
             gh.write(["issue", "close", str(it.number), "--reason", "completed"],
