@@ -12,7 +12,7 @@
 
 **Decision IDs touched:**
 **Milestone:** M
-**Mechanism affected (B / D / E / F / none):**
+**Mechanism affected (D / E / none):**
 
 ## Review this hardest
 <!-- Point the reviewer at the part most likely to be wrong. Be specific:
