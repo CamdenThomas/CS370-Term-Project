@@ -45,7 +45,7 @@ never marks a decision reviewed or LOCKED**; only Camden or Lance does, in their
 
 ```sh
 make              # build everything, -Wall -Wextra -Werror clean
-make test         # unit tests + boundary check + milestones.md check
+make test         # C unit tests + Python tool tests + boundary + milestones.md check
 make asan         # tests under AddressSanitizer + UBSan
 make memcheck     # valgrind over the test binaries
 make soakcheck    # 1-hour miniature of the 48h run
@@ -71,7 +71,8 @@ is pasted.** Not "should pass." Output.
 4. **Systems core is C17**, `-Wall -Wextra -Werror`, no VLAs, `goto`-cleanup for
    multi-resource functions. Every allocation checked. Every syscall error path handled
    *and logged*.
-5. **Python lives only in `tools/` and `ui/`.** No graded mechanism may hide there.
+5. **Python lives only in `tools/`, `ui/` and their tests (`tests/tools/`).** No graded
+   mechanism may hide there.
 6. **Every daemon is supervisable:** clean exit codes, no orphaned fds across restart,
    heartbeat within 60 s of start, survives `kill -9` of any sibling.
 7. **Replayed or synthesized data is labeled as such EVERYWHERE**: every record carries
