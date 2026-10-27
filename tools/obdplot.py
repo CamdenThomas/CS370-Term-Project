@@ -77,20 +77,30 @@ def plot_session(path, out_dir):
         written.append(p)
 
     pids = sorted(data)
-    fig, axes = plt.subplots(len(pids), 1, sharex=True, squeeze=False,
-                             figsize=(11, 1.1 * len(pids) + 0.6), layout="constrained")
-    for ax, pid in zip(axes[:, 0], pids):
-        t, v = data[pid]
-        ax.plot(t, v, color=SERIES, linewidth=1.2)
-        _events(ax, records, t0)
-        ax.set_ylabel(f"{pid}\n{unit[pid]}", rotation=0, ha="right", va="center",
-                      fontsize=8, color=INK)
-        ax.set_title(obdlib.pid_name(int(pid, 16)), loc="left", fontsize=8, color=MUTED,
-                     pad=2)
-        _style(ax)
-    axes[-1, 0].set_xlabel("seconds since first sample", color=INK)
-    fig.suptitle(title, x=0.01, ha="left", color=INK)
-    save(fig, "overview.png")
+    if not pids:
+        # Every request went unanswered (engine off, wrong port): say so in the figure
+        # rather than fail, because this is exactly the drive someone needs to look at.
+        fig, ax = plt.subplots(figsize=(11, 1.5))
+        ax.axis("off")
+        ax.text(0.5, 0.5, "no decoded samples in this log: see its events (obdsum.py)",
+                ha="center", va="center", color=MUTED)
+        fig.suptitle(title, x=0.01, ha="left", color=INK)
+        save(fig, "overview.png")
+    else:
+        fig, axes = plt.subplots(len(pids), 1, sharex=True, squeeze=False,
+                                 figsize=(11, 1.1 * len(pids) + 0.6), layout="constrained")
+        for ax, pid in zip(axes[:, 0], pids):
+            t, v = data[pid]
+            ax.plot(t, v, color=SERIES, linewidth=1.2)
+            _events(ax, records, t0)
+            ax.set_ylabel(f"{pid}\n{unit[pid]}", rotation=0, ha="right", va="center",
+                          fontsize=8, color=INK)
+            ax.set_title(obdlib.pid_name(int(pid, 16)), loc="left", fontsize=8,
+                         color=MUTED, pad=2)
+            _style(ax)
+        axes[-1, 0].set_xlabel("seconds since first sample", color=INK)
+        fig.suptitle(title, x=0.01, ha="left", color=INK)
+        save(fig, "overview.png")
 
     for pid in pids:
         t, v = data[pid]
