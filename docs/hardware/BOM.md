@@ -1,8 +1,8 @@
 # Bill of materials
 
-> **Nothing on this page is ordered until the paper design is signed** (D-024). Then
-> order the dongle first: shipping time is the most common silent schedule-killer on this
-> project (handout §16).
+> **The OBDLink LX is bought** (Camden's PROMPTLOG, E-03). **Nothing else on this page is
+> ordered until the paper design is signed** (D-024). Order the probe as soon as it is
+> drawn: shipping time is the most common silent schedule-killer (handout §16).
 
 The product is one box with one USB-C port, one light and one temperature probe, plus a
 Bluetooth OBD2 dongle in the car's OBD2 port (D-019, D-024, D-037). The owner supplies the
@@ -14,7 +14,7 @@ USB-C charger.
 | --- | --- | --- | --- |
 | 1 | Raspberry Pi 4 (2 GB+) | owned | Both partners already have one. |
 | 2 | 32 GB A2 microSD | $20 | A2 endurance matters for a key-cycle soak. Two, because the soak eats cards. |
-| 1 | OBDLink LX, Bluetooth Classic OBD2 dongle (STN chip) | ~$60, verify | The data path (D-019). Bluetooth Classic (SPP), **not BLE**. A cheap ELM327 Bluetooth clone is enough for the first PID survey but is unreliable for a 48 h run. |
+| 1 | OBDLink LX, Bluetooth Classic OBD2 dongle (STN chip) | bought | The data path (D-019). Bluetooth Classic (SPP), **not BLE**. A cheap ELM327 Bluetooth clone is enough for the first PID survey but is unreliable for a 48 h run. |
 | 1 | USB-C cable, short, 3 A-rated | $6 | From the owner's charger to the box. |
 | — | USB-C car charger | owner's | Not supplied: the box takes whatever the owner has (D-024). It must go dead with the key off (`keyoff`). |
 | 1 | USB-C power meter (inline) | $10 | Settles "does this charger go dead at key-off, what does it deliver, and does it sag at crank" in seconds. |
