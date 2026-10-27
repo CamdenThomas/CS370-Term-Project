@@ -1,0 +1,32 @@
+####
+# CI for the systems core (CLAUDE.md §1): a change is done only when make, make test and
+# make asan pass. This runs them with gcc and glibc on 64-bit Arm Linux, the Pi's
+# architecture, so a Mac-only build (Apple clang) is never the only evidence.
+#
+# valgrind (make memcheck) and anything that needs the car or the adapter stay on the Pi.
+####
+name: build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    name: make, make test, make asan (gcc, arm64 Linux)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: make
+        run: make
+      - name: make test
+        run: make test
+      - name: make asan
+        run: make asan
