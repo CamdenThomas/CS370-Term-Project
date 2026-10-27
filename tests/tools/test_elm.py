@@ -147,6 +147,16 @@ class SupportChain(unittest.TestCase):
             ad.supported_pids()
 
 
+class Init(unittest.TestCase):
+    def test_a_sleeping_bus_at_init_is_bus_asleep(self):
+        ad = elm.Adapter.__new__(elm.Adapter)
+        ad.command = lambda cmd, timeout=None: {
+            "ATZ": "\rELM327 v1.4b\r\r>",
+            "0100": "SEARCHING...\rUNABLE TO CONNECT\r\r>"}.get(cmd, "OK\r\r>")
+        with self.assertRaises(elm.obdlib.BusAsleep):
+            ad.init()
+
+
 class Opening(unittest.TestCase):
     def test_missing_port_is_link_lost(self):
         with self.assertRaises(elm.LinkLost):

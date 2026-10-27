@@ -9,7 +9,7 @@ One file per session, data/drive-<time>-<src>.jsonl, one JSON object per line:
     header  adapter, protocol, battery, VIN hash, PID list, tool and schema version
     sample  src, seq, t_mono, t_wall, pid, raw hex, decoded val, unit
     event   no_data, timeout, adapter_error, reinit, pid_absent, link_lost,
-            reconnected, gps_unavailable, gps_error, ...
+            reconnected, bus_asleep, bus_awake, gps_unavailable, gps_error, ...
     gps     a Mac location fix, only with --gps
     footer  why the session ended, and its counts
 
@@ -36,6 +36,7 @@ SCHEMA = 1
 NO_DATA_LIMIT = 5        # consecutive NO DATA before a PID is set aside as absent
 ABSENT_RETRY_SEC = 60.0  # how often an absent PID is tried again
 ERROR_LIMIT = 3          # consecutive timeouts or adapter errors before a reset
+BUS_RETRY_MAX = 30.0     # longest wait between tries while the bus is asleep
 GPS_POLL_SEC = 0.5       # location fixes arrive about once a second; poll no faster
 
 
@@ -243,6 +244,7 @@ def _run(args, stop):
     no_data = {p: 0 for p in pids}
     absent = {}                       # pid -> monotonic time it was set aside
     errors = 0
+    asleep_delay = None               # seconds until the next try while the bus is asleep
     next_status = time.monotonic() + args.status_sec
     next_gps = 0.0
     print(f"obdlog: logging {len(pids)} PIDs to {path} (src={src}); Ctrl-C to stop",
@@ -257,6 +259,14 @@ def _run(args, stop):
         if new_ad is not None:
             event("reconnected", attempts=attempts)
         return new_ad
+
+    def wait(seconds):
+        """Sleep without missing Ctrl-C, --max-seconds, the fsync bound or the status."""
+        end = time.monotonic() + seconds
+        while stop.reason is None and not expired() and time.monotonic() < end:
+            time.sleep(0.05)
+            out.tick()
+            status()
 
     def status():
         nonlocal next_status
@@ -298,6 +308,16 @@ def _run(args, stop):
                         absent[pid] = now
                         event("pid_absent", pid=key, after=NO_DATA_LIMIT)
                     continue
+                except obdlib.BusAsleep as e:
+                    # Ignition off or ECUs asleep: the adapter is fine, so no reset. Say so
+                    # once, then try again less and less often until the bus answers.
+                    errors = 0
+                    if asleep_delay is None:
+                        event("bus_asleep", pid=key, detail=str(e))
+                        asleep_delay = args.backoff_min
+                    wait(asleep_delay)
+                    asleep_delay = min(asleep_delay * 2, BUS_RETRY_MAX)
+                    break
                 except elm.LinkLost as e:
                     event("link_lost", detail=str(e))
                     ad = reopen(ad)
@@ -320,6 +340,9 @@ def _run(args, stop):
                     ad = reopen(ad)
                     break
                 errors = 0
+                if asleep_delay is not None:
+                    asleep_delay = None
+                    event("bus_awake", pid=key)
                 no_data[pid] = 0
                 if pid in absent:
                     del absent[pid]

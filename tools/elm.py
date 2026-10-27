@@ -102,11 +102,13 @@ class Adapter:
         for cmd in INIT:
             self.command(cmd)
         # The first OBD request makes the adapter search for the protocol; allow for it.
-        self.command("0100", timeout=15.0)
+        # With the ignition off that search fails (BusAsleep), and the caller waits.
+        obdlib.check_bus(self.command("0100", timeout=15.0))
         return self.banner
 
     def query(self, mode, pid):
-        """The data bytes of one request. Raises NoData, AdapterError, Timeout, LinkLost."""
+        """The data bytes of one request. Raises NoData, BusAsleep, AdapterError, Timeout,
+        LinkLost."""
         return obdlib.parse_response(self.command(obdlib.request(mode, pid)), mode, pid)
 
     def supported_pids(self):

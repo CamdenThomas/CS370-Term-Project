@@ -37,6 +37,14 @@ class ParseResponse(unittest.TestCase):
                 obdlib.parse_response(text + "\r\r>", 0x01, 0x0C)
             self.assertNotIsInstance(cm.exception, NoData)
 
+    def test_no_bus_is_its_own_error(self):
+        for text in ("UNABLE TO CONNECT", "CAN ERROR"):
+            with self.subTest(text=text), self.assertRaises(obdlib.BusAsleep):
+                obdlib.parse_response(text + "\r\r>", 0x01, 0x0C)
+        with self.assertRaises(obdlib.BusAsleep):
+            obdlib.check_bus("SEARCHING...\rUNABLE TO CONNECT\r\r>")
+        obdlib.check_bus("SEARCHING...\r41 00 BE 1F A8 13 \r\r>")
+
     def test_nul_bytes_from_the_adapter_are_ignored(self):
         self.assertEqual(obdlib.parse_response("\x0041 0C 1A F8 \x00\r\r>", 0x01, 0x0C),
                          bytes([0x1A, 0xF8]))

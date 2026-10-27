@@ -12,6 +12,7 @@ from unittest import mock
 
 import elm
 import macgps
+import obdlib
 import obdlog
 import obdsim
 
@@ -129,6 +130,18 @@ class AgainstSim(unittest.TestCase):
         kinds = [r.get("event") for r in records if r["type"] == "event"]
         self.assertIn("reinit_failed", kinds)
         self.assertIn("reopen", kinds)
+
+    def test_a_sleeping_bus_is_waited_out_not_reset(self):
+        asleep = mock.Mock(side_effect=obdlib.BusAsleep("UNABLE TO CONNECT"))
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(elm.Adapter, "query", asleep):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
+                        "--backoff-min", "0.2"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        kinds = [r.get("event") for r in records if r["type"] == "event"]
+        self.assertEqual(kinds.count("bus_asleep"), 1, kinds)
+        self.assertNotIn("reinit", kinds)
+        self.assertLessEqual(asleep.call_count, 5, "tries back off: 0, 0.2, 0.6, 1.4 s")
 
     def test_gps_unavailable_is_an_event_and_logging_continues(self):
         with obdsim.PtyServer(link=self.link, latency=0.0), \
