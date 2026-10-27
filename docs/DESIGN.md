@@ -109,10 +109,15 @@ sensor is added, so nothing in the design needs them (D-029).
 > What is stored, at what rate, in what format, with what retention, and what happens to
 > it when the power dies mid-write.
 
-- **Record format:** `[magic][seq][mono_ns][wall_ns][src: live|replay|synth][pid][value][crc32]`,
-  grouped into `BEGIN` … `COMMIT` batches; transaction and boot record kinds are settled
-  in `recfmt` (D-025)
-- **Rates:** [fill — Mode 01 request budget, and the per-PID rate it implies (D-012)]
+- **Record format (draft, D-034):** a 40-byte header (`magic`, `kind`, `body_len`, `seq`,
+  `mono_ns`, `wall_ns`, `src: live|replay|synth`, flags, `boot_id`), a typed body and a
+  CRC32 over both. Six kinds: sample, begin, commit, boot, shutdown, event. Samples are
+  grouped into `BEGIN` … `COMMIT` batches (D-025). A sample record is 56 bytes and keeps
+  the raw reply bytes beside the decoded value.
+- **Rates (estimates until the first drive measures them):** the adapter answers one
+  request at a time, about 15 to 25 a second (D-012; `obdsim` at a 40 ms reply time gives
+  22). Round-robin over the supported PIDs, about 17 on the simulator, gives each PID
+  about 1 Hz. That is 0.8 to 1.4 KB/s, or 3 to 5 MB per running hour.
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
 - **fsync discipline:** provisional: one `COMMIT` and one `fsync` per batch of about one
   second (D-025). [fill — the argument for that size, from the user's requirements
