@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -241,8 +242,12 @@ def sync_milestones(gh: Gh, repo: str, b: Board) -> None:
                      f"update milestone {ms} (due {due})")
 
 
-def sync_issues(gh: Gh, b: Board) -> list[str]:
-    """Make each line's issue match it. Returns lines worth reporting."""
+def sync_issues(gh: Gh, b: Board, save=lambda: None) -> list[str]:
+    """Make each line's issue match it. Returns lines worth reporting.
+
+    `save` is called after every tag or tick written into `b`, so an error or Ctrl-C
+    later in the run cannot lose the tag of an issue already created on GitHub, which
+    the next run would create a second time."""
     issues = {r["number"]: r for r in gh.read_json(
         ["issue", "list", "--state", "all", "--limit", "1000",
          "--json", "number,title,state,milestone,assignees"], [])}
@@ -263,6 +268,7 @@ def sync_issues(gh: Gh, b: Board) -> list[str]:
                     gh.write([], "close it again (the box is ticked)")
                 continue
             set_tag(b, it, int(url.rsplit("/", 1)[-1]))
+            save()
             issues[it.number] = {"number": it.number, "title": it.title, "state": "OPEN",
                                  "milestone": {"title": it.milestone},
                                  "assignees": [{"login": PEOPLE[it.owner]}]
@@ -286,6 +292,7 @@ def sync_issues(gh: Gh, b: Board) -> list[str]:
                      f"close #{it.number} (ticked)")
         elif closed and not it.checked:
             set_checked(b, it)
+            save()
             report.append(f"#{it.number} was closed on GitHub; ticked its box")
     listed = {it.number for it in b.items}
     for n, r in sorted(issues.items()):
@@ -362,16 +369,27 @@ def main() -> int:
         raise Fail(f"gh repo view -> {err}")
     say(f"repo: {repo}" + ("   [CHECK ONLY]" if args.check else ""))
     sync_milestones(gh, repo, b)
-    report = sync_issues(gh, b)
+    written = [original]
+
+    def save() -> None:
+        """Write the file now if it changed; never in --check."""
+        new = render(b)
+        if not args.check and new != written[0]:
+            # Replace, never truncate in place: a Ctrl-C mid-write keeps the old file.
+            tmp = LIST_DOC.with_name(LIST_DOC.name + ".tmp")
+            tmp.write_text(new, encoding="utf-8")
+            os.replace(tmp, LIST_DOC)
+            written[0] = new
+
+    report = sync_issues(gh, b, save)
     note = None if args.no_board else sync_board(gh, repo, b)
 
-    new = render(b)
-    if new != original:
+    if render(b) != original:
         if args.check:
             gh.pending += 1
             say("    would: rewrite docs/milestones.md (tags, ticks or progress)")
         else:
-            LIST_DOC.write_text(new, encoding="utf-8")
+            save()
             say("  wrote docs/milestones.md")
     for r in report:
         say(f"  ! {r}")
