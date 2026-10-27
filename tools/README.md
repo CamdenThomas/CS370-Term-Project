@@ -10,7 +10,7 @@ product's runtime path.
 | --- | --- |
 | `board_sync.py` | Mirrors the checklist in `docs/milestones.md` onto GitHub issues and the project board. Not a product tool at all — it is how the plan is maintained. See `docs/BOARD/BOARD.md`. |
 | `pidscan.py` | Mode 01 supported-PID survey for one car: protocol, battery, VIN hash, one reading per PID. Feeds `pid-survey.md`, which sets each testbed's inputs (**D-022**). |
-| `obdlog.py` | The drive logger: every supported PID, round-robin, to `data/drive-*.jsonl` (**D-033**). Run book: `docs/hardware/first-drive.md`. |
+| `obdlog.py` | The drive logger: every supported PID to `data/drive-*.jsonl` (**D-033**), rpm and load one request in four (`--fast`), static PIDs once into the header, every answering ECU's line kept (**D-044**). Run book: `docs/hardware/first-drive.md`. |
 | `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty with a scripted drive (`--two-ecu` makes a second ECU answer some PIDs), for development and tests, never the soak's data source (**D-023**). Sessions against it are labeled `synth`. |
 | `obdsum.py` | Per-session and per-PID summary of a drive log: rates, gaps, events. |
 | `obdplot.py` | PNG figures of a drive log: every PID on one time axis, speed against rpm, reply intervals. |

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""The drive logger: poll every supported Mode 01 PID and append each reply to JSONL.
+"""The drive logger: poll the supported Mode 01 PIDs and append each reply to JSONL.
 
     tools/obdlog.py --port /dev/cu.OBDLinkLX-SPP        # Mac, a real drive
     tools/obdlog.py --sim                               # rehearsal against obdsim
 
 One file per session, data/drive-<time>-<src>.jsonl, one JSON object per line:
 
-    header  adapter, protocol, battery, VIN hash, PID list, tool and schema version
+    header  adapter, protocol, battery, VIN hash, PID list, tool and schema version,
+            the schedule, and the answers of the static PIDs, read once (D-044)
     sample  src, seq, t_mono, t_wall, pid, raw hex, decoded val, unit, n_ecu (lines
             that answered), raw_all (every line, only when n_ecu > 1; D-044)
     event   no_data, timeout, adapter_error, reinit, pid_absent, link_lost,
@@ -16,10 +17,13 @@ One file per session, data/drive-<time>-<src>.jsonl, one JSON object per line:
     footer  why the session ended, and its counts
 
 Every line carries `src`: `live` for the car, `synth` when the adapter is obdsim
-(CLAUDE.md 2.7). Writes are append-only and fsync'd every --fsync-lines lines or
---fsync-sec seconds, so a crash or a closed lid loses at most that much. A Bluetooth
-drop is logged and retried with backoff; the logger only stops on Ctrl-C, SIGTERM or
---max-seconds. This is a tool for collecting data (D-033), not the product's obdd.
+(CLAUDE.md 2.7). rpm and load (0C, 04), the operating point every reading is binned
+by, get one request in every four (--fast); every other PID is round-robin; PIDs that
+cannot change while driving (13, 1C, 1D, 51) are read once. Writes are append-only and
+fsync'd every --fsync-lines lines or --fsync-sec seconds, so a crash or a closed lid
+loses at most that much. A Bluetooth drop is logged and retried with backoff; the logger
+only stops on Ctrl-C, SIGTERM or --max-seconds. This is a tool for collecting data
+(D-033), not the product's obdd.
 """
 import argparse
 import datetime
@@ -39,6 +43,10 @@ ABSENT_RETRY_SEC = 60.0  # how often an absent PID is tried again
 ERROR_LIMIT = 3          # consecutive timeouts or adapter errors before a reset
 BUS_RETRY_MAX = 30.0     # longest wait between tries while the bus is asleep
 GPS_POLL_SEC = 0.5       # location fixes arrive about once a second; poll no faster
+FAST_EVERY = 4           # one request in this many goes to a --fast PID (D-044)
+# PIDs whose answer cannot change while the engine runs: read once into the header
+# (D-044). 01 is not one: it carries the check-engine light, so it stays in the rotation.
+STATIC = (0x13, 0x1C, 0x1D, 0x51)  # O2 sensors present (2 forms), OBD standard, fuel type
 
 
 def _wall():
@@ -168,6 +176,54 @@ def connect(path, tries, backoff_min, stop, log=None, idle=None, expired=lambda:
     return None, attempt
 
 
+class Schedule:
+    """Which PID to ask next. The --fast PIDs (rpm and load, the binning axes) get one
+    request in every FAST_EVERY, taken in turn; every other PID shares the rest,
+    round-robin. A PID the caller says to skip (set aside as absent) costs no turn."""
+
+    def __init__(self, pids, fast, every=FAST_EVERY):
+        self.fast = [p for p in fast if p in pids]
+        self.slow = [p for p in pids if p not in self.fast]
+        self.every = every
+        self.cursor = {"fast": 0, "slow": 0}
+        self.since_fast = 0
+
+    def _take(self, kind, skip):
+        group = getattr(self, kind)
+        for _ in range(len(group)):
+            pid = group[self.cursor[kind] % len(group)]
+            self.cursor[kind] += 1
+            if not skip(pid):
+                return pid
+        return None
+
+    def next(self, skip=lambda pid: False):
+        """The next PID to request, or None when every PID is skipped."""
+        if self.fast and self.since_fast >= self.every - 1:
+            pid = self._take("fast", skip)
+            if pid is not None:
+                self.since_fast = 0
+                return pid
+        pid = self._take("slow", skip)
+        if pid is not None:
+            self.since_fast += 1
+            return pid
+        pid = self._take("fast", skip)
+        if pid is not None:
+            self.since_fast = 0
+        return pid
+
+
+def read_once(ad, pid):
+    """A static PID's answer for the header: every line's hex, or the error text."""
+    try:
+        return {"raw_all": [a.hex(" ").upper() for a in ad.query_all(1, pid)]}
+    except elm.LinkLost:
+        raise
+    except obdlib.AdapterError as e:
+        return {"error": str(e) or type(e).__name__}
+
+
 def parse_pids(text):
     """'0C,0d, 05' -> [0x0C, 0x0D, 0x05]. ValueError for a bad or empty list."""
     pids = []
@@ -190,6 +246,9 @@ def main(argv=None):
     ap.add_argument("--sim", action="store_true", help="start obdsim and log from it")
     ap.add_argument("--out", default="data", help="directory for session files")
     ap.add_argument("--pids", help="comma-separated hex PIDs; default: all supported")
+    ap.add_argument("--fast", default="0C,04",
+                    help=f"PIDs given one request in every {FAST_EVERY} (default 0C,04: "
+                         "rpm and load); \"\" turns this off")
     ap.add_argument("--gps", action="store_true", help="also log Mac location (optional)")
     ap.add_argument("--fsync-lines", type=int, default=50)
     ap.add_argument("--fsync-sec", type=float, default=1.0)
@@ -204,6 +263,10 @@ def main(argv=None):
             args.pids = parse_pids(args.pids)
         except ValueError as e:
             ap.error(f"--pids: {e}")
+    try:
+        args.fast = parse_pids(args.fast) if args.fast.strip() else []
+    except ValueError as e:
+        ap.error(f"--fast: {e}")
     if bool(args.port) == bool(args.sim):
         ap.error("give exactly one of --port or --sim")
     os.makedirs(args.out, exist_ok=True)
@@ -257,17 +320,24 @@ def _run(args, stop):
                   "adapter": ad.banner, "protocol": ad.protocol(), "voltage": ad.voltage(),
                   "vin_hash": obdlib.vin_hash(vin) if vin else None,
                   "supported": [f"{p:02X}" for p in sorted(supported)]}
+        wanted = args.pids if args.pids is not None else sorted(supported)
+        static = [p for p in wanted if p in STATIC]
+        header["static"] = {f"{p:02X}": read_once(ad, p) for p in static}
     except (elm.LinkLost, obdlib.AdapterError) as e:
         ad.close()
         print(f"obdlog: session setup failed: {e}", file=sys.stderr)
         return 2
-    pids = args.pids if args.pids is not None else sorted(supported)
+    pids = [p for p in wanted if p not in static]
     if not pids:
         # Nothing to poll: the loop would idle until --max-seconds, logging nothing.
         ad.close()
-        print("obdlog: the ECU lists no supported PIDs; nothing to log", file=sys.stderr)
+        print("obdlog: no PID left to poll; nothing to log", file=sys.stderr)
         return 2
+    sched = Schedule(pids, args.fast)
     header["pids"] = [f"{p:02X}" for p in pids]
+    header["schedule"] = {"fast": [f"{p:02X}" for p in sched.fast],
+                          "fast_every": FAST_EVERY if sched.fast else None,
+                          "static": [f"{p:02X}" for p in static]}
 
     out = open_session(args.out, src, args.fsync_lines, args.fsync_sec)
     path = out.path
@@ -348,7 +418,8 @@ def _run(args, stop):
     try:
         while stop.reason is None and not expired():
             now = time.monotonic()
-            if all(p in absent and now - absent[p] < ABSENT_RETRY_SEC for p in pids):
+            pid = sched.next(lambda p: p in absent and now - absent[p] < ABSENT_RETRY_SEC)
+            if pid is None:
                 # Every PID is set aside (engine off, ECU quiet): wait for the next retry
                 # instead of spinning through an empty pass. The location is still logged.
                 time.sleep(0.2)
@@ -356,80 +427,76 @@ def _run(args, stop):
                 poll_gps()
                 status()
                 continue
-            for pid in pids:
-                if stop.reason is not None or expired():
-                    break
-                key = f"{pid:02X}"
-                now = time.monotonic()
-                if pid in absent:
-                    if now - absent[pid] < ABSENT_RETRY_SEC:
-                        continue
+            key = f"{pid:02X}"
+            if pid in absent:
+                absent[pid] = now          # this is its retry; the next one is a minute on
+            try:
+                answers = ad.query_all(1, pid)
+            except obdlib.NoData:
+                no_data[pid] += 1
+                event("no_data", pid=key)
+                if no_data[pid] == NO_DATA_LIMIT and pid not in absent:
                     absent[pid] = now
-                try:
-                    answers = ad.query_all(1, pid)
-                except obdlib.NoData:
-                    no_data[pid] += 1
-                    event("no_data", pid=key)
-                    if no_data[pid] == NO_DATA_LIMIT and pid not in absent:
-                        absent[pid] = now
-                        event("pid_absent", pid=key, after=NO_DATA_LIMIT)
-                    continue
-                except obdlib.BusAsleep as e:
-                    # Ignition off or ECUs asleep: the adapter is fine, so no reset. Say so
-                    # once, then try again less and less often until the bus answers.
-                    errors = 0
-                    if asleep_delay is None:
-                        event("bus_asleep", pid=key, detail=str(e))
-                        asleep_delay = args.backoff_min
-                    wait(asleep_delay)
-                    asleep_delay = min(asleep_delay * 2, BUS_RETRY_MAX)
-                    break
-                except elm.LinkLost as e:
-                    event("link_lost", detail=str(e))
-                    ad = reopen(ad)
-                    errors = 0
-                    break
-                except obdlib.AdapterError as e:
-                    errors += 1
-                    event("timeout" if isinstance(e, elm.Timeout) else "adapter_error",
-                          pid=key, detail=str(e))
-                    if errors < ERROR_LIMIT:
-                        continue
-                    errors = 0
-                    try:
-                        event("reinit", banner=ad.init())
-                        continue
-                    except (elm.LinkLost, obdlib.AdapterError) as e2:
-                        event("reinit_failed", detail=str(e2))
-                    # Connected but deaf: close the port and open it again, as for a drop.
-                    event("reopen", detail="adapter stopped answering")
-                    ad = reopen(ad)
-                    break
+                    event("pid_absent", pid=key, after=NO_DATA_LIMIT)
+                continue
+            except obdlib.BusAsleep as e:
+                # Ignition off or ECUs asleep: the adapter is fine, so no reset. Say so
+                # once, then try again less and less often until the bus answers.
                 errors = 0
-                if asleep_delay is not None:
-                    asleep_delay = None
-                    event("bus_awake", pid=key)
-                no_data[pid] = 0
-                if pid in absent:
-                    del absent[pid]
-                    event("pid_present", pid=key)
-                # With headers off (ATH0) a line does not say which ECU sent it. Decode
-                # the first, as before, and keep every line so the ECUs can be told
-                # apart later (D-044).
-                raws = [a.hex(" ").upper() for a in answers]
-                extra = {"raw_all": raws} if len(raws) > 1 else {}
-                if len(raws) > 1 and pid not in multi:
-                    multi.add(pid)
-                    event("multi_ecu", pid=key, n_ecu=len(raws), raw_all=raws)
-                value, unit = obdlib.decode(pid, answers[0])
-                out.write("sample", pid=key, raw=raws[0], val=value, unit=unit,
-                          n_ecu=len(raws), **extra)
-                counts["samples"] += 1
+                if asleep_delay is None:
+                    event("bus_asleep", pid=key, detail=str(e))
+                    asleep_delay = args.backoff_min
+                wait(asleep_delay)
+                asleep_delay = min(asleep_delay * 2, BUS_RETRY_MAX)
+                continue
+            except elm.LinkLost as e:
+                event("link_lost", detail=str(e))
+                ad = reopen(ad)
+                errors = 0
+                if ad is None:
+                    break
+                continue
+            except obdlib.AdapterError as e:
+                errors += 1
+                event("timeout" if isinstance(e, elm.Timeout) else "adapter_error",
+                      pid=key, detail=str(e))
+                if errors < ERROR_LIMIT:
+                    continue
+                errors = 0
+                try:
+                    event("reinit", banner=ad.init())
+                    continue
+                except (elm.LinkLost, obdlib.AdapterError) as e2:
+                    event("reinit_failed", detail=str(e2))
+                # Connected but deaf: close the port and open it again, as for a drop.
+                event("reopen", detail="adapter stopped answering")
+                ad = reopen(ad)
+                if ad is None:
+                    break
+                continue
+            errors = 0
+            if asleep_delay is not None:
+                asleep_delay = None
+                event("bus_awake", pid=key)
+            no_data[pid] = 0
+            if pid in absent:
+                del absent[pid]
+                event("pid_present", pid=key)
+            # With headers off (ATH0) a line does not say which ECU sent it. Decode the
+            # first, as before, and keep every line so the ECUs can be told apart later
+            # (D-044).
+            raws = [a.hex(" ").upper() for a in answers]
+            extra = {"raw_all": raws} if len(raws) > 1 else {}
+            if len(raws) > 1 and pid not in multi:
+                multi.add(pid)
+                event("multi_ecu", pid=key, n_ecu=len(raws), raw_all=raws)
+            value, unit = obdlib.decode(pid, answers[0])
+            out.write("sample", pid=key, raw=raws[0], val=value, unit=unit,
+                      n_ecu=len(raws), **extra)
+            counts["samples"] += 1
 
-                poll_gps()
-                status()
-            if ad is None:
-                break
+            poll_gps()
+            status()
     except BaseException as e:
         failure = f"error: {type(e).__name__}: {e}"
         raise

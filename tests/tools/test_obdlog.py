@@ -80,6 +80,41 @@ class AgainstSim(unittest.TestCase):
         self.assertEqual(sorted(e["pid"] for e in multi), ["0C", "0D"])
         self.assertTrue(all(r["src"] == "synth" for r in records))
 
+    def test_rpm_and_load_are_polled_more_often_and_the_schedule_is_recorded(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertEqual(records[0]["schedule"],
+                         {"fast": ["0C", "04"], "fast_every": 4, "static": []})
+        n = {}
+        for r in records:
+            if r["type"] == "sample":
+                n[r["pid"]] = n.get(r["pid"], 0) + 1
+        # 2 fast PIDs share 1 request in 4; 15 others share 3 in 4: 1/8 against 1/20.
+        for slow in ("05", "0D", "42"):
+            self.assertGreater(n["0C"], 2 * n[slow], n)
+            self.assertGreater(n["04"], 2 * n[slow], n)
+
+    def test_fast_can_be_turned_off(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "0.8",
+                        "--fast", ""])
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertEqual(records[0]["schedule"]["fast"], [])
+        self.assertIsNone(records[0]["schedule"]["fast_every"])
+
+    def test_static_pids_are_read_once_into_the_header(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "0.8",
+                        "--pids", "0C,1C"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        header = records[0]
+        self.assertEqual(header["static"], {"1C": {"error": "NO DATA"}})
+        self.assertEqual(header["pids"], ["0C"])
+        self.assertEqual(header["schedule"]["static"], ["1C"])
+        self.assertFalse([r for r in records[1:] if r.get("pid") == "1C"],
+                         "a static PID is never polled")
+
     def test_pid_list_can_be_narrowed(self):
         with obdsim.PtyServer(link=self.link, latency=0.0):
             run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "0.8",
@@ -200,6 +235,11 @@ class AgainstSim(unittest.TestCase):
                 run_logger(["--port", self.link, "--out", self.d, "--pids", bad])
             adapter.assert_not_called()
 
+    def test_a_bad_fast_list_is_refused_before_connecting(self):
+        with mock.patch.object(elm, "Adapter") as adapter, self.assertRaises(SystemExit):
+            run_logger(["--port", self.link, "--out", self.d, "--fast", "0C,QQ"])
+        adapter.assert_not_called()
+
     def test_an_ecu_that_lists_nothing_ends_the_session_at_once(self):
         with obdsim.PtyServer(link=self.link, latency=0.0), \
                 mock.patch.object(elm.Adapter, "supported_pids", return_value=set()):
@@ -265,6 +305,40 @@ class Writer(unittest.TestCase):
             w.close()
             records, _ = obdlog.read_log(p)
             self.assertEqual(records, [], "nothing was written")
+
+
+class Scheduling(unittest.TestCase):
+    def picks(self, sched, n, skip=lambda pid: False):
+        return [sched.next(skip) for _ in range(n)]
+
+    def test_fast_pids_get_every_fourth_request_in_turn(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x06, 0x0C, 0x0D, 0x0F], fast=[0x0C, 0x04])
+        self.assertEqual(self.picks(sched, 12),
+                         [0x05, 0x06, 0x0D, 0x0C, 0x0F, 0x05, 0x06, 0x04,
+                          0x0D, 0x0F, 0x05, 0x0C])
+
+    def test_skipped_pids_cost_no_turn(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x06, 0x0C], fast=[0x0C, 0x04])
+        self.assertEqual(self.picks(sched, 4, skip=lambda p: p == 0x06),
+                         [0x05, 0x05, 0x05, 0x0C])
+
+    def test_only_fast_pids_left_are_asked_every_time(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x0C], fast=[0x0C, 0x04])
+        self.assertEqual(self.picks(sched, 4, skip=lambda p: p == 0x05),
+                         [0x0C, 0x04, 0x0C, 0x04])
+
+    def test_everything_skipped_is_none(self):
+        sched = obdlog.Schedule([0x05, 0x0C], fast=[0x0C])
+        self.assertIsNone(sched.next(lambda p: True))
+
+    def test_no_fast_pids_is_plain_round_robin(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x0C], fast=[])
+        self.assertEqual(self.picks(sched, 6), [0x04, 0x05, 0x0C] * 2)
+
+    def test_a_fast_pid_that_is_not_polled_is_dropped(self):
+        sched = obdlog.Schedule([0x05, 0x0D], fast=[0x0C, 0x04])
+        self.assertEqual(sched.fast, [])
+        self.assertEqual(self.picks(sched, 4), [0x05, 0x0D] * 2)
 
 
 class Interrupt(unittest.TestCase):
