@@ -56,6 +56,7 @@ Decisions currently awaiting a human signature:
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
+| D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs one package |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
@@ -773,6 +774,40 @@ does not change.
 **Cost.** Recovery now spans two processes, so the crash tests (cut the file at every
 byte offset, then `expcrash` on the device) must cover both. Checkpoint frequency trades
 write load against redo time at boot.
+
+---
+
+### C.4 — Drive captures are JSONL from a Python tool, VIN hashed ⚠️ UNREVIEWED
+
+`D-033` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** Until `obdd` exists, real-car data is collected by `tools/obdlog.py`, run on
+Camden's Mac (or the Pi) against the OBDLink LX. It writes one file per session,
+`data/drive-<time>-<src>.jsonl`, one JSON object per line: a `header` (adapter,
+protocol, battery voltage, VIN hash, PID list, tool and schema version), a `sample` per
+reply (`src`, `seq`, `t_mono`, `t_wall`, `pid`, raw hex, decoded value, unit), an `event`
+for every non-sample outcome (`no_data`, `timeout`, `link_lost`, `reconnected`, ...),
+optional `gps` lines and a `footer`. It polls every supported PID round-robin as fast as
+the adapter answers. Writes are append-only and fsync'd every 50 lines or 1 s. The VIN is
+shown on screen and stored only as the first 12 hex digits of its SHA-256. A session
+against `obdsim` is labeled `synth` on every line, because the simulator's reset banner
+says `SIM`.
+
+**Why.** Camden, 2026-10-26: the first drive must log everything the car will answer so
+the data can be studied before the pipeline is designed around it. JSONL is readable by
+eye and by any analysis tool; the raw hex beside the decoded value means a decoding bug
+never costs data; event lines mean nothing is dropped silently (D-012). Camden chose
+hashing over storing the VIN.
+
+**What this is not.** It is not mechanism D and not the on-disk format of `storaged`
+(`recfmt`, D-025). The product stays C (CLAUDE.md §2.4); this is a collection tool in
+`tools/` (§2.5). `tools/replay.py` will convert these files into the product's records,
+labeled `replay`.
+
+**Cost.** The hash is pseudonymization, not anonymity: a VIN has little entropy, so
+anyone holding candidate VINs can test them. Raw logs stay out of git (`data/` is
+ignored); only short excerpts are committed as evidence.
 
 ---
 
