@@ -104,7 +104,7 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | adapter | Bluetooth drops | `read` 0/`EIO`, `POLLHUP` | reopen `/dev/obd` with backoff | `link_lost`, `reconnected` |
 | adapter | garbage or timeouts | parse failure; timeout | 3 in a row: `ATZ`, then reopen | `reply_bad`, `adapter_reset` |
 | adapter | engine off, key in ACC | `0100` gets `NO DATA` | poll `0100` every few s, record nothing | `ecu_silent` |
-| ECU | a PID stops (sensor unplugged) | 5 `NO DATA` in a row | mark absent, retry each minute; report it | `pid_absent`, `pid_present` |
+| ECU | a sensor unplugged or failed | 5 `NO DATA` in a row; or the value pinned or flat while its partners move, with the MIL on and the DTC count up (PID 0101) | mark absent or suspect, retry each minute; report it. Most ECUs substitute a default value and light the CEL, so this fault is not caught before the light | `pid_absent`, `pid_flat`, `mil_on`, `pid_present` |
 | probe | unplugged, broken wire, bad read | device gone from sysfs; CRC `NO`; the 85.0 °C power-on value | mark absent, retry every 10 s; cold-soak check off, reported | `sensor_absent`, `sensor_present`, `reply_bad` |
 | any child | crash, `kill -9` | `waitpid` | restart with backoff; others run on | `child_exit`, `child_restart` |
 | ring | consumer stalls | sequence gap; late heartbeat | refuse and count (B.3); restart `storaged`; red | `ring_full`, `heartbeat_late` |

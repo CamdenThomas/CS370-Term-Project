@@ -54,7 +54,7 @@ why, here.
 | Bluetooth drops | pull the dongle for 10 min, engine running | `link_lost`, `reconnected` | | | |
 | Garbage or timeouts | `obdsim` serving bad replies (`synth`) | `reply_bad`, `adapter_reset` | | | |
 | Engine off, key in ACC | key to ACC | `ecu_silent` | | | |
-| A PID stops | unplug one engine sensor, engine running (lights the CEL) | `pid_absent`, `pid_present` | | | |
+| A sensor unplugged | unplug one engine sensor, engine running (lights the CEL) | `pid_absent` or `pid_flat`, `mil_on`, `pid_present` | | | |
 | Probe unplugged | pull the DS18B20 for 10 min | `sensor_absent`, `sensor_present` | | | |
 | A child crashes | `kill -9` each child, 20 times | `child_exit`, `child_restart` | | | |
 | Ring consumer stalls | `SIGSTOP` `storaged` for 5 min | `ring_full`, `heartbeat_late` | | | |
