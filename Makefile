@@ -86,9 +86,11 @@ toolcheck: .venv/.installed
 	@PYTHONPATH=tools .venv/bin/python -m unittest discover -s tests/tools -q && \
 		echo "toolcheck                    PASS"
 
+# Sanitized objects live in their own tree. Objects do not depend on the flags that built
+# them, so sharing build/ let a plain `make` link against ASan objects and fail, and let
+# `make test` rerun sanitized binaries without saying so.
 asan:
-	$(MAKE) clean
-	$(MAKE) test OPT="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"
+	$(MAKE) BUILD=$(BUILD)/asan test OPT="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"
 
 memcheck: $(TEST_BIN)
 	@for t in $(TEST_BIN); do valgrind --error-exitcode=1 --leak-check=full $$t || exit 1; done
