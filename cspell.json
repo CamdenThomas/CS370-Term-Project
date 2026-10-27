@@ -258,6 +258,7 @@
     "symlib",
     "syscall",
     "sysfs",
+    "tcflush",
     "telematics",
     "Theil",
     "timespec",
