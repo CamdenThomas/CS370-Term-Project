@@ -9,9 +9,9 @@
 board unless we take The Reach (handout §14).
 
 A custom PCB earns **zero points** — the rubric grades mechanisms, measurements and the
-soak — and adds fab turnaround on top of critical path B, which is already the thing most
-likely to delay M2. Off-the-shelf parts on a breadboard clear every guardrail, and the
-handout is explicit that the enclosure can be a food container.
+soak — and adds fab turnaround on top of the hardware critical path (`docs/PLAN.md` §1),
+which M2 has already overrun. Off-the-shelf parts on a breadboard clear every guardrail,
+and the handout is explicit that the enclosure can be a food container.
 
 The schematic is worth the time anyway, because three graded artifacts depend on it:
 
@@ -31,7 +31,7 @@ architecture, which makes both documents easier to defend:
 | Block | Contains |
 | --- | --- |
 | **Power** | The box's USB-C sink input (5.1 kΩ on CC1 and CC2) as an off-sheet connector; input protection and fuse; current limit and inrush limiter; the supercapacitor bank with balancing and its fuse; the power-path controller; the step-up-capable 5 V / 3 A converter to the Pi; the source-present and halt-done signals (D-024). **No** OBD2 pin 16. |
-| **Pi interface** | 40-pin header, the tri-color LED with its resistors and the pull that holds yellow on during boot (D-027), source-present (divided to 3.3 V) and halt-done GPIOs, the real-time clock on I2C (D-030), grounds |
+| **Pi interface** | 40-pin header, the tri-color LED with its resistors and the pull that holds yellow on during boot (D-027), source-present (divided to 3.3 V) and halt-done GPIOs, the real-time clock on I2C (D-030), the DS18B20 probe connector on GPIO4 with its 4.7 kΩ pull-up to 3.3 V (D-037), grounds |
 | **CAN** *(stretch only, D-019)* | OBD2 pin 6 / pin 14 / pin 5 via the Y-splitter, TJA1050 transceiver, MCP2515, crystal + load caps, termination jumper **drawn open** (nothing on the car is disturbed, D-024), `INT` to GPIO, SPI0 (CE0/MISO/MOSI/SCLK) |
 
 The OBD2 adapter is not on the schematic: it plugs into the car and reaches the Pi over
@@ -72,5 +72,10 @@ disagree, the schematic wins and the table was stale:
 
 - `docs/figures/electricalDrawing.svg` — rendered schematic, **committed**, so pull requests
   show a picture instead of an S-expression diff
-- `docs/hardware/bom.csv` — parts list feeding `BOM.md`
-- `electricalDrawing/electricalDrawing.net` — netlist, the source for `wiring.md` pin tables
+- `docs/hardware/bom.csv` — the parts list `BOM.md` is checked against
+- `electricalDrawing/electricalDrawing.net` — the netlist `wiring.md`'s pin tables are
+  checked against
+
+None of them exists yet: nothing has been drawn (`schpower`, `schpi`). `BOM.md` and
+`wiring.md` are written by hand, by function, and stay that way; once a block is drawn,
+the PR that draws it checks them against `bom.csv` and the netlist (`hwgate`).
