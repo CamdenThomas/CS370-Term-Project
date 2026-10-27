@@ -27,6 +27,9 @@ class Timeout(obdlib.AdapterError):
     """No prompt from the adapter within the timeout."""
 
 
+# Seconds to wait for a timed-out request's late prompt before interrupting it.
+RESYNC_WAIT = 0.5
+
 # Settings sent after reset: echo off, no linefeeds, spaces on, headers off, auto protocol.
 INIT = ("ATE0", "ATL0", "ATS1", "ATH0", "ATSP0")
 
@@ -35,6 +38,7 @@ class Adapter:
     def __init__(self, path, timeout=2.0, baud=115200):
         self.path, self.timeout = path, timeout
         self.banner = ""
+        self.stale = False     # a request timed out; its reply may still be on its way
         try:
             # A write blocked on a stalled Bluetooth link must time out, or Ctrl-C could
             # never end the session; pyserial reports it as a SerialException (LinkLost).
@@ -53,19 +57,40 @@ class Adapter:
         except (serial.SerialException, OSError):
             pass
 
+    def _read_to_prompt(self, deadline):
+        """Bytes up to and including the `>` prompt, or None at the deadline."""
+        buf = b""
+        while not buf.rstrip().endswith(b">"):
+            if time.monotonic() > deadline:
+                return None
+            # Read what is waiting, or block for one byte, so the reply returns as soon as
+            # its prompt arrives instead of at the end of a read timeout.
+            buf += self.port.read(self.port.in_waiting or 1)
+        return buf
+
+    def _resync(self, cmd):
+        """Wait out the reply to a request that timed out, so it is not read as the
+        answer to the next one. First wait for its prompt; if none comes, send a bare CR,
+        which makes a busy adapter stop (`STOPPED`, then `>`). A CR to an idle adapter
+        would repeat the last command, which is why it is not sent first."""
+        if self._read_to_prompt(time.monotonic() + min(RESYNC_WAIT, self.timeout)) is None:
+            self.port.write(b"\r")
+            if self._read_to_prompt(time.monotonic() + self.timeout) is None:
+                raise Timeout(f"{cmd}: adapter still busy with a timed-out request")
+        self.stale = False
+
     def command(self, cmd, timeout=None):
         """Send one command and return the raw reply text up to the `>` prompt."""
-        deadline = time.monotonic() + (timeout or self.timeout)
         try:
+            if self.stale:
+                self._resync(cmd)
+            deadline = time.monotonic() + (timeout or self.timeout)
             self.port.reset_input_buffer()
             self.port.write(cmd.encode("ascii") + b"\r")
-            buf = b""
-            while not buf.rstrip().endswith(b">"):
-                if time.monotonic() > deadline:
-                    raise Timeout(f"{cmd}: no prompt after {timeout or self.timeout}s")
-                # Read what is waiting, or block for one byte, so the reply returns as
-                # soon as its prompt arrives instead of at the end of a read timeout.
-                buf += self.port.read(self.port.in_waiting or 1)
+            buf = self._read_to_prompt(deadline)
+            if buf is None:
+                self.stale = True
+                raise Timeout(f"{cmd}: no prompt after {timeout or self.timeout}s")
         except PORT_ERRORS as e:
             raise LinkLost(f"{cmd}: {e}") from e
         return buf.decode("ascii", errors="replace")
