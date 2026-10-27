@@ -31,7 +31,7 @@ class AgainstSim(unittest.TestCase):
 
     def test_supported_pids_walks_the_chain(self):
         self.ad.init()
-        self.assertEqual(self.ad.supported_pids(), set(obdsim.MODELLED))
+        self.assertEqual(self.ad.supported_pids(), set(obdsim.MODELED))
 
     def test_protocol_voltage_and_vin(self):
         self.ad.init()

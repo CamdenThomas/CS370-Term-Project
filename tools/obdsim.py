@@ -48,7 +48,7 @@ def _clamp(v, lo, hi):
 
 
 def vehicle_state(t):
-    """Every modelled PID's value at t seconds after the engine started."""
+    """Every modeled PID's value at t seconds after the engine started."""
     v = _speed(t)
     accel = _speed(t + 0.5) - _speed(t - 0.5)       # km/h per s
     gear = sum(v >= s for s in _SHIFTS)
@@ -83,7 +83,7 @@ def _u16(v):
     return int(_clamp(round(v), 0, 65535)).to_bytes(2, "big")
 
 
-# The inverse of obdlib's decode, per modelled PID.
+# The inverse of obdlib's decode, per modeled PID.
 ENCODE = {
     0x04: lambda v: _b(v * 255 / 100),
     0x05: lambda v: _b(v + 40),
@@ -103,16 +103,16 @@ ENCODE = {
     0x42: lambda v: _u16(v * 1000),
     0x46: lambda v: _b(v + 40),
 }
-MODELLED = sorted(ENCODE)
+MODELED = sorted(ENCODE)
 
 
 def _bitmap(base):
     """The support bitmap for the block after `base`, chaining to the next block."""
     bits = 0
-    for pid in MODELLED:
+    for pid in MODELED:
         if base < pid < base + 0x20:
             bits |= 1 << (31 - (pid - base - 1))
-    if any(pid > base + 0x20 for pid in MODELLED):
+    if any(pid > base + 0x20 for pid in MODELED):
         bits |= 1   # base + 0x20: the next block exists
     return bits.to_bytes(4, "big")
 

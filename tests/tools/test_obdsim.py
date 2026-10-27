@@ -72,20 +72,20 @@ class ModeOne(unittest.TestCase):
                 return found
             base += 0x20
 
-    def test_support_chain_lists_every_modelled_pid(self):
-        self.assertEqual({p for p in self.supported() if p % 0x20}, set(obdsim.MODELLED))
+    def test_support_chain_lists_every_modeled_pid(self):
+        self.assertEqual({p for p in self.supported() if p % 0x20}, set(obdsim.MODELED))
 
     def test_values_round_trip_through_the_decoder(self):
         t = 75.0
         state = obdsim.vehicle_state(t)
-        for pid in obdsim.MODELLED:
+        for pid in obdsim.MODELED:
             with self.subTest(pid=hex(pid)):
                 reply = self.sim.handle(obdlib.request(1, pid), t)
                 data = obdlib.parse_response(reply, 1, pid)
                 value, _unit = obdlib.decode(pid, data)
                 self.assertAlmostEqual(value, state[pid], delta=max(1.0, abs(state[pid]) * 0.02))
 
-    def test_unmodelled_pid_has_no_data(self):
+    def test_unmodeled_pid_has_no_data(self):
         with self.assertRaises(obdlib.NoData):
             obdlib.parse_response(ask(self.sim, "015C"), 1, 0x5C)
 

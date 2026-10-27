@@ -47,7 +47,7 @@ class AgainstSim(unittest.TestCase):
         samples = [r for r in records if r["type"] == "sample"]
         self.assertGreater(len(samples), 20)
         self.assertEqual({s["pid"] for s in samples},
-                         {f"{p:02X}" for p in obdsim.MODELLED})
+                         {f"{p:02X}" for p in obdsim.MODELED})
         seqs = [r["seq"] for r in records]
         self.assertEqual(seqs, sorted(seqs))
         self.assertEqual(len(set(seqs)), len(seqs))

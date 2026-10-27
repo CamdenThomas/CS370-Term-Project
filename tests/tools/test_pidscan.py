@@ -41,7 +41,7 @@ class ScanSim(unittest.TestCase):
             self.assertEqual(result["src"], "synth")
             self.assertEqual(result["vin_hash"], obdlib.vin_hash(obdsim.SIM_VIN))
             self.assertEqual(sorted(int(p, 16) for p in result["supported"]),
-                             obdsim.MODELLED)
+                             obdsim.MODELED)
             with open(os.path.join(d, js[0])) as f:
                 self.assertNotIn(obdsim.SIM_VIN, f.read(), "the VIN never reaches a file")
             with open(os.path.join(d, md[0])) as f:
