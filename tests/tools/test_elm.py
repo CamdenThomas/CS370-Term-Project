@@ -132,6 +132,21 @@ class AfterATimeout(unittest.TestCase):
         self.assertEqual(ad.query(1, 0x0D), bytes([0x3C]), "no repeated reply is left over")
 
 
+class SupportChain(unittest.TestCase):
+    def test_no_data_on_a_later_block_ends_the_chain(self):
+        replies = {"0100": "41 00 80 00 00 01 \r\r>",     # 01, and block 0x20 exists
+                   "0120": "NO DATA\r\r>"}
+        ad = elm.Adapter.__new__(elm.Adapter)
+        ad.command = lambda cmd, timeout=None: replies[cmd]
+        self.assertEqual(ad.supported_pids(), {0x01})
+
+    def test_no_data_on_the_first_block_still_raises(self):
+        ad = elm.Adapter.__new__(elm.Adapter)
+        ad.command = lambda cmd, timeout=None: "NO DATA\r\r>"
+        with self.assertRaises(elm.obdlib.NoData):
+            ad.supported_pids()
+
+
 class Opening(unittest.TestCase):
     def test_missing_port_is_link_lost(self):
         with self.assertRaises(elm.LinkLost):

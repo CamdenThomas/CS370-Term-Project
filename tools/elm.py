@@ -115,7 +115,12 @@ class Adapter:
         while base <= 0xE0:
             # Every ECU that answers contributes; the engine may not answer first.
             raw = self.command(obdlib.request(1, base))
-            block = obdlib.support_from_reply(raw, base)
+            try:
+                block = obdlib.support_from_reply(raw, base)
+            except obdlib.NoData:
+                if base == 0x00:
+                    raise           # nothing answers at all: the caller must know
+                break               # a block the previous one chained to, unanswered
             found |= {p for p in block if p % 0x20}
             if base + 0x20 not in block:
                 break
