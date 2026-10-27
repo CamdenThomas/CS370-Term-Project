@@ -56,6 +56,7 @@ Decisions currently awaiting a human signature:
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
+| D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs one package |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -1064,6 +1065,28 @@ second copy.
 **Cost.** Less structure: no enforced dependency order, and a closed issue explains
 itself only through its body and comments. If the board grows unwieldy again, the
 fix is fewer lines, not more tooling.
+
+---
+
+### F.6 — Python tools are tested in `make test`, in a venv built on first use ⚠️ UNREVIEWED
+
+`D-032` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** `make toolcheck`, part of `make test`, runs the tests in `tests/tools/` with
+stdlib `unittest`. If `.venv/` does not exist it creates one with the `PY` interpreter and
+installs `tools/requirements.txt` (pyserial, pinned). Analysis and GPS dependencies live in
+their own requirements files and are never needed to log a drive.
+
+**Why.** The drive logger, the PID survey and the simulator are on the path to the M2
+exit criteria `firstcap` and `pidforester`, and CLAUDE.md §2.8 forbids shipping behavior
+without a test. A Python test that is not in `make test` would never run. A venv built on
+demand keeps a fresh clone green without a manual setup step. The standard library
+`unittest` avoids a second test dependency.
+
+**Cost.** The first `make test` on a new machine needs the network once, to install
+pyserial. That is a development step; the product, which has no Python, never does. Python
+stays in `tools/` and `tests/tools/` (CLAUDE.md §2.5).
 
 ---
 

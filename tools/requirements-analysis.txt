@@ -1,0 +1,4 @@
+# Post-drive analysis helpers (tools/obdplot.py, tools/obdbins.py). Not needed to log.
+-r requirements.txt
+numpy
+matplotlib

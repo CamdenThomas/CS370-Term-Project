@@ -1,0 +1,3 @@
+# Logging and survey tools (tools/obdlog.py, tools/pidscan.py, tools/obdsim.py).
+# Python lives in tools/ only (CLAUDE.md 2.5); nothing here is on the product's runtime path.
+pyserial==3.5
