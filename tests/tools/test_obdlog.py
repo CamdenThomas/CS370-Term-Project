@@ -199,6 +199,17 @@ class Writer(unittest.TestCase):
             self.assertGreater(os.path.getsize(p), 0, "tick wrote it out")
             w.close()
 
+    def test_a_field_cannot_relabel_a_record(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "drive-x.jsonl")
+            w = obdlog.LogWriter(p, "synth", fsync_lines=1, fsync_sec=1.0)
+            for field in ("src", "type", "seq", "t_mono", "t_wall"):
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    w.write("gps", **{field: "live", "lat": 40.0})
+            w.close()
+            records, _ = obdlog.read_log(p)
+            self.assertEqual(records, [], "nothing was written")
+
 
 class Naming(unittest.TestCase):
     def test_two_sessions_in_one_millisecond_get_two_files(self):

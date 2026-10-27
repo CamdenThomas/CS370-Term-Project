@@ -60,7 +60,13 @@ class LogWriter:
         finally:
             os.close(dfd)
 
+    # Set by the writer alone: a field may never relabel a record (CLAUDE.md 2.7).
+    RESERVED = frozenset({"type", "src", "seq", "t_mono", "t_wall"})
+
     def write(self, rtype, **fields):
+        clash = self.RESERVED & fields.keys()
+        if clash:
+            raise ValueError(f"{rtype} record may not set {sorted(clash)}")
         rec = {"type": rtype, "src": self.src, "seq": self.seq,
                "t_mono": round(time.monotonic(), 4), "t_wall": _wall()}
         rec.update(fields)
