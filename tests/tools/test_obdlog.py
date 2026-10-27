@@ -132,6 +132,19 @@ class Sim(unittest.TestCase):
             self.assertTrue(all(r["src"] == "synth" for r in records))
 
 
+class Writer(unittest.TestCase):
+    def test_tick_flushes_a_quiet_buffer_after_the_interval(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "drive-x.jsonl")
+            w = obdlog.LogWriter(p, "synth", fsync_lines=1000, fsync_sec=0.1)
+            w.write("event", event="link_lost")
+            self.assertEqual(os.path.getsize(p), 0, "still buffered")
+            time.sleep(0.15)
+            w.tick()
+            self.assertGreater(os.path.getsize(p), 0, "tick wrote it out")
+            w.close()
+
+
 class Reader(unittest.TestCase):
     def test_torn_last_line_is_dropped_and_reported(self):
         with tempfile.TemporaryDirectory() as d:

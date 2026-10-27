@@ -69,6 +69,12 @@ class LogWriter:
                 or time.monotonic() - self.last_sync >= self.fsync_sec):
             self.sync()
 
+    def tick(self):
+        """Sync a quiet buffer once the interval has passed, so the time bound holds
+        while nothing is being written (idle, or waiting to reconnect)."""
+        if self.unsynced and time.monotonic() - self.last_sync >= self.fsync_sec:
+            self.sync()
+
     def sync(self):
         self.f.flush()
         os.fsync(self.f.fileno())
@@ -106,7 +112,7 @@ class Stop:
         self.reason = "sigint" if signum == signal.SIGINT else "sigterm"
 
 
-def connect(path, tries, backoff_min, stop, log=None):
+def connect(path, tries, backoff_min, stop, log=None, idle=None):
     """Open and init the adapter, retrying with exponential backoff. None if stopped."""
     delay, attempt = backoff_min, 0
     while stop.reason is None and (tries <= 0 or attempt < tries):
@@ -127,6 +133,8 @@ def connect(path, tries, backoff_min, stop, log=None):
             end = time.monotonic() + delay
             while stop.reason is None and time.monotonic() < end:
                 time.sleep(0.05)
+                if idle:
+                    idle()
             delay = min(delay * 2, 30.0)
     return None, attempt
 
@@ -256,6 +264,7 @@ def _run(args, stop):
                 # Every PID is set aside (engine off, ECU quiet): wait for the next retry
                 # instead of spinning through an empty pass.
                 time.sleep(0.2)
+                out.tick()
                 status()
                 continue
             for pid in pids:
@@ -280,7 +289,8 @@ def _run(args, stop):
                     event("link_lost", detail=str(e))
                     ad.close()
                     ad, attempts = connect(args.port, 0, args.backoff_min, stop,
-                                           log=lambda n, **f: event(n, **f))
+                                           log=lambda n, **f: event(n, **f),
+                                           idle=out.tick)
                     if ad is None:
                         break
                     event("reconnected", attempts=attempts)
