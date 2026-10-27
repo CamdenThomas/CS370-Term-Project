@@ -98,6 +98,8 @@ asan:
 	  OPT="-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
 
 memcheck: $(TEST_BIN)
+	@command -v valgrind >/dev/null 2>&1 || { \
+		echo "valgrind not found: run make memcheck on the Pi or Linux (macOS has none)"; exit 1; }
 	@for t in $(TEST_BIN); do valgrind --error-exitcode=1 --leak-check=full $$t || exit 1; done
 
 soakcheck: all
