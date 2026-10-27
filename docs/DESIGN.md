@@ -21,27 +21,27 @@
   │              │                 clean shutdown at key-off (D-024)
   │ Bluetooth    │  RFCOMM tty         ┌────────────────┐
   │ OBD2 adapter │◀ ~ ~ ~ ~ ~ ~ ~ ~ ~ ▶│      obdd      │  Mode 01 requests,
-  │ (D-019)      │  /dev/obd           │  tty reader    │  [N] req/s, round-robin (D-012)
+  │ (D-019)      │  /dev/obd           │  tty reader    │  ~20 req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
-                                               │ SPSC ring in shm, [N] samples/s,
+                                               │ SPSC ring in shm, ~20 samples/s,
                                                │ sequence-accounted; one consumer (D-031)
                                                ▼
                                        ┌────────────────┐
                                        │    storaged    │  append-only log; BEGIN/COMMIT
-                                       │    [mech D]    │  batches, one fsync each (D-025)
+                                       │    [mech D]    │  batches, 1 fsync/s, ~1 KB/s (D-025, D-035)
                                        └───────┬────────┘
                                                │ committed records only, read from
-                                               │ the log, [N] records/s (D-031)
+                                               │ the log, ~20 records/s, ~1 s behind (D-031)
                                                ▼
                                        ┌────────────────┐
                                        │    analyzed    │  bins → baselines → residuals
                                        │                │  → trends → model → FSM
                                        └───────┬────────┘
-                                               │ verdicts, UDS
+                                               │ verdicts, UDS, a few per drive at most
                                                ▼
    ┌────────────────┐       UDS        ┌────────────────┐  GPIOs
-   │ obdctl         │◀────────────────▶│   supervisor   │──────────▶ tri-color light (D-027)
-   │ query CLI,     │                  │   [mech E]     │            pulse = alive;
+   │ obdctl         │◀────────────────▶│   supervisor   │──────────▶ tri-color light (D-027), 1-4 Hz
+   │ query CLI,     │   on demand      │   [mech E]     │            pulse = alive;
    │ 5 verbs        │       ┌─────────▶│                │            steady = not running
    └────────────────┘       │   UDS    └────────────────┘
    ┌────────────────┐       │          spawns, heartbeats and restarts, with backoff,
@@ -53,7 +53,12 @@
 `obdctl` and the status page never read samples themselves: they ask the supervisor, which
 asks the process that holds the answer (D-013). `analyzed` never reads the ring (D-031).
 
-**TODO(M2):** fill every `[N]`. Replace with a real figure in `docs/figures/`.
+Every rate is an estimate until the first drive measures it (`firstcap`): about 20
+requests a second is what `obdsim` gives at a 40 ms reply time (D-012), and the OBDLink
+LX's real reply time is unknown. The ring, the log and `analyzed` all run at the request
+rate, because each reply is one sample, one record and one analysis step. Heartbeat and
+backoff timings are set in the supervisor's design (`supbackoff`). A drawn figure in
+`docs/figures/` is still to do (`archfig`).
 
 ## 2. Mechanism mapping
 >
