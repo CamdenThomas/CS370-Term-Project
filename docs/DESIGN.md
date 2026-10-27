@@ -1,5 +1,16 @@
 # Design document — carwatch
 
+> **WEDNESDAY REVIEW — delete this box, and every 🟨 / 📏 note, before submitting.**
+> 🟨 **TEAM** = decide or review together. 📏 **DRIVE** = replace with a number from the
+> first Forester drive (`firstcap`, `pidforester`). Checklist:
+>
+> - [ ] Sign, change or reject D-019 to D-036 in `DECISIONS.md` (the doc cites them).
+> - [ ] Decide the fault-area rows in §3 and fill the ownership map in §9.
+> - [ ] Drive numbers into §1, §3 and §5; Lance's power numbers into §6.
+> - [ ] Three-isolated-workers check: design-only reader, BOM-only buyer, wiring-only
+>   builder each succeed from their own part.
+> - [ ] Render to PDF: 5 pages or fewer without this box.
+
 **User and problem.** Lance drives a 2015 CR-V daily, and nothing reads his engine's
 sensors except a check-engine light that speaks only once something has failed. carwatch
 is a box that boots at every key-on, records every Mode 01 sensor through a Bluetooth
@@ -34,6 +45,9 @@ Rates are estimates until the first drive measures them (`firstcap`): D-012 budg
 one record and one analysis step. `obdctl` and the page ask the supervisor, which asks
 the process holding the answer; `analyzed` never reads the ring (D-031).
 
+> 📏 **DRIVE:** measured request rate, reply-time p50/p99 and PID count replace the
+> estimates here and in §5.
+
 ## 2. Mechanism mapping
 
 D and E are the committed pair (D-017); B and F were declined: no Pi-side sensor, and
@@ -66,7 +80,8 @@ classifier (trained in `tools/train/`, inference in C; without weights, 1–4 st
 | Unknown | all | residual high, no area matches | — |
 
 No row can be called by one threshold on one value: each compares sensors that normally
-move together, inside one bin (D.4).
+move together, inside one bin (D.4). 📏 **DRIVE:** strike any sensor the survey shows the
+Forester does not publish.
 
 > 🟨 **TEAM DECIDES (Wednesday):** the fault-area rows, signatures and bin axes above are
 > Claude's proposal from D-021 and D.2. The AI-use plan (§10) says analysis design is
@@ -152,7 +167,7 @@ crash at any point is still recovered by mechanism D.
 
 ## 8. Evaluation plan
 
-Targets are drafts until D-036 is signed.
+> 🟨 **TEAM:** these targets are D-036, a draft; agree each number or change it.
 
 | Measurement | Method | Target |
 | --- | --- | --- |
@@ -172,7 +187,11 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | Subsystem | Owner | Evidence |
 | --- | --- | --- |
 | `src/ipc/` | Camden | the SPSC ring and its tests (M0) |
+| `tools/` OBD2 logging and analysis tools | Camden | `obdlib` to `obdbins` (M2, PR #155) |
 | `src/obd/`, `src/store/`, `src/analysis/`, `src/supervisor/`, `src/interface/`, `src/common/`, `tools/train/`, `electricalDrawing/` | unclaimed | |
+
+> 🟨 **TEAM:** the rubric grades this map. Agree who takes each unclaimed row (D-026
+> still applies: the first substantive commit is the claim) and fill it in.
 
 ## 10. AI-use plan
 
@@ -180,7 +199,10 @@ Claude Code is used for planning, explaining kernel and serial mechanics, test f
 tooling, adversarial review of diffs and documentation; never at runtime, and not for the
 analysis pipeline's design decisions. `src/` holds no network code except the read-only
 status page in `src/interface/`, which serves the box's own access point with no upstream
-(D-013, D-028); `make boundary`, part of `make test`, fails the build otherwise.
+(D-013, D-028); `make boundary`, part of `make test`, fails the build otherwise. Every
+choice Claude drafts lands in `DECISIONS.md` as UNREVIEWED until one of us signs it;
+D-032 to D-036 and much of this text were drafted that way, and the transcripts are
+committed.
 
 ## 11. Changelog (M5)
 
