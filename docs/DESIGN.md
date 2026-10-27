@@ -69,7 +69,7 @@ No row can be called by one threshold on one value: each compares sensors that n
 move together, inside one bin (D.4).
 
 > 🟨 **TEAM DECIDES (Wednesday):** the fault-area rows, signatures and bin axes above are
-> Claude's proposal from D-021 and D.2. The AI-use plan (§9) says analysis design is
+> Claude's proposal from D-021 and D.2. The AI-use plan (§10) says analysis design is
 > ours, so confirm, change or replace each row, and then delete this note.
 
 ## 4. Failure-mode table
@@ -110,7 +110,35 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
   overwritten), and logs whether the last session ended clean. `analyzed` loads the newest
   valid checkpoint and redoes later batches through the live code path (D-025).
 
-## 6. Constraints and substitutions
+## 6. The box: hardware and safe power-down
+
+One small box: a Pi 4, one USB-C sink input (5.1 kΩ on CC, so never more than 5 V) from
+the owner's charger, fuse and transient protection, an input current and inrush limit, a
+supercapacitor bank (two 2.7 V cells, about 10 F, about 105 J usable, estimate) behind a
+5 V / 3 A boost converter, an I2C real-time clock (D-030) and one tri-color light
+(D-027). Two signals reach the Pi: **source-present** (charger live) and, from the Pi,
+**halt-done**, after which the power stage cuts the Pi even if the source has returned,
+then re-enables it (D-024). Nothing on the car is cut or spliced. Buyer: `hardware/BOM.md`;
+builder: the schematic and `hardware/wiring.md`.
+
+| State | Entered when | Supervisor does | Light |
+| --- | --- | --- | --- |
+| `BOOTING` | power-on (~30 s, `bootbudget`) | start children, await heartbeats | steady yellow (hardware pull) |
+| `RUNNING` | all healthy, source present | record | green pulse |
+| `DEGRADED` | child down, dongle silent with engine on, storage or power fault | record what it can; log absent vs crashed | red blink |
+| `GRACE` | source-present lost | keep recording; source back → `RUNNING` (a crank dip) | yellow blink |
+| `SHUTTING_DOWN` | grace (~3 s) expires | stop `obdd`, final `COMMIT` + `fsync`, checkpoint, `sync`, halt; source back → finish, then reboot | yellow blink |
+| `OFF` | halt-done; power stage cuts the Pi | nothing | dark |
+
+Energy (estimates, D-024): grace plus shutdown need 65–85 J of about 105 J usable. A
+crash at any point is still recovered by mechanism D.
+
+> 🟨 **TEAM / LANCE (Wednesday):** the power block's parts, the bank size, the grace
+> period and the shutdown time are estimates until `powerspec` and `capbench` measure
+> them; replace each with a number or mark it "estimate". Decide what the box does when
+> a charger stays live with the engine silent (`shutfsm`).
+
+## 7. Constraints and substitutions
 
 | Wanted | Using | Cost |
 | --- | --- | --- |
@@ -122,7 +150,7 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | Recording from key-on | A ~30 s Pi 4 boot (`bootbudget`) | The first half-minute of warm-up is lost |
 | The product on the first drives | A Python tool, labeled `live` (D-033) | Proves nothing about `obdd`; enters the product only as `replay` |
 
-## 7. Evaluation plan
+## 8. Evaluation plan
 
 Targets are drafts until D-036 is signed.
 
@@ -137,7 +165,7 @@ Targets are drafts until D-036 is signed.
 | Recovery after a cut mid-write | cut the Pi's 5 V rail after the converter | 50 / 50 recover; ≤ 1 batch lost |
 | Boot to first durable sample | log time against the source-present edge | ≤ 45 s |
 
-## 8. Ownership map
+## 9. Ownership map
 
 A subsystem belongs to whoever lands its first substantive commit (D-026).
 
@@ -146,7 +174,7 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | `src/ipc/` | Camden | the SPSC ring and its tests (M0) |
 | `src/obd/`, `src/store/`, `src/analysis/`, `src/supervisor/`, `src/interface/`, `src/common/`, `tools/train/`, `electricalDrawing/` | unclaimed | |
 
-## 9. AI-use plan
+## 10. AI-use plan
 
 Claude Code is used for planning, explaining kernel and serial mechanics, test fixtures,
 tooling, adversarial review of diffs and documentation; never at runtime, and not for the
@@ -154,6 +182,6 @@ analysis pipeline's design decisions. `src/` holds no network code except the re
 status page in `src/interface/`, which serves the box's own access point with no upstream
 (D-013, D-028); `make boundary`, part of `make test`, fails the build otherwise.
 
-## 10. Changelog (M5)
+## 11. Changelog (M5)
 
 What this M2 version got wrong, written at M5.
