@@ -10,16 +10,27 @@ product's runtime path.
 | --- | --- |
 | `board_sync.py` | Mirrors the checklist in `docs/milestones.md` onto GitHub issues and the project board. Not a product tool at all — it is how the plan is maintained. See `docs/BOARD/BOARD.md`. |
 | `replay.py` | Feed a labeled capture through the real pipeline at real or accelerated speed. A legitimate systems artifact (handout §5), not a workaround — but everything it produces is labeled `replay`. |
-| `pidscan.py` | Mode 01 supported-PID bitmap scan. Feeds `pid-survey.md`; the input to **D-007**. |
+| `pidscan.py` | Mode 01 supported-PID survey for one car: protocol, battery, VIN hash, one reading per PID. Feeds `pid-survey.md`; the input to **D-007**. |
+| `obdlog.py` | The drive logger: every supported PID, round-robin, to `data/drive-*.jsonl` (**D-033**). Run book: `docs/hardware/first-drive.md`. |
+| `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty with a scripted drive, for development and tests, never the soak's data source (**D-023**). Sessions against it are labeled `synth`. |
+| `obdsum.py` | Per-session and per-PID summary of a drive log: rates, gaps, events. |
+| `obdplot.py` | PNG figures of a drive log: every PID on one time axis, speed against rpm, reply intervals. |
+| `obdview.py` | One offline HTML page per drive log to scrub, zoom and read every PID at once. |
+| `obdbins.py` | Operating-point binning prototype: per rpm x load cell, each PID's mean and spread. A look at the data, not the product's analysis. |
+| `obdlib.py`, `elm.py`, `macgps.py` | Shared code: reply parsing and PID decoding; one adapter session; optional Mac location. |
 | `train/` | Model training (skeleton). Weights land in `models/` with the training commit in the header. |
 
 **Planned — not written yet.** Listed so nobody looks for them:
 
 | Tool | Purpose | Board item |
 | --- | --- | --- |
-| `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty that answers Mode 01 requests from recorded captures, for development and testing, never the soak's data source (**D-023**). Output is labeled `synth`. | `obdsim` |
 | `plot_soak.py` | RSS / CPU / event-count series from soak heartbeats → the figure docs/EVALUATION.md §3 requires. | `plots` |
 
-**The labeling rule is absolute.** Anything these tools produce carries
-`src=replay` or `src=synth` in every record and every log line, all the way through to
+**Setup:** `make toolcheck` builds `.venv/` with `requirements.txt` and runs the tool
+tests (D-032). Run a tool as `PYTHONPATH=tools .venv/bin/python tools/<tool>.py`. Analysis
+helpers need `requirements-analysis.txt`; `--gps` needs `requirements-gps.txt`.
+
+**The labeling rule is absolute.** Every record and log line these tools produce carries
+its `src`: `live` only for `obdlog.py` and `pidscan.py` talking to a real car, otherwise
+`replay` or `synth`, all the way through to
 the report and the demo screen.

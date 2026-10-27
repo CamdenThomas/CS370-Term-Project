@@ -33,7 +33,7 @@ TEST_SRC   = $(wildcard tests/test_*.c)
 TEST_BIN   = $(TEST_SRC:tests/%.c=$(BIN)/%)
 
 .PHONY: all test asan memcheck soakcheck replay deploy clean boundary boardcheck \
-        hwcheck hwdocs hwclean
+        hwcheck hwdocs hwclean toolcheck
 
 all: $(DAEMON_BIN)
 
@@ -55,7 +55,7 @@ $(BIN)/test_%: tests/test_%.c $(COMMON_OBJ)
 	@mkdir -p $(BIN)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-test: $(TEST_BIN) boundary boardcheck
+test: $(TEST_BIN) boundary boardcheck toolcheck
 	@fail=0; for t in $(TEST_BIN); do \
 		printf '%-28s ' "$$(basename $$t)"; \
 		if $$t; then echo PASS; else echo FAIL; fail=1; fi; done; \
@@ -73,6 +73,18 @@ boundary:
 # in the project is a checkbox there. Validate it in the same gate as the C.
 boardcheck:
 	@$(PY) tools/test_board.py
+
+# Python tool tests (stdlib unittest, tests/tools/). The venv is made on first use, and
+# refreshed when a requirements file changes, so a fresh clone stays green; it needs the
+# network for that install. Dev only (D-032).
+.venv/.installed: tools/requirements.txt tools/requirements-analysis.txt
+	@test -x .venv/bin/python || $(PY) -m venv .venv
+	@.venv/bin/pip install -q -r tools/requirements-analysis.txt
+	@touch $@
+
+toolcheck: .venv/.installed
+	@PYTHONPATH=tools .venv/bin/python -m unittest discover -s tests/tools -q && \
+		echo "toolcheck                    PASS"
 
 asan:
 	$(MAKE) clean

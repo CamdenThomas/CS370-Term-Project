@@ -56,6 +56,11 @@ Decisions currently awaiting a human signature:
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
+| D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
+| D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
+| D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
+| D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
+| D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -773,6 +778,143 @@ does not change.
 byte offset, then `expcrash` on the device) must cover both. Checkpoint frequency trades
 write load against redo time at boot.
 
+### C.4 — Drive captures are JSONL from a Python tool, VIN hashed ⚠️ UNREVIEWED
+
+`D-033` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** Until `obdd` exists, real-car data is collected by `tools/obdlog.py`, run on
+Camden's Mac (or the Pi) against the OBDLink LX. It writes one file per session,
+`data/drive-<time>-<src>.jsonl`, one JSON object per line: a `header` (adapter,
+protocol, battery voltage, VIN hash, PID list, tool and schema version), a `sample` per
+reply (`src`, `seq`, `t_mono`, `t_wall`, `pid`, raw hex, decoded value, unit), an `event`
+for every non-sample outcome (`no_data`, `timeout`, `link_lost`, `reconnected`, ...),
+optional `gps` lines and a `footer`. It polls every supported PID round-robin as fast as
+the adapter answers. Writes are append-only and fsync'd every 50 lines or 1 s. The VIN is
+shown on screen and stored only as the first 12 hex digits of its SHA-256. A session
+against `obdsim` is labeled `synth` on every line, because the simulator's reset banner
+says `SIM`.
+
+**Why.** Camden, 2026-10-26: the first drive must log everything the car will answer so
+the data can be studied before the pipeline is designed around it. JSONL is readable by
+eye and by any analysis tool; the raw hex beside the decoded value means a decoding bug
+never costs data; event lines mean nothing is dropped silently (D-012). Camden chose
+hashing over storing the VIN.
+
+**A departure from D-012, stated.** D-012 budgets about 10 requests a second on a
+rate-limited schedule. This tool keeps D-012's one outstanding request, the core of its
+safety argument, but sends the next request as soon as the last is answered, because the
+first drives exist to measure what the adapter can do. The product's `obdd` keeps a rate
+limit, set from that measurement (`canreq`).
+
+**What this is not.** It is not mechanism D and not the on-disk format of `storaged`
+(`recfmt`, D-025). The product stays C (CLAUDE.md §2.4); this is a collection tool in
+`tools/` (§2.5). `tools/replay.py` will convert these files into the product's records,
+labeled `replay`.
+
+**Cost.** The hash is pseudonymization, not anonymity: a VIN has little entropy, so
+anyone holding candidate VINs can test them. Raw logs stay out of git (`data/` is
+ignored); only short excerpts are committed as evidence.
+
+### C.5 — The on-disk record format (draft) ⚠️ UNREVIEWED
+
+`D-034` · Drafted M2, 2026-10-26 · **By:** Claude, in Camden's session, without his review
+of the details · **Reviewed:** Camden ⬜ / Lance ⬜
+· **Finishes:** D-025's open `recfmt` item; keeps every rule of 🔒 C.1 and 🔒 C.2
+
+**Decision (draft).** `storaged` writes a log of self-framing records. Every multi-byte
+field is little-endian, the Pi's native order. Each record is a fixed header, a body whose
+layout depends on its kind, and a CRC32 (the existing `src/store/` CRC, known-answer
+tested) over everything before it, magic included.
+
+| Offset | Size | Field | Notes |
+| --- | --- | --- | --- |
+| 0 | 4 | `magic` | `0x31525743`, the bytes `CWR1`; the resynchronization point (C.1) |
+| 4 | 2 | `kind` | 1 sample, 2 begin, 3 commit, 4 boot, 5 shutdown, 6 event |
+| 6 | 2 | `body_len` | bytes of body; a reader rejects a length its kind does not allow |
+| 8 | 8 | `seq` | per log, never reused, continues across boots |
+| 16 | 8 | `mono_ns` | `CLOCK_MONOTONIC` at capture (samples) or at write (others) |
+| 24 | 8 | `wall_ns` | Unix time from the real-time clock (D-030) |
+| 32 | 1 | `src` | 0 `live`, 1 `replay`, 2 `synth` (C.2); any other value fails the record |
+| 33 | 1 | `flags` | bit 0: wall time untrusted this session (D-030) |
+| 34 | 2 | reserved | zero |
+| 36 | 4 | `boot_id` | increments at every boot, so `mono_ns` is comparable only within one |
+| 40 | n | body | per kind, below |
+| 40 + n | 4 | `crc32` | over bytes 0 to 40 + n − 1 |
+
+| Kind | Body |
+| --- | --- |
+| sample | `mode` u8, `pid` u8, `raw_len` u8 (0 to 5), `raw[5]`, `value` f32 (12 bytes): the raw reply bytes are kept beside the decoded value so a decoding bug never costs data. Five bytes is the most a single-frame Mode 01 reply carries (0x64, for one, uses all five); a longer, multi-frame reply is stored as an event holding its hex |
+| begin | `txn_id` u64 |
+| commit | `txn_id` u64, `records` u32 (samples in the batch), reserved u32 |
+| boot | `prev_end` u8 (0 clean shutdown, 1 recovered, 2 first boot), reserved u8[3], `bytes_truncated` u32, `records_lost` u32 |
+| shutdown | `reason` u8 (1 source lost, 2 signal, 3 operator), reserved u8[7] |
+| event | `code` u16, `len` u16, then `len` bytes of text, at most 200; the codes are open until D-031's open item decides how verdicts and supervisor events reach storage |
+
+**Segments.** The log is a directory of segment files, `log-<first seq>.cwr`, each closed
+at about 16 MB (about four hours of driving at the D-025 rate). Recovery scans only the
+newest segment; retention deletes whole segments, oldest first, and never edits one.
+
+**Size and rate.** A sample record is 56 bytes. At 10 to 25 requests a second (D-012's
+budget up to what the unthrottled tool reaches on `obdsim`) that is 0.56 to 1.4 KB/s, or
+2 to 5 MB per running hour, plus a begin and a commit (112 bytes) per
+batch. D-025's estimate of 48 bytes becomes 56.
+
+**Why.** D-025 left the record kinds and the boot id to `recfmt`. The fields come straight
+from the decisions that need them: `src` (C.2), the boot id and untrusted-time flag
+(D-030), begin and commit (D-025), a boot record with a positive clean-shutdown marker
+(D-025), and raw bytes beside the value, which proved its worth in the logging tool
+(D-033). Fixed widths and a fixed header make the forward scan simple and the
+cut-at-every-byte test exhaustive. Segments keep recovery time bounded however long the
+box has run.
+
+**Open.** The event codes, and whether verdicts travel as events, wait on D-031's open
+item. The value field is f32: enough for every Mode 01 formula, but say so if a PID needs
+more.
+
+**Cost.** A format change touches `storaged`, `analyzed` and `tools/replay.py` at once
+(D-031). Little-endian is fixed in the file, so the log is not portable to a big-endian
+machine without a converter, which nothing here needs.
+
+### C.6 — fsync discipline: one commit a second (draft) ⚠️ UNREVIEWED
+
+`D-035` · Drafted M2, 2026-10-26 · **By:** Claude, in Camden's session, without his review
+of the argument · **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** 🔒 C.1's open sub-decision and board item `fsync`
+
+**Decision (draft).** `storaged` closes a batch, writes its `COMMIT` and calls `fsync` when
+the batch is **one second old or holds 64 samples**, whichever comes first, and always at
+a clean shutdown. A batch is never left open across a ring wakeup that finds no data for
+a second: the timer closes it.
+
+**The argument, from the user's requirements.**
+
+- **What a cut costs.** The clean shutdown commits everything (D-024), so loss happens only
+  when a cut beats it: an empty bank at a cold start, a pulled cable, a crank reset. Then
+  the uncommitted batch is lost: at most one second, about 20 samples, roughly one reading
+  of each PID. The signals we watch move over minutes (warm-up, fuel trim against load,
+  drift over days, D-012), so one second is invisible to every analysis stage.
+- **Why not longer.** Cold-start crank resets are expected, not rare (D-024), and they
+  land in the first minutes of a drive, the most informative ones. Ten-second batches
+  would lose ten seconds of warm-up at every such reset.
+- **Why not every record.** An SD card `fsync` costs milliseconds; twenty a second would
+  spend a noticeable share of every second blocked and multiply flash writes about
+  twentyfold for no user benefit, since nothing reads a sample within a second anyway.
+- **Analysis lag.** `analyzed` reads only durable records (D-031), so it trails capture by
+  one batch, about a second. Nothing the owner sees changes faster than that.
+- **Flash wear.** About one page plus metadata per second, a few tens of MB per running
+  hour including write amplification. Two hours a day for a year is well under the
+  endurance of any current SD card. Estimate, not measured.
+- **The 64-sample cap** bounds a batch if the rate ever rises (a faster adapter, or the
+  raw CAN stretch goal), so the loss stays about a second's worth either way.
+
+**How it is checked.** The evaluation measures `fsync` latency on the Pi (p50, p99) and
+reply-to-durable latency (DESIGN.md §6); the crash tests show at most one batch lost per
+cut (`expcrash`).
+
+**Cost.** One second of data is lost on every unclean cut, by design, and the report says
+how many records each recovery dropped (D-025).
+
 ---
 
 ## D. Intelligence and analysis
@@ -934,6 +1076,37 @@ off period is a deliberate gap between a logged shutdown and a logged boot.
   against a slow leak. A continuous bench run against `obdsim`, labeled `synth`, could
   add memory evidence alongside the soak, never in place of it. Open: not decided here.
 
+### E.4 — Committed evaluation targets (draft) ⚠️ UNREVIEWED
+
+`D-036` · Drafted M2, 2026-10-26 · **By:** Claude, in Camden's session, without his review
+of the numbers · **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** board item `evalplan`
+
+**Decision (draft).** `docs/DESIGN.md` §6 commits to these targets. Each one is chosen from
+what the user needs or what an earlier decision already implies, not from what we expect
+to hit.
+
+| Measurement | Target | Where the number comes from |
+| --- | --- | --- |
+| Reply to durable, p50 / p99 | ≤ 1.2 s / ≤ 2.5 s, idle and loaded | one batch a second (D-035) plus `fsync` time; nothing the owner sees moves faster |
+| Sustained request rate | ≥ 10 per second; every PID the model uses read at least every 2 s | D-012's budget of about 10; `obdd` polls the model's input list, not every supported PID, so the 2 s bound holds for up to 20 inputs |
+| `kill -9` of each child, detection | ≤ 100 ms, 20 trials per child | `SIGCHLD` arrives at once; slower means the supervisor is blocked |
+| `kill -9` of each child, recovery | ≤ 5 s to the first heartbeat, no fd leaked | a recorder silent for longer has missed a reading of every PID |
+| Ring drops under contention | 0 overruns | B.3: refusals are counted, so zero is checkable |
+| RSS per process over the soak | slope under 100 KB per running hour, per process | flat within measurement noise over D-023's sessions |
+| Detection per fault area (D-021) | catch ≥ 4 of 5 induced events per area | five events per area is what the semester allows |
+| False alarms | ≤ 1 surfaced verdict per 10 hours of normal driving | D.3: a monitor that cries wolf gets unplugged |
+| Recovery after a cut mid-write | 50 of 50 cuts recover; ≤ 1 batch lost each | D-025 and D-035 promise exactly this |
+| Boot to first durable sample | ≤ 45 s | what `bootbudget` must defend; the start of warm-up is lost before it |
+
+**Why commit numbers now.** Handout §8: numbers committed at M2 are twice as credible when
+hit later, and instructive when missed. Each target is written so a miss says something
+specific.
+
+**Cost.** Some targets will be missed, and the evaluation report must say so plainly.
+Five induced events per fault area gives a coarse rate (4 of 5 is 80 %, with a wide
+interval); the report states the counts, not just the ratio.
+
 ---
 
 ## F. Process, team and tooling
@@ -1064,6 +1237,28 @@ second copy.
 **Cost.** Less structure: no enforced dependency order, and a closed issue explains
 itself only through its body and comments. If the board grows unwieldy again, the
 fix is fewer lines, not more tooling.
+
+### F.6 — Python tools are tested in `make test`, in a venv built on first use ⚠️ UNREVIEWED
+
+`D-032` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+
+**Decision.** `make toolcheck`, part of `make test`, runs the tests in `tests/tools/` with
+stdlib `unittest`. If `.venv/` does not exist, or a requirements file is newer than its
+last install, it creates or refreshes it with the `PY` interpreter from
+`tools/requirements-analysis.txt` (pyserial and matplotlib, pinned), so the plotting tool
+is tested too. The GPS dependency lives in its own file and is never needed to log a
+drive; logging itself needs only pyserial.
+
+**Why.** The drive logger, the PID survey and the simulator are on the path to the M2
+exit criteria `firstcap` and `pidforester`, and CLAUDE.md §2.8 forbids shipping behavior
+without a test. A Python test that is not in `make test` would never run. A venv built on
+demand keeps a fresh clone green without a manual setup step. The standard library
+`unittest` avoids a second test dependency.
+
+**Cost.** The first `make test` on a new machine needs the network once, to install
+pyserial and matplotlib (with numpy). That is a development step; the product, which has
+no Python, never does. Python stays in `tools/` and `tests/tools/` (CLAUDE.md §2.5).
 
 ---
 

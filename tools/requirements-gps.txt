@@ -1,0 +1,3 @@
+# Optional: Mac location for `obdlog.py --gps`. macOS only.
+-r requirements.txt
+pyobjc-framework-CoreLocation

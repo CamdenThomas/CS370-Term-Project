@@ -17,8 +17,8 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 2/35 |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/23 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 3/39 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/24 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/29 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
@@ -104,7 +104,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #7 -->
 - [ ] M2 decision: get the professor's 48-hour soak definition (D-023) in writing
       `profmail` <!-- #131 -->
-- [ ] M2 docs: record the box redesign as D-022 to D-031 and bring every doc in line
+- [x] M2 docs: record the box redesign as D-022 to D-031 and bring every doc in line
       `boxdocs` <!-- #132 -->
 - [ ] M2 hardware: Bluetooth OBD2 adapter bring-up on the Pi, no car `bench`
       <!-- #18 -->
@@ -156,6 +156,14 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 hardware: record the supply dip at crank with a meter `cranklog` <!-- #142 -->
 - [ ] M2 hardware: supercapacitor bench test into a dummy load, no Pi, after the design
       is signed `capbench` <!-- #143 -->
+- [ ] M2 docs: drawn architecture figure in docs/figures/, from DESIGN.md §1 `archfig`
+      <!-- #156 -->
+- [ ] M2 decision: raw-log retention and rollup, by whole segments (D-034) `retention`
+      <!-- #157 -->
+- [ ] M2 question: pid-survey.md records the VIN hash only, or the raw VIN too? `vinsurvey`
+      <!-- #158 -->
+- [ ] M2 hardware: try obdlog --gps on the Mac once; record whether it works `gpstest`
+      <!-- #159 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -188,6 +196,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 interface: obdctl UDS transport + status verb `obdstatus` <!-- #44 -->
 - [ ] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim`
       <!-- #90 -->
+- [ ] M3 tools: replay.py reads obdlog JSONL captures, emits records labeled replay
+      `replayjsonl` <!-- #160 -->
 - [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon` <!-- #145 -->
 - [ ] M3 supervisor: set the clock from the RTC at boot; flag invalid time `rtcboot`
       <!-- #146 -->

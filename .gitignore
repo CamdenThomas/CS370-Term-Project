@@ -27,3 +27,6 @@ fp-info-cache
 electricalDrawing/gerbers/
 electricalDrawing/erc.json
 electricalDrawing/drc.json
+
+# Drive logs and survey output from tools/ (VIN-hashed, but still raw captures).
+data/
