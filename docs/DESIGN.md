@@ -1,5 +1,13 @@
 # Design document — carwatch
 
+**User and problem.** Lance drives a 2015 CR-V daily, and nothing reads his engine's
+sensors except a check-engine light that speaks only once something has failed. carwatch
+is a box that boots at every key-on, records every Mode 01 sensor through a Bluetooth
+OBD2 dongle, learns *this* car's normal, and flags behavior that leaves it before the
+light would. It is also tested on Camden's 2008 Forester (D-022). **Claim (D-021):** it
+learns the normal of the car it is installed in, flags behavior outside it and names the
+likely fault area, with measured catch and false-alarm rates on faults we induce.
+
 ## 1. Architecture
 
 ```text
