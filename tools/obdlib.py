@@ -31,9 +31,9 @@ def request(mode, pid):
 
 
 def _lines(raw):
-    """Reply text to clean upper-case lines: no prompt, no blanks."""
+    """Reply text to clean upper-case lines: no prompt, no blanks, no NUL bytes."""
     out = []
-    for line in re.split(r"[\r\n]+", raw.replace(">", "")):
+    for line in re.split(r"[\r\n]+", raw.replace(">", "").replace("\x00", "")):
         line = line.strip().upper()
         if line:
             out.append(line)

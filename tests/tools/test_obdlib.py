@@ -37,6 +37,10 @@ class ParseResponse(unittest.TestCase):
                 obdlib.parse_response(text + "\r\r>", 0x01, 0x0C)
             self.assertNotIsInstance(cm.exception, NoData)
 
+    def test_nul_bytes_from_the_adapter_are_ignored(self):
+        self.assertEqual(obdlib.parse_response("\x0041 0C 1A F8 \x00\r\r>", 0x01, 0x0C),
+                         bytes([0x1A, 0xF8]))
+
     def test_empty_reply_raises(self):
         with self.assertRaises(AdapterError):
             obdlib.parse_response("\r>", 0x01, 0x0C)
