@@ -100,6 +100,6 @@ Mechanisms B and F were declined (D-029, D-037), so they have no comparison here
 "An honest limitations section is worth more at the defense than a suspiciously perfect
 results section, and we notice which one we are reading."
 
-Name at minimum: the fault areas we could not induce, what one vehicle cannot tell us
-about another, how many weeks of normal the baseline actually covers, and every place a
-number came from replay rather than live driving.
+Name at minimum: the fault areas we could not induce, what results on one testbed car say
+(and do not say) about the other (D-022), how many weeks of normal the baseline actually
+covers, and every place a number came from replay rather than live driving.
