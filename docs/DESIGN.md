@@ -215,13 +215,14 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 ## 10. AI-use plan
 
 Claude Code is used for planning, explaining kernel and serial mechanics, test fixtures,
-tooling, adversarial review of diffs and documentation; never at runtime, and not for the
-analysis pipeline's design decisions. `src/` holds no network code except the read-only
-status page in `src/interface/`, which serves the box's own access point with no upstream
-(D-013, D-028); `make boundary`, part of `make test`, fails the build otherwise. Every
-choice Claude drafts lands in `DECISIONS.md` as UNREVIEWED until one of us signs it;
-D-032 to D-036 and much of this text were drafted that way, and the transcripts are
-committed.
+tooling, adversarial review of diffs and documentation, and drafting; never at runtime.
+It may draft any part of the design, the analysis included, but a draft binds nothing:
+every choice Claude drafts lands in `DECISIONS.md` as UNREVIEWED until one of us signs
+it. The §3 fault areas are such a draft, from D-021 and D.2, and D-032 to D-036, D-041 to
+D-043 and much of this text were drafted the same way; the transcripts are committed.
+`src/` holds no network code except the read-only status page in `src/interface/`, which
+serves the box's own access point with no upstream (D-013, D-028); `make boundary`, part
+of `make test`, fails the build otherwise.
 
 ## 11. Changelog (M5)
 
