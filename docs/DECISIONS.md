@@ -48,7 +48,7 @@ Decisions currently awaiting a human signature:
 | D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
-| D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
+| D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); confirmed by the professor (Camden, 2026-10-26) | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
 | D-025 | Write-ahead transactions (`BEGIN`, records, `COMMIT`, one `fsync`) and A/B baseline checkpoints; extends 🔒 C.1 (§C.3) | Camden (extended C.1) + Claude | 2026-10-21 | Lance — it is the storage design behind mechanism D |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
@@ -1034,8 +1034,8 @@ know what ours mean — and we will be asked at the defense how we know.
 
 `D-023` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜
-· **Answers:** D-006 (§G.7) · **Pending:** the professor's written confirmation
-(`profmail`)
+· **Answers:** D-006 (§G.7) · **Confirmed:** by the professor, reported by Camden on
+2026-10-26 (`profmail`)
 
 **Decision.** The graded soak (handout §3.4) is a **48-hour wall-clock window of the car's
 normal use**. Across that window the box:
@@ -1059,10 +1059,10 @@ gracefully at key-off and boots again at the next start. Camden chose the wall-c
 reading (`docs/REVISION_PLAN.md` §1.1, P3). It also dissolves D-006's conflict: the soak
 runs on live sensors, as handout §5 requires.
 
-**Pending.** The handout's text says "48 continuous hours". Until the professor confirms
-this reading in writing (email draft in `docs/REVISION_PLAN.md` §9; Camden sends it),
-build so that a grader reading the handout literally can still follow the logs: every
-off period is a deliberate gap between a logged shutdown and a logged boot.
+**Confirmed.** The handout's text says "48 continuous hours"; the professor confirmed this
+reading (reported by Camden, 2026-10-26). The logs are still built so that a grader
+reading the handout literally can follow them: every off period is a deliberate gap
+between a logged shutdown and a logged boot.
 
 **Cost.**
 

@@ -160,7 +160,7 @@ crash at any point is still recovered by mechanism D.
 | Every engine sensor | The Mode 01 PIDs the ECU publishes (D-022) | Oil pressure likely absent; lists differ by car |
 | Failing engines | Induced, reversible faults on two healthy cars (D-021) | A few fault areas; no real wear-out |
 | Raw CAN at ECU rate | Bluetooth Mode 01 request/response (D-019) | ~10–20 samples/s, no bus timing, a link that drops; most of the menu leaves the data path (D-017) |
-| 48 continuous hours | 48 h of normal use across key cycles (D-023) | Sessions with gaps; awaiting written confirmation (`profmail`) |
+| 48 continuous hours | 48 h of normal use across key cycles (D-023) | Sessions with gaps; the professor confirmed this reading (D-023) |
 | Full hold-up | Owner's charger + seconds-scale supercapacitor (D-024) | A cold-start crank may reset the Pi |
 | Recording from key-on | A ~30 s Pi 4 boot (`bootbudget`) | The first half-minute of warm-up is lost |
 | The product on the first drives | A Python tool, labeled `live` (D-033) | Proves nothing about `obdd`; enters the product only as `replay` |
