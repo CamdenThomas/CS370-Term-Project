@@ -309,12 +309,27 @@ def _run(args, stop):
             event("reconnected", attempts=attempts)
         return new_ad
 
+    def poll_gps():
+        """Log new location fixes, at most every GPS_POLL_SEC."""
+        nonlocal next_gps
+        if gps is None or time.monotonic() < next_gps:
+            return
+        next_gps = time.monotonic() + GPS_POLL_SEC
+        fixes, err = gps.poll()
+        for fix in fixes:
+            out.write("gps", **fix)
+            counts["gps"] += 1
+        if err:
+            event("gps_error", detail=err)
+
     def wait(seconds):
-        """Sleep without missing Ctrl-C, --max-seconds, the fsync bound or the status."""
+        """Sleep without missing Ctrl-C, --max-seconds, the fsync bound, the status or the
+        location."""
         end = time.monotonic() + seconds
         while stop.reason is None and not expired() and time.monotonic() < end:
             time.sleep(0.05)
             out.tick()
+            poll_gps()
             status()
 
     def status():
@@ -334,9 +349,10 @@ def _run(args, stop):
             now = time.monotonic()
             if all(p in absent and now - absent[p] < ABSENT_RETRY_SEC for p in pids):
                 # Every PID is set aside (engine off, ECU quiet): wait for the next retry
-                # instead of spinning through an empty pass.
+                # instead of spinning through an empty pass. The location is still logged.
                 time.sleep(0.2)
                 out.tick()
+                poll_gps()
                 status()
                 continue
             for pid in pids:
@@ -401,15 +417,7 @@ def _run(args, stop):
                           unit=unit)
                 counts["samples"] += 1
 
-                if gps is not None and time.monotonic() >= next_gps:
-                    next_gps = time.monotonic() + GPS_POLL_SEC
-                    fixes, err = gps.poll()
-                    for fix in fixes:
-                        out.write("gps", **fix)
-                        counts["gps"] += 1
-                    if err:
-                        event("gps_error", detail=err)
-
+                poll_gps()
                 status()
             if ad is None:
                 break
