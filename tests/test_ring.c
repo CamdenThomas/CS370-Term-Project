@@ -4,6 +4,8 @@
 #include "ipc/ring.h"
 #include "common/log.h"
 
+#include <pthread.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,8 +88,69 @@ static void test_wraparound(void)
     free(r);
 }
 
+/* A producer, a consumer and a third reader running at once: the consumer must see
+ * every sequence number in order, and the observer (the supervisor or `obdctl status`
+ * asking how full the ring is) must never see a depth above capacity. */
+#define CONCURRENT_N 400000u
+
+static ring_t     *g_ring;
+static atomic_int  g_done;
+static unsigned    g_bad_depth;
+
+static void *producer(void *arg)
+{
+    (void)arg;
+    for (uint64_t i = 0; i < CONCURRENT_N; ) {
+        ring_slot_t s = mk(i);
+        memcpy(s.data, &i, sizeof i);
+        if (ring_push(g_ring, &s)) i++;
+    }
+    return NULL;
+}
+
+static void *observer(void *arg)
+{
+    (void)arg;
+    while (!atomic_load(&g_done))
+        if (ring_depth(g_ring) > RING_CAPACITY) g_bad_depth++;
+    return NULL;
+}
+
+static void test_concurrent_order_and_depth(void)
+{
+    g_ring = malloc(sizeof *g_ring);
+    if (g_ring == NULL) { failures++; return; }
+    ring_init(g_ring);
+    atomic_store(&g_done, 0);
+    g_bad_depth = 0;
+
+    pthread_t p, o;
+    if (pthread_create(&p, NULL, producer, NULL) != 0) { failures++; free(g_ring); return; }
+    if (pthread_create(&o, NULL, observer, NULL) != 0) {
+        failures++; pthread_join(p, NULL); free(g_ring); return;
+    }
+
+    unsigned out_of_order = 0;
+    ring_slot_t out;
+    for (uint64_t want = 0; want < CONCURRENT_N; ) {
+        if (!ring_pop(g_ring, &out)) continue;
+        uint64_t v;
+        memcpy(&v, out.data, sizeof v);
+        if (out.seq != want || v != want) out_of_order++;
+        want++;
+    }
+    pthread_join(p, NULL);
+    atomic_store(&g_done, 1);
+    pthread_join(o, NULL);
+
+    CHECK(out_of_order == 0, "concurrent consumer saw a gap, a repeat or a torn slot");
+    CHECK(g_bad_depth == 0, "an observer saw a depth above capacity");
+    free(g_ring);
+}
+
 int main(void)
 {
+    test_concurrent_order_and_depth();
     test_empty_then_fifo();
     test_full_refuses_never_overwrites();
     test_wraparound();

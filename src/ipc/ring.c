@@ -51,7 +51,10 @@ uint64_t ring_overruns(const ring_t *r)
 
 size_t ring_depth(const ring_t *r)
 {
-    uint64_t head = atomic_load_explicit(&r->head, memory_order_acquire);
+    /* tail first: head only grows, so a head read after the tail is never behind it.
+     * Read the other way round, a third party (the supervisor, `obdctl status`) could see
+     * the consumer pass a stale head and get a depth near 2^64. */
     uint64_t tail = atomic_load_explicit(&r->tail, memory_order_acquire);
+    uint64_t head = atomic_load_explicit(&r->head, memory_order_acquire);
     return (size_t)(head - tail);
 }
