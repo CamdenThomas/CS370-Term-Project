@@ -51,7 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     # SOFT LAUNCH. Failing red on your own PRs while you are still learning the
     # flow teaches you to bypass the check, which is the opposite of the point.
-    # Delete this line once the habit is set - target 2026-09-26.
+    # The 2026-09-26 target passed with the habit not yet set; delete this line when
+    # the team decides it is (CLAUDE.md 7.5).
     continue-on-error: true
     steps:
       - name: body must contain "Closes #<n>"
@@ -61,6 +62,6 @@ jobs:
           if printf '%s' "$BODY" | grep -Eiq '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'; then
             echo "ok - PR closes an issue"
           else
-            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.11: every PR traces back to an issue; if there is no issue, add a line to docs/milestones.md and sync first."
+            echo "::error::PR body has no 'Closes #<n>'. CLAUDE.md 7.5: every PR traces back to an issue; if there is no issue, add a line to docs/milestones.md and sync first (7.11)."
             exit 1
           fi

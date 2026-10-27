@@ -9,6 +9,15 @@ import serial
 
 import obdlib
 
+try:
+    import termios
+except ImportError:  # Windows has no termios; pyserial raises SerialException there.
+    termios = None
+
+# What a vanished port raises. On Linux a pty or RFCOMM tty whose other end has gone fails
+# tcflush() with termios.error (EIO), which is not an OSError.
+PORT_ERRORS = (serial.SerialException, OSError) + ((termios.error,) if termios else ())
+
 
 class LinkLost(Exception):
     """The port vanished or errored: Bluetooth dropped, adapter unplugged or asleep."""
@@ -57,7 +66,7 @@ class Adapter:
                 # Read what is waiting, or block for one byte, so the reply returns as
                 # soon as its prompt arrives instead of at the end of a read timeout.
                 buf += self.port.read(self.port.in_waiting or 1)
-        except (serial.SerialException, OSError) as e:
+        except PORT_ERRORS as e:
             raise LinkLost(f"{cmd}: {e}") from e
         return buf.decode("ascii", errors="replace")
 

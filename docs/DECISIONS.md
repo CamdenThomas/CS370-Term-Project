@@ -64,6 +64,7 @@ Decisions currently awaiting a human signature:
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
+| D-038 | `make boundary` allows Unix sockets through `src/ipc/uds.c`, bans every network family outside `src/interface/`, and tests itself (§F.7) | Claude, Camden's session | 2026-10-27 | Both — it is the 60-second check of handout §10.3 |
 | D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
@@ -100,6 +101,9 @@ and E are implemented *and measured* (unchanged from D-015).
 becomes one power cable; the adapter stays in the port. The protocol, the parsing and every
 downstream design are the same as D-015, because an STN adapter speaks the same ELM327
 command set over Bluetooth as over USB.
+
+*Note 2026-10-27: D-038 rewrote `make boundary`. `AF_BLUETOOTH` is now banned everywhere,
+and Unix sockets are allowed through `src/ipc/uds.c`, so the reasoning below still holds.*
 
 **Why a tty and not our own Bluetooth socket.** Opening an RFCOMM socket from `obdd` would
 put `socket()` in `src/obd/`, which `make boundary` forbids outside `src/interface/`
@@ -1497,6 +1501,42 @@ demand keeps a fresh clone green without a manual setup step. The standard libra
 **Cost.** The first `make test` on a new machine needs the network once, to install
 pyserial and matplotlib (with numpy). That is a development step; the product, which has
 no Python, never does. Python stays in `tools/` and `tests/tools/` (CLAUDE.md §2.5).
+
+### F.7 — The boundary check allows Unix sockets through one helper and bans every network family ⚠️ UNREVIEWED
+
+`D-038` · Decided M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers:** board item `boundaryrule`
+
+**Decision.** `make boundary`, part of `make test`, runs `tests/boundary/check.sh` over
+`src/`, `include/` and the Makefile, comments included:
+
+1. No network family, resolver or address call (`AF_INET`, `AF_INET6`, `AF_PACKET`,
+   `AF_NETLINK`, `getaddrinfo`, `gethostbyname`, `inet_*`, `<netdb.h>`, `<netinet/...>`,
+   `<arpa/inet.h>`) outside `src/interface/`.
+2. Nowhere, the page server included: an HTTP or TLS library (`curl`, `openssl`), a
+   Bluetooth socket (`AF_BLUETOOTH`, `<bluetooth/...>`), or shelling out (`system`,
+   `popen`).
+3. `socket()` and `socketpair()` only in `src/ipc/uds.c`, the one helper that opens Unix
+   sockets (D-042, D-043), and in `src/interface/` (`statusd`).
+4. No network library (`-lcurl`, `-lssl`, `-lcrypto`, `-lbluetooth`) on the link line.
+
+Before checking the tree, it checks itself: every case in `tests/boundary/cases/bad_*`
+must fail and every `good_*` must pass, so a rule that silently stops matching breaks the
+build.
+
+**Why.** The old rule banned the word `socket` outside `src/interface/`, but the design
+needs Unix sockets in the supervisor, `storaged` and `analyzed` (B.2, D-042, D-043), so
+the first supervisor commit would have failed `make test`, inviting someone to weaken the
+check (CLAUDE.md §2.8). Its `curl_` and `SSL_` patterns could never match a real call
+(both ended in `\b` between two word characters), and it never looked at `connect`,
+address families, headers, `include/` or the link line. The new rule is narrower where
+the product needs room and wider everywhere else, and a grader can still read it in a
+minute.
+
+**Cost.** A text check, not a symbol check: a comment that names a banned call fails it,
+which is the safe direction. It cannot prove a Unix socket is not pointed at a network
+path; it relies on every socket going through one helper a reviewer can read.
 
 ---
 

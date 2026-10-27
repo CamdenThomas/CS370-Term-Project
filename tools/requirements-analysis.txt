@@ -1,3 +1,7 @@
 # Post-drive analysis helpers (tools/obdplot.py). Not needed to log a drive.
+# Two pins each: the newest releases need Python 3.12, and Raspberry Pi OS ships 3.11.
 -r requirements.txt
-matplotlib==3.11.2
+matplotlib==3.11.2; python_version >= "3.12"
+matplotlib==3.10.9; python_version < "3.12"
+numpy==2.5.4; python_version >= "3.12"
+numpy==2.4.6; python_version < "3.12"
