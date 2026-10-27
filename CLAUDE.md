@@ -152,8 +152,8 @@ the test and say in `WHY` why it is indivisible. Details: `docs/PROCESS.md`.
 ### 7.4 Commit messages
 
 Format: `.gitmessage` (`M<n> <area>: <imperative summary>`, then `WHAT` / `WHY` /
-`REVIEW` / `VERIFY`). `<area>` is one of `obd`, `ipc`, `store`, `analysis`, `supervisor`,
-`interface`, `common`, `build`, `tests`, `tools`, `soak`, `docs`, `process`. **Banned:**
+`REVIEW` / `VERIFY`). `<area>` is one of `obd`, `ambient`, `ipc`, `store`, `analysis`, `supervisor`,
+`interface`, `common`, `build`, `tests`, `tools`, `soak`, `hw`, `docs`, `process`. **Banned:**
 `wip`, `fix`, `fixes`, `updates`, `misc`, `cleanup`, `changes`, `more work`,
 `address feedback`, or anything that does not say what changed.
 
