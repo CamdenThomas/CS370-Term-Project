@@ -185,8 +185,12 @@ crash at any point is still recovered by mechanism D.
 | Reply → durable, p50 / p99 | timestamps at tty read and after `fsync`; idle and with a CPU hog | ≤ 1.2 s / ≤ 2.5 s |
 | Sustained request rate | answers per second from the log, per drive | ≥ 10/s; every model input every ≤ 2 s |
 | `kill -9` each child | 20 trials per child, from the log | detect ≤ 100 ms; heartbeat ≤ 5 s; no fd leak |
-| Ring drops under contention | sequence accounting | 0 |
+| Ring drops under contention (B.3) | sequence accounting, both rings | 0 |
+| CPU per process | `utime` + `stime` from `/proc/<pid>/stat` in every heartbeat; idle and with a CPU hog | each daemon ≤ 10 % of one core; all ≤ 25 % |
 | RSS over the soak | heartbeats at start, hourly, end, per session | slope < 100 KB per running hour |
+| fsync batch size (`expbatch`) | per record, 1 s and 10 s batches on the Pi's SD: `fsync` p50 / p99, bytes written, records lost per cut | 1 s loses ≤ 1 s per cut and writes ≤ ⅕ of per-record's bytes |
+| Every failure-table row (§4) | inject it as EVALUATION.md §5 lists; read the log | its log event appears; a fault outside capture never stops capture |
+| Probe unplugged (D-037) | pull it with everything running | `sensor_absent` ≤ 10 s; engine capture unaffected |
 | Detection per fault area | 5 induced events per area | ≥ 4 of 5; ≤ 1 false verdict per 10 h |
 | Recovery after a cut mid-write | cut the Pi's 5 V rail after the converter | 50 / 50 recover; ≤ 1 batch lost |
 | Boot to first durable sample | log time against the source-present edge | ≤ 45 s |

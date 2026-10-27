@@ -1157,6 +1157,11 @@ between a logged shutdown and a logged boot.
 of the numbers · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Answers (if signed):** board item `evalplan`
 
+*Extended 2026-10-26, before any review, by Claude in Camden's session: rows for CPU per
+process, the fsync batch-size experiment, every failure-table row, and the probe (D-037),
+because handout §9 requires CPU and fault-injection results and mechanism D is measured
+by its write batching.*
+
 **Decision (draft).** `docs/DESIGN.md` §6 commits to these targets. Each one is chosen from
 what the user needs or what an earlier decision already implies, not from what we expect
 to hit.
@@ -1167,8 +1172,12 @@ to hit.
 | Sustained request rate | ≥ 10 per second; every PID the model uses read at least every 2 s | D-012's budget of about 10; `obdd` polls the model's input list, not every supported PID, so the 2 s bound holds for up to 20 inputs |
 | `kill -9` of each child, detection | ≤ 100 ms, 20 trials per child | `SIGCHLD` arrives at once; slower means the supervisor is blocked |
 | `kill -9` of each child, recovery | ≤ 5 s to the first heartbeat, no fd leaked | a recorder silent for longer has missed a reading of every PID |
-| Ring drops under contention | 0 overruns | B.3: refusals are counted, so zero is checkable |
+| Ring drops under contention | 0 overruns, both rings | B.3: refusals are counted, so zero is checkable. Sequence accounting, not a mechanism F claim (D-029) |
+| CPU per process | each daemon ≤ 10 % of one core at steady state; all together ≤ 25 %, idle and loaded | handout §9; a recorder that crowds out its own capture under load has failed the user |
 | RSS per process over the soak | slope under 100 KB per running hour, per process | flat within measurement noise over D-023's sessions |
+| fsync batch size (`expbatch`) | 1 s batches lose ≤ 1 s per cut and write ≤ ⅕ of the bytes of per-record `fsync` | D-035's argument, tested: per record, 1 s and 10 s on the Pi's own SD |
+| Every failure-table row | its log event appears when it is injected; a fault outside capture never stops capture | handout §9 asks for each failure mode in the design table |
+| Probe unplugged (D-037) | `sensor_absent` within 10 s; engine capture unaffected | one retry period plus one read |
 | Detection per fault area (D-021) | catch ≥ 4 of 5 induced events per area | five events per area is what the semester allows |
 | False alarms | ≤ 1 surfaced verdict per 10 hours of normal driving | D.3: a monitor that cries wolf gets unplugged |
 | Recovery after a cut mid-write | 50 of 50 cuts recover; ≤ 1 batch lost each | D-025 and D-035 promise exactly this |
