@@ -884,7 +884,7 @@ of the argument · **Reviewed:** Camden ⬜ / Lance ⬜
 
 **Decision (draft).** `storaged` closes a batch, writes its `COMMIT` and calls `fsync` when
 the batch is **one second old or holds 64 samples**, whichever comes first, and always at
-a clean shutdown. A batch is never left open across a ring wakeup that finds no data for
+a clean shutdown. A batch is never left open across a ring wake-up that finds no data for
 a second: the timer closes it.
 
 **The argument, from the user's requirements.**
@@ -899,7 +899,7 @@ a second: the timer closes it.
   would lose ten seconds of warm-up at every such reset.
 - **Why not every record.** An SD card `fsync` costs milliseconds; twenty a second would
   spend a noticeable share of every second blocked and multiply flash writes about
-  twentyfold for no user benefit, since nothing reads a sample within a second anyway.
+  twenty times over for no user benefit, since nothing reads a sample within a second anyway.
 - **Analysis lag.** `analyzed` reads only durable records (D-031), so it trails capture by
   one batch, about a second. Nothing the owner sees changes faster than that.
 - **Flash wear.** About one page plus metadata per second, a few tens of MB per running
