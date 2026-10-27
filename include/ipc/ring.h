@@ -32,12 +32,15 @@ typedef struct {
     uint8_t  data[RING_PAYLOAD];
 } ring_slot_t;
 
+#define RING_LINE 64u   /* cache line on the Pi 4's Cortex-A72 */
+
+/* head and tail each own a cache line, so the producer's stores never invalidate the
+ * line the consumer is spinning on, and the reverse. */
 typedef struct {
-    _Atomic uint64_t head;           /* producer writes */
-    _Atomic uint64_t tail;           /* consumer writes */
-    _Atomic uint64_t overruns;       /* refused pushes — must stay zero */
-    uint64_t         _pad[5];        /* keep head/tail off one cache line */
-    ring_slot_t      slot[RING_CAPACITY];
+    _Alignas(RING_LINE) _Atomic uint64_t head;      /* producer writes */
+    _Alignas(RING_LINE) _Atomic uint64_t tail;      /* consumer writes */
+    _Alignas(RING_LINE) _Atomic uint64_t overruns;  /* refused pushes — must stay zero */
+    _Alignas(RING_LINE) ring_slot_t      slot[RING_CAPACITY];
 } ring_t;
 
 void     ring_init(ring_t *r);

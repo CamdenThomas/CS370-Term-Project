@@ -28,7 +28,7 @@ static ring_slot_t mk(uint64_t seq)
 
 static void test_empty_then_fifo(void)
 {
-    ring_t *r = malloc(sizeof *r);
+    ring_t *r = aligned_alloc(RING_LINE, sizeof *r);   /* ring_t is cache-line aligned */
     if (r == NULL) { failures++; return; }
     ring_init(r);
 
@@ -51,7 +51,7 @@ static void test_empty_then_fifo(void)
 
 static void test_full_refuses_never_overwrites(void)
 {
-    ring_t *r = malloc(sizeof *r);
+    ring_t *r = aligned_alloc(RING_LINE, sizeof *r);   /* ring_t is cache-line aligned */
     if (r == NULL) { failures++; return; }
     ring_init(r);
 
@@ -73,7 +73,7 @@ static void test_full_refuses_never_overwrites(void)
 
 static void test_wraparound(void)
 {
-    ring_t *r = malloc(sizeof *r);
+    ring_t *r = aligned_alloc(RING_LINE, sizeof *r);   /* ring_t is cache-line aligned */
     if (r == NULL) { failures++; return; }
     ring_init(r);
 
@@ -118,7 +118,7 @@ static void *observer(void *arg)
 
 static void test_concurrent_order_and_depth(void)
 {
-    g_ring = malloc(sizeof *g_ring);
+    g_ring = aligned_alloc(RING_LINE, sizeof *g_ring);
     if (g_ring == NULL) { failures++; return; }
     ring_init(g_ring);
     atomic_store(&g_done, 0);

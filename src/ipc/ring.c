@@ -1,10 +1,15 @@
 #include "ipc/ring.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #define MASK (RING_CAPACITY - 1u)
 
-_Static_assert((RING_CAPACITY & MASK) == 0u, "RING_CAPACITY must be a power of two");
+_Static_assert(RING_CAPACITY != 0u && (RING_CAPACITY & MASK) == 0u,
+               "RING_CAPACITY must be a non-zero power of two");
+_Static_assert(offsetof(ring_t, tail) - offsetof(ring_t, head) >= RING_LINE &&
+               offsetof(ring_t, overruns) - offsetof(ring_t, tail) >= RING_LINE,
+               "head, tail and the counter must not share a cache line");
 
 void ring_init(ring_t *r)
 {
