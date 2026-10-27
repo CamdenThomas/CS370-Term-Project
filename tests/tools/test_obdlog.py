@@ -139,6 +139,25 @@ class AgainstSim(unittest.TestCase):
         self.assertTrue(any(r.get("event") == "gps_unavailable" for r in records))
         self.assertTrue(any(r["type"] == "sample" for r in records))
 
+    def test_gps_is_polled_at_most_twice_a_second(self):
+        class FakeGps:
+            polls = 0
+
+            def poll(self):
+                FakeGps.polls += 1
+                return [{"lat": 40.57, "lon": -105.08}], None
+
+            def stop(self):
+                pass
+
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(macgps, "start", return_value=FakeGps()):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.2",
+                        "--gps"])
+        self.assertLessEqual(FakeGps.polls, 4)
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertTrue(any(r["type"] == "gps" for r in records))
+
     def test_missing_port_at_start_fails_cleanly(self):
         rc = run_logger(["--port", "/nonexistent/obd", "--out", self.d, "--max-seconds",
                          "0.5", "--connect-tries", "1"])

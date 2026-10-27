@@ -36,6 +36,7 @@ SCHEMA = 1
 NO_DATA_LIMIT = 5        # consecutive NO DATA before a PID is set aside as absent
 ABSENT_RETRY_SEC = 60.0  # how often an absent PID is tried again
 ERROR_LIMIT = 3          # consecutive timeouts or adapter errors before a reset
+GPS_POLL_SEC = 0.5       # location fixes arrive about once a second; poll no faster
 
 
 def _wall():
@@ -243,6 +244,7 @@ def _run(args, stop):
     absent = {}                       # pid -> monotonic time it was set aside
     errors = 0
     next_status = time.monotonic() + args.status_sec
+    next_gps = 0.0
     print(f"obdlog: logging {len(pids)} PIDs to {path} (src={src}); Ctrl-C to stop",
           file=sys.stderr)
 
@@ -327,7 +329,8 @@ def _run(args, stop):
                           unit=unit)
                 counts["samples"] += 1
 
-                if gps is not None:
+                if gps is not None and time.monotonic() >= next_gps:
+                    next_gps = time.monotonic() + GPS_POLL_SEC
                     fixes, err = gps.poll()
                     for fix in fixes:
                         out.write("gps", **fix)

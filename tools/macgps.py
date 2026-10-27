@@ -14,7 +14,8 @@ def start():
     """Start location updates. Returns an object whose poll() gives new fixes as dicts."""
     try:
         import CoreLocation  # noqa: PLC0415 - optional dependency, imported on demand
-        from Foundation import NSDate, NSObject, NSRunLoop  # noqa: PLC0415
+        from Foundation import (NSDate, NSDefaultRunLoopMode, NSObject,  # noqa: PLC0415
+                                NSRunLoop)
     except ImportError as e:
         raise GpsUnavailable(f"pyobjc CoreLocation not installed: {e}") from e
 
@@ -50,8 +51,9 @@ def start():
             self.mgr.startUpdatingLocation()
 
         def poll(self):
-            """Pump the run loop briefly; return (new fixes, error text or None)."""
-            NSRunLoop.currentRunLoop().runUntilDate_(NSDate.dateWithTimeIntervalSinceNow_(0.01))
+            """Handle pending location events without waiting; return (fixes, error)."""
+            NSRunLoop.currentRunLoop().runMode_beforeDate_(NSDefaultRunLoopMode,
+                                                           NSDate.distantPast())
             fixes, self.delegate.fixes = self.delegate.fixes, []
             err, self.delegate.error = self.delegate.error, None
             return fixes, err
