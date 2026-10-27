@@ -23,6 +23,7 @@
 
 /* Event codes storaged writes itself (D-042: sender byte 0x05). */
 #define WAL_EV_RING_GEN     0x0501u   /* "ns=<0|1> gen=<hex>": which ring instance fed us */
+#define WAL_EV_RING_SEQ     0x0502u   /* "ns=<0|1> seq=<hex>": last ring slot in this batch */
 
 /* What a scan of one segment found. */
 typedef struct {
@@ -35,6 +36,8 @@ typedef struct {
     uint32_t records_lost;        /* decodable samples after the last COMMIT */
     uint64_t last_mono[WAL_NAMESPACES];   /* last committed sample's mono_ns, per namespace */
     uint64_t ring_gen[WAL_NAMESPACES];    /* last WAL_EV_RING_GEN, per namespace (0: none) */
+    bool     has_ring_seq[WAL_NAMESPACES];
+    uint64_t ring_seq[WAL_NAMESPACES];    /* last committed WAL_EV_RING_SEQ, per namespace */
 } wal_scan_t;
 
 typedef struct {

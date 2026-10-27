@@ -903,9 +903,11 @@ D-037 (one producer and one consumer per ring) · **Answers:** board item `rings
   build. Only the creator initializes; a restarted child attaches and never resets the
   indices the other side is using.
 - **Duplicates after a restart.** If `storaged` dies after `fsync` returns but before the
-  release, the restarted process sees that batch again. Recovery knows the last committed
-  sample's `mono_ns` for each ring in the current boot, and `storaged` skips ring slots
-  at or before it, so a batch is never written twice.
+  release, the restarted process sees that batch again. So every batch also records, as
+  an event, the `seq` of the newest ring slot it holds, and each run records which ring
+  instance it drains (its generation, set at creation). After a restart, `storaged` skips
+  slots at or below the last committed ring `seq`, but only for the same ring instance:
+  a ring made fresh at the next boot is never skipped. A batch is never written twice.
 
 **Why.** With `ring_pop`, a slot left the ring the moment `storaged` read it, up to a
 second before it was durable (D-035), so killing `storaged` (the soak's injected fault,
@@ -915,8 +917,10 @@ indices; a header check stops a ring left over from an older build being read wi
 layout.
 
 **Cost.** A ring holds at most 4096 slots, about 200 s at 20 samples a second, so a
-`storaged` that is down longer makes the producer refuse (counted, B.3). The duplicate
-rule relies on `mono_ns` growing within a boot, which `CLOCK_MONOTONIC` guarantees.
+`storaged` that is down longer makes the producer refuse (counted, B.3). Two small events
+per batch (the ring generation once per run, the newest ring `seq` per batch). A first
+draft skipped by `mono_ns` instead; the restart test lost a sample to two readings with
+the same timestamp, which ring `seq` cannot have.
 
 ---
 

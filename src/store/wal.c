@@ -43,6 +43,8 @@ void wal_scan(const uint8_t *buf, size_t len, wal_scan_t *out)
     uint64_t txn = 0;
     uint32_t samples = 0;
     uint64_t mono[WAL_NAMESPACES] = { 0 }, gen[WAL_NAMESPACES] = { 0 };
+    uint64_t batch_ring_seq[WAL_NAMESPACES] = { 0 };
+    bool     batch_has_ring_seq[WAL_NAMESPACES] = { false };
     uint16_t last_kind = 0;
 
     size_t off = 0;
@@ -59,6 +61,8 @@ void wal_scan(const uint8_t *buf, size_t len, wal_scan_t *out)
             in_batch = true; txn = b.txn_id; samples = 0;
             memcpy(mono, out->last_mono, sizeof mono);
             memcpy(gen, out->ring_gen, sizeof gen);
+            memcpy(batch_ring_seq, out->ring_seq, sizeof batch_ring_seq);
+            memcpy(batch_has_ring_seq, out->has_ring_seq, sizeof batch_has_ring_seq);
         } else if (!in_batch) {
             break;                                    /* every record belongs to a batch */
         } else if (h.kind == REC_COMMIT) {
@@ -75,6 +79,8 @@ void wal_scan(const uint8_t *buf, size_t len, wal_scan_t *out)
             out->samples_committed += samples;
             memcpy(out->last_mono, mono, sizeof mono);
             memcpy(out->ring_gen, gen, sizeof gen);
+            memcpy(out->ring_seq, batch_ring_seq, sizeof batch_ring_seq);
+            memcpy(out->has_ring_seq, batch_has_ring_seq, sizeof batch_has_ring_seq);
             samples = 0;
         } else if (h.kind == REC_SAMPLE) {
             rec_sample_t s;
@@ -93,6 +99,11 @@ void wal_scan(const uint8_t *buf, size_t len, wal_scan_t *out)
             if (e.code == WAL_EV_RING_GEN &&
                 sscanf(text, "ns=%u gen=%" SCNx64, &ns, &g) == 2 && ns < WAL_NAMESPACES)
                 gen[ns] = g;
+            if (e.code == WAL_EV_RING_SEQ &&
+                sscanf(text, "ns=%u seq=%" SCNx64, &ns, &g) == 2 && ns < WAL_NAMESPACES) {
+                batch_ring_seq[ns] = g;
+                batch_has_ring_seq[ns] = true;
+            }
         }
         last_kind = h.kind;
         off += size;
