@@ -20,21 +20,23 @@
 #include <stdint.h>
 
 #define RING_CAPACITY 4096u   /* power of two — the mask depends on it */
-#define RING_PAYLOAD    16u   /* bytes; a Mode 01 reply's data (<= 4 bytes) fits with room */
+#define RING_PAYLOAD    16u   /* bytes; a Mode 01 reply's data (<= 5 bytes) fits with room */
 
+/* One sample, as its producer decoded it; storaged turns it into a D-034 sample record. */
 typedef struct {
     uint64_t seq;                    /* set by ring_push: the slot's position, never reused */
     uint64_t mono_ns;                /* CLOCK_MONOTONIC at capture */
-    uint32_t pid;                    /* (mode << 16) | PID — room for 16-bit Mode 22 PIDs */
-    uint8_t  len;
-    uint8_t  src;                    /* data_src_t — live | replay | synth */
-    uint8_t  _pad[2];
-    uint8_t  data[RING_PAYLOAD];
+    uint8_t  mode;                   /* 0x01 for Mode 01; 0x00 for the box's own sensors (D-037) */
+    uint8_t  pid;
+    uint8_t  len;                    /* bytes of data[] in use */
+    uint8_t  src;                    /* data_src_t — live | replay | synth; 0 is refused */
+    float    value;                  /* the decoded value, in the PID's unit */
+    uint8_t  data[RING_PAYLOAD];     /* the reply's raw data bytes */
 } ring_slot_t;
 
 #define RING_LINE    64u          /* cache line on the Pi 4's Cortex-A72 */
 #define RING_MAGIC   0x474E5243u  /* the bytes "CRNG" */
-#define RING_VERSION 1u           /* bump whenever ring_t or ring_slot_t changes layout */
+#define RING_VERSION 2u           /* bump whenever ring_t or ring_slot_t changes layout */
 
 /* Shared-memory names (D-039): obdd's ring and ambientd's (D-037). */
 #define RING_NAME_OBD   "/carwatch-obd"
