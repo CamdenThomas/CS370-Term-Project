@@ -148,8 +148,27 @@ static void test_concurrent_order_and_depth(void)
     free(g_ring);
 }
 
+static void test_unlabeled_slot_is_refused(void)
+{
+    ring_t *r = aligned_alloc(RING_LINE, sizeof *r);   /* ring_t is cache-line aligned */
+    if (r == NULL) { failures++; return; }
+    ring_init(r);
+
+    ring_slot_t s = mk(0);
+    s.src = SRC_INVALID;
+    CHECK(!ring_push(r, &s), "an unlabeled slot must be refused (D-040)");
+    CHECK(ring_rejected(r) == 1, "the refusal must be counted");
+    CHECK(ring_overruns(r) == 0, "a rejection is not an overrun");
+    CHECK(ring_depth(r) == 0, "nothing was queued");
+
+    s.src = SRC_SYNTH + 1;
+    CHECK(!ring_push(r, &s), "an out-of-range label must be refused");
+    free(r);
+}
+
 int main(void)
 {
+    test_unlabeled_slot_is_refused();
     test_concurrent_order_and_depth();
     test_empty_then_fifo();
     test_full_refuses_never_overwrites();

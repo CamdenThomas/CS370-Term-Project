@@ -1,5 +1,7 @@
 #include "ipc/ring.h"
 
+#include "common/log.h"
+
 #include <stddef.h>
 #include <string.h>
 
@@ -22,10 +24,17 @@ void ring_init(ring_t *r)
     atomic_init(&r->head, 0);
     atomic_init(&r->tail, 0);
     atomic_init(&r->overruns, 0);
+    atomic_init(&r->rejected, 0);
 }
 
 bool ring_push(ring_t *r, const ring_slot_t *in)
 {
+    if (!SRC_IS_VALID(in->src)) {
+        /* An unlabeled slot would reach the log as data nobody vouched for (D-040). */
+        atomic_fetch_add_explicit(&r->rejected, 1, memory_order_relaxed);
+        return false;
+    }
+
     uint64_t head = atomic_load_explicit(&r->head, memory_order_relaxed);
     uint64_t tail = atomic_load_explicit(&r->tail, memory_order_acquire);
 
@@ -57,6 +66,11 @@ bool ring_pop(ring_t *r, ring_slot_t *out)
 uint64_t ring_overruns(const ring_t *r)
 {
     return atomic_load_explicit(&r->overruns, memory_order_relaxed);
+}
+
+uint64_t ring_rejected(const ring_t *r)
+{
+    return atomic_load_explicit(&r->rejected, memory_order_relaxed);
 }
 
 size_t ring_depth(const ring_t *r)

@@ -40,18 +40,21 @@ typedef struct {
     _Alignas(RING_LINE) _Atomic uint64_t head;      /* producer writes */
     _Alignas(RING_LINE) _Atomic uint64_t tail;      /* consumer writes */
     _Alignas(RING_LINE) _Atomic uint64_t overruns;  /* refused pushes — must stay zero */
+    _Atomic uint64_t                     rejected;  /* unlabeled slots refused (D-040) */
     _Alignas(RING_LINE) ring_slot_t      slot[RING_CAPACITY];
 } ring_t;
 
 void     ring_init(ring_t *r);
 
-/* Returns false when full. Never overwrites an unread slot; increments overruns. */
+/* Returns false when full (never overwriting an unread slot; counts an overrun) or when
+ * the slot carries no valid src (counts a rejection, D-040). */
 bool     ring_push(ring_t *r, const ring_slot_t *in);
 
 /* Returns false when empty. */
 bool     ring_pop(ring_t *r, ring_slot_t *out);
 
 uint64_t ring_overruns(const ring_t *r);
+uint64_t ring_rejected(const ring_t *r);
 size_t   ring_depth(const ring_t *r);
 
 #endif
