@@ -38,7 +38,7 @@ OBD2 port -- OBDLink LX (Bluetooth SPP, D-019)   DS18B20 cabin probe (D-037)
   supervisor [E] spawns, heartbeats, restarts with backoff --GPIO--> light,
     ^            1-4 Hz pulse = alive; steady, except yellow at boot = not running (D-027)
     | UDS, on demand
-  obdctl (CLI), status page + report --> phone on the box's own Wi-Fi (D-013, D-028)
+  obdctl (CLI); statusd: page + report --> phone on the box's Wi-Fi (D-013, D-043)
 power: owner's USB-C charger -> power block + supercapacitor -> Pi 4 (D-024)
 ```
 
@@ -112,7 +112,7 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | storaged | power cut mid-write | bad CRC / no `COMMIT` at boot | truncate tail and open batch (D-025) | `recovered` |
 | storaged | disk full; `fsync` or write `EIO` | `ENOSPC`, return values | drop oldest segment if allowed; hold durable offset; degrade, red | `enospc`, `fsync_failed` |
 | analyzed | torn checkpoint; bad model file | slot CRC; header CRC | other slot + redo; residuals only | `checkpoint_bad`, `model_unavailable` |
-| status page | report fails, out of memory | error; RSS | page says so; capture unaffected | `report_failed` |
+| `statusd` | report fails, out of memory | error; RSS | page says so; capture unaffected | `report_failed` |
 | supervisor | dies | systemd `Restart=always` | light freezes steady = "not running" | journal |
 | clock | RTC lost backup (D-030) | invalid time at boot | run on `mono_ns`; wall time untrusted | `rtc_invalid` |
 | power | key-off, cable pulled, crank dip, source back mid-shutdown | source-present GPIO timing | §6 state machine | `source_lost`, `source_dip`, `shutdown` |

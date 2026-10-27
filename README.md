@@ -74,12 +74,14 @@ grade it** — this file is graded.
 ## Query interface
 
 ```sh
-obdctl status                        # liveness, per-process RSS, event counts
-obdctl verdicts [--since <when>]     # current and historical diagnoses
-obdctl series <pid> --from --to      # raw or binned history
-obdctl baseline <pid>                # the learned model for an operating-point bin
-obdctl faults                        # detection/degradation/recovery events
+obdctl status                                   # liveness, RSS, CPU, counts, sensors
+obdctl verdicts [--since WHEN]                  # current and historical diagnoses
+obdctl series PID --from WHEN --to WHEN [--binned]   # raw or per-bin history
+obdctl baseline PID [--bin RPM,LOAD,COOLANT]    # the learned normal, every bin or one
+obdctl faults [--since WHEN]                    # detection/degradation/recovery events
 ```
+
+`WHEN` is ISO 8601 or relative, such as `-2h`. The protocol underneath is decision D-043.
 
 **From a phone:** join the box's own Wi-Fi network (no internet — it has none) and open
 its status page. The page shows status, current verdicts and trends, and a **Download

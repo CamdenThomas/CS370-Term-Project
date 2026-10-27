@@ -61,6 +61,7 @@ Decisions currently awaiting a human signature:
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
+| D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
 | D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
@@ -666,6 +667,61 @@ boundary rule must allow it outside `src/interface/` (`make boundary`).
 common order with the samples, and one more crash-recovery story per file. Events in the
 rings: the slot type is sized for a reply, and the supervisor, which has no ring, could
 not send.
+
+### B.11 — The supervisor's control socket, the five `obdctl` verbs, and `statusd` (draft) ⚠️ UNREVIEWED
+
+`D-043` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** board item `ipcspec`; names the status-page process D-013 and
+D-028 left unnamed
+
+**Decision (draft).**
+
+- **The control socket.** The supervisor listens on `/run/carwatch/ctl.sock`, a Unix
+  domain `SOCK_STREAM` socket, mode 0660. A request is one line, `VERB key=value ...`,
+  at most 512 bytes. A reply is zero or more lines of `key=value` fields, then `ok`, or
+  `err <code> <reason>`, then the connection closes. Text, so it can be typed by hand
+  and quoted in the report and at the defense.
+- **Routing.** The supervisor answers `status` itself, from its children's heartbeats.
+  It forwards `verdicts`, `series` and `faults` to `storaged`, which reads its own
+  committed log up to the durable offset (D-031), and `baseline` to `analyzed`, the only
+  holder of baselines, each over that process's own query socket in the same format. A
+  child that is down gives `err unavailable <name>`; nothing else waits on it.
+
+**The five verbs.**
+
+| Verb | Arguments | Answers |
+| --- | --- | --- |
+| `status` | none | each process: up, down or restarting, pid, uptime, restarts, RSS, CPU, event and drop counts; each ring's depth and overruns; dongle link and probe present or absent; the light's state; whether wall time is trusted; the mix of `src` in this session |
+| `verdicts` | `--since WHEN` (default: this boot) | each surfaced verdict: start, end or active, fault area, the sensors that cooperated, residual, `src` |
+| `series` | `PID --from WHEN --to WHEN [--binned]` | the samples of one PID (`0C`, or `probe`) in the window, each with `src`; `--binned` gives per-bin means instead |
+| `baseline` | `PID [--bin RPM,LOAD,COOLANT]` | the learned mean and variance of one PID in every bin, or in the one bin named |
+| `faults` | `--since WHEN` (default: this boot) | detection, degradation and recovery events (D-042), each with `src` |
+
+`WHEN` is ISO 8601 or relative (`-2h`). `obdctl` exits 0 on `ok`, 1 on `err`, 2 on a
+usage error and 3 when the supervisor cannot be reached.
+
+**`statusd`.** The phone page and the report generator (D-013, D-028) are one supervised
+process, `statusd`, in `src/interface/`. It serves HTTP only on the box's access-point
+address, and builds every page and report from the same control-socket verbs, so it holds
+no state of its own. It is the only process with an `AF_INET` socket.
+
+**Why.** Board item `ipcspec`: B.2, D-013 and D-031 all route queries through the
+supervisor without saying how, the README's `baseline` line was ambiguous about bins,
+and the status page had no process name for the failure table, the Makefile or the
+soak's RSS plot. A line protocol over one socket is the smallest thing that lets the CLI,
+the page and a human at a terminal ask the same questions. History is answered by
+`storaged` because it owns the log; the supervisor does not hold data, so a query can
+never slow the restart path.
+
+**Cost.** Three query sockets (supervisor, `storaged`, `analyzed`) and their parsers,
+each a place for a malformed request to be handled; every parser gets a test with bad
+input. History queries cost `storaged` reads while it writes, which the CPU measurement
+(D-036) will show.
+
+**Alternative rejected.** `obdctl` reading the log files itself: simpler, but it breaks
+D-031's rule that only the process holding the answer reads it, and the page would need a
+second copy of that reader.
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 
