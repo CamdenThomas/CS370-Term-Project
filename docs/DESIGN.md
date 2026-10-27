@@ -51,7 +51,36 @@ O2 sensors are distinct sensors on the engine, and every diagnostic fuses at lea
 (D.4): a vacuum leak is called only when long-term fuel trim and idle manifold pressure
 rise together in one operating-point bin.
 
-## 3. Failure-mode table
+## 3. Analysis: how normal is learned and a fault area named
+
+All of it is our code (handout §3.3; D.1, D.2). `analyzed` runs, per committed sample:
+
+1. **Operating point:** bin by rpm × load × coolant temperature, so a cold idle is never
+   compared with a warm cruise. Bin edges are set from the first drives' data.
+2. **Baseline:** per-bin running mean and covariance of the other sensors (Welford),
+   saved in A/B checkpoints (D-025).
+3. **Residual:** Mahalanobis distance of the current sensor vector from its bin's
+   baseline, which alarms when a *partnership* breaks, not when one value is high.
+4. **Trend:** Theil–Sen slope of each residual across drives, for slow drift.
+5. **Area:** our classifier, trained in `tools/train/` on our labeled captures, inference
+   in C. Without its weights, steps 1–4 still flag; only naming is lost (PLAN §3).
+6. **Verdict:** a state machine with hysteresis and dwell surfaces it (D.3).
+
+| Fault area (D-021) | Cooperating sensors | Signature | Induced by (E.2) |
+| --- | --- | --- | --- |
+| Cooling | coolant, intake/ambient temp, load, speed | warm-up slope or warm settling temperature off its bin's normal for the same ambient and load | cardboard over the radiator |
+| Air/fuel | fuel trims, MAP or MAF, rpm, O2 | long-term trim rising at idle with idle MAP, shrinking with load | a small vacuum line opened |
+| Sensor/electrical | the failed PID and its usual partners; module voltage | one PID absent or flat while its partners move | a sensor unplugged |
+| Unknown | all | residual high, no area matches | — |
+
+No row can be called by one threshold on one value: each compares sensors that normally
+move together, inside one operating-point bin (D.4).
+
+> 🟨 **TEAM DECIDES (Wednesday):** the fault-area rows, signatures and bin axes above are
+> Claude's proposal from D-021 and D.2. The AI-use plan (§9) says analysis design is
+> ours, so confirm, change or replace each row, and then delete this note.
+
+## 4. Failure-mode table
 
 Log lines take the form `<process> <level> <event> key=value`, carry `src`, and go through
 the shared logger; the table names the event.
@@ -79,7 +108,7 @@ the shared logger; the table names the event.
 | SD card | write errors | `EIO` | degrade and log; do not crash | `write_failed` |
 | radio | Bluetooth and Wi-Fi share one chip | reply-time p99 in the heartbeat | measure (`btcoex`) | heartbeat |
 
-## 4. Storage and data
+## 5. Storage and data
 
 - **Format (D-034):** 40-byte header (`magic`, `kind`, `seq`, `mono_ns`, `wall_ns`, `src`,
   flags, `boot_id`), typed body, CRC32 over both. Kinds: sample, begin, commit, boot,
@@ -98,7 +127,7 @@ the shared logger; the table names the event.
   the last session ended clean. `analyzed` loads the newest valid A/B checkpoint and redoes
   every committed batch after it through the live code path (D-025).
 
-## 5. Constraints and substitutions
+## 6. Constraints and substitutions
 
 | Wanted | Using | Cost |
 | --- | --- | --- |
@@ -110,7 +139,7 @@ the shared logger; the table names the event.
 | Recording from key-on | A Pi 4 boot of about 30 s (`bootbudget`) | The first half-minute of warm-up is lost |
 | The product capturing the first drives | A Python tool, labeled `live` (D-033) | Shapes the design, proves nothing about `obdd`; enters the product only as `replay` |
 
-## 6. Evaluation plan
+## 7. Evaluation plan
 
 Targets are drafts until D-036 is signed.
 
@@ -125,7 +154,7 @@ Targets are drafts until D-036 is signed.
 | Recovery after a cut mid-write | cut the Pi's 5 V rail after the converter | 50 / 50 recover; ≤ 1 batch lost |
 | Boot to first durable sample | log time against the source-present edge | ≤ 45 s |
 
-## 7. Ownership map
+## 8. Ownership map
 
 A subsystem belongs to whoever lands its first substantive commit (D-026).
 
@@ -134,7 +163,7 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | `src/ipc/` | Camden | the SPSC ring and its tests (M0) |
 | `src/obd/`, `src/store/`, `src/analysis/`, `src/supervisor/`, `src/interface/`, `src/common/`, `tools/train/`, `electricalDrawing/` | unclaimed | |
 
-## 8. AI-use plan
+## 9. AI-use plan
 
 Claude Code is used for planning, explaining kernel and serial mechanics, test fixtures,
 tooling, adversarial review of diffs and documentation; never at runtime, and not for the
@@ -142,6 +171,6 @@ analysis pipeline's design decisions. `src/` holds no network code except the re
 status page in `src/interface/`, which serves the box's own access point with no upstream
 (D-013, D-028); `make boundary`, part of `make test`, fails the build otherwise.
 
-## 9. Changelog (M5)
+## 10. Changelog (M5)
 
 What this M2 version got wrong, written at M5.
