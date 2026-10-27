@@ -11,12 +11,17 @@ _Static_assert(offsetof(ring_t, tail) - offsetof(ring_t, head) >= RING_LINE &&
                offsetof(ring_t, overruns) - offsetof(ring_t, tail) >= RING_LINE,
                "head, tail and the counter must not share a cache line");
 
+/* The ring will live in shared memory between processes (mechanism E). An atomic that
+ * is not lock-free may be implemented with a lock private to one process, which is no
+ * lock at all across two; on a 32-bit Pi OS a 64-bit atomic could be exactly that. */
+_Static_assert(ATOMIC_LLONG_LOCK_FREE == 2, "the ring needs lock-free 64-bit atomics");
+
 void ring_init(ring_t *r)
 {
-    memset(r, 0, sizeof *r);
-    atomic_store_explicit(&r->head, 0, memory_order_relaxed);
-    atomic_store_explicit(&r->tail, 0, memory_order_relaxed);
-    atomic_store_explicit(&r->overruns, 0, memory_order_relaxed);
+    memset(r->slot, 0, sizeof r->slot);
+    atomic_init(&r->head, 0);
+    atomic_init(&r->tail, 0);
+    atomic_init(&r->overruns, 0);
 }
 
 bool ring_push(ring_t *r, const ring_slot_t *in)
