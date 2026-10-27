@@ -24,8 +24,8 @@ likely fault area, with measured catch and false-alarm rates on faults we induce
 ```text
 OBD2 port -- OBDLink LX (Bluetooth SPP, D-019)   DS18B20 cabin probe (D-037)
    ~~ RFCOMM ~~> BlueZ -> rfcomm tty -> /dev/obd    1-Wire -> kernel w1-gpio -> sysfs
-  obdd    Mode 01, one outstanding, ~10-20 req/s   ambientd   one read every 2 s
-    | ring 1: SPSC, ~10-20 samples/s                  | ring 2: SPSC, 0.5 samples/s
+  obdd    Mode 01, one outstanding, ~10-25 req/s   ambientd   one read every 2 s
+    | ring 1: SPSC, ~10-25 samples/s                  | ring 2: SPSC, 0.5 samples/s
     +------------------------+------------------------+  shared memory, refuse when full
                              v
   storaged [D]  BEGIN..COMMIT batches, 1 fsync/s, ~1 KB/s -> ext4 on SD (D-025)
@@ -170,7 +170,7 @@ crash at any point is still recovered by mechanism D.
 | Every engine sensor | The Mode 01 PIDs the ECU publishes (D-022) | Oil pressure likely absent; lists differ by car |
 | Outside air temperature | A DS18B20 in the cabin (D-037) | Reads cabin air: ambient only after a long soak, and sun-heated in summer |
 | Failing engines | Induced, reversible faults on two healthy cars (D-021) | A few fault areas; no real wear-out |
-| Raw CAN at ECU rate | Bluetooth Mode 01 request/response (D-019) | ~10–20 samples/s, no bus timing, a link that drops; most of the menu leaves the data path (D-017) |
+| Raw CAN at ECU rate | Bluetooth Mode 01 request/response (D-019) | ~10–25 samples/s, no bus timing, a link that drops; most of the menu leaves the data path (D-017) |
 | 48 continuous hours | 48 h of normal use across key cycles (D-023) | Sessions with gaps; the professor confirmed this reading (D-023) |
 | Full hold-up | Owner's charger + seconds-scale supercapacitor (D-024) | A cold-start crank may reset the Pi |
 | Recording from key-on | A ~30 s Pi 4 boot (`bootbudget`) | The first half-minute of warm-up is lost |
