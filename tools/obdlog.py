@@ -50,7 +50,7 @@ class LogWriter:
     def __init__(self, path, src, fsync_lines, fsync_sec):
         self.path, self.src = path, src
         self.fsync_lines, self.fsync_sec = fsync_lines, fsync_sec
-        self.f = open(path, "a", encoding="utf-8")
+        self.f = open(path, "x", encoding="utf-8")   # never append to another session
         self.seq = 0
         self.unsynced = 0
         self.last_sync = time.monotonic()
@@ -86,6 +86,19 @@ class LogWriter:
     def close(self):
         self.sync()
         self.f.close()
+
+
+def open_session(out_dir, src, fsync_lines, fsync_sec):
+    """A LogWriter on a new file, data/drive-<time to the ms>-<src>.jsonl. Two sessions
+    that start in the same millisecond get -2, -3, ... rather than sharing one file."""
+    stamp = _wall()[:23].replace(":", "").replace("-", "")       # 20261027T120000.123
+    n = 1
+    while True:
+        name = f"drive-{stamp}-{src}.jsonl" if n == 1 else f"drive-{stamp}-{n}-{src}.jsonl"
+        try:
+            return LogWriter(os.path.join(out_dir, name), src, fsync_lines, fsync_sec)
+        except FileExistsError:
+            n += 1
 
 
 def read_log(path):
@@ -220,9 +233,8 @@ def _run(args, stop):
             else sorted(supported))
     header["pids"] = [f"{p:02X}" for p in pids]
 
-    stamp = _wall()[:19].replace(":", "").replace("-", "")
-    path = os.path.join(args.out, f"drive-{stamp}-{src}.jsonl")
-    out = LogWriter(path, src, args.fsync_lines, args.fsync_sec)
+    out = open_session(args.out, src, args.fsync_lines, args.fsync_sec)
+    path = out.path
     out.write("header", **header)
 
     counts = {"samples": 0, "events": 0, "gps": 0}

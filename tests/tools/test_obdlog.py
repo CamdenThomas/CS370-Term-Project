@@ -200,6 +200,27 @@ class Writer(unittest.TestCase):
             w.close()
 
 
+class Naming(unittest.TestCase):
+    def test_two_sessions_in_one_millisecond_get_two_files(self):
+        with tempfile.TemporaryDirectory() as d, \
+                mock.patch.object(obdlog, "_wall", return_value="2026-10-27T12:00:00.123+00:00"):
+            for _ in range(2):
+                run_logger(["--sim", "--out", d, "--max-seconds", "0.3"])
+            logs = sorted(f for f in os.listdir(d) if f.startswith("drive-"))
+            self.assertEqual(logs, ["drive-20261027T120000.123-2-synth.jsonl",
+                                    "drive-20261027T120000.123-synth.jsonl"])
+            for name in logs:
+                records, _ = obdlog.read_log(os.path.join(d, name))
+                self.assertEqual([r["type"] for r in records].count("header"), 1, name)
+
+    def test_the_writer_never_appends_to_an_existing_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "drive-x.jsonl")
+            obdlog.LogWriter(p, "synth", 50, 1.0).close()
+            with self.assertRaises(FileExistsError):
+                obdlog.LogWriter(p, "synth", 50, 1.0)
+
+
 class Reader(unittest.TestCase):
     def test_torn_last_line_is_dropped_and_reported(self):
         with tempfile.TemporaryDirectory() as d:
