@@ -53,7 +53,8 @@ Decisions currently awaiting a human signature:
 | D-025 | Write-ahead transactions (`BEGIN`, records, `COMMIT`, one `fsync`) and A/B baseline checkpoints; extends 🔒 C.1 (§C.3) | Camden (extended C.1) + Claude | 2026-10-21 | Lance — it is the storage design behind mechanism D |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
-| D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
+| D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7); revised by D-037 | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
+| D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
@@ -476,6 +477,10 @@ rather than *old*. If that is ever the wrong choice for a diagnostic, reopen thi
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Resolves:** board item `pisensor`, and the "only if" conditions of D-017 (§B.1)
 
+*Revised 2026-10-26 by D-037 (§B.9), before any review: one Pi-side sensor, a DS18B20
+probe, is added for handout §3.1 and mechanism E's wording. B and F stay out of scope,
+and the "no MPU-6050, no DS18B20" below now reads "no MPU-6050".*
+
 **Decision.** No sensor is added on the Pi itself: no MPU-6050, no DS18B20. Mechanisms
 **D** and **E** are the committed pair, implemented and measured. **B** and **F** are out
 of scope. **A**, **C** and raw CAN stay stretch goals.
@@ -509,6 +514,10 @@ hardware, for a sensor the user's problem does not need.
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Fixes:** `docs/DESIGN.md` §1, which fanned one single-consumer ring out to three
 readers
+
+*Revised 2026-10-26 by D-037 (§B.9), before any review: a second SPSC ring carries the
+DS18B20 probe's samples from `ambientd` to `storaged`. Each ring keeps one producer and
+one consumer, so the reasoning below holds for both.*
 
 **Decision.** The shared-memory SPSC ring has exactly one producer, `obdd`, and one
 consumer, `storaged`. `analyzed` does not read the ring: it reads `storaged`'s log, in
@@ -545,6 +554,69 @@ obvious answer is a Unix socket to `storaged`; it is not decided here.
 **Alternative rejected.** Two rings, `obdd` pushing every sample into both: lower
 analysis latency, but the analysis ring overruns whenever `analyzed` restarts, and
 recovery would need its own replay path.
+
+### B.9 — A DS18B20 probe on the Pi, read by its own process ⚠️ UNREVIEWED
+
+`D-037` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Revises:** D-029 (§B.7), which declined every Pi-side sensor; D-031 (§B.8), which had
+one ring; D-034 (§C.5), whose sample record gains a namespace for it
+· **Answers:** board item `pisensor`
+
+**Decision.** The box gets one sensor of its own: a **DS18B20** digital temperature probe
+on a short lead outside the shell, in cabin air.
+
+- **Wiring.** The standard 1-Wire hookup: data on GPIO4 (header pin 7, the default of
+  the kernel's `w1-gpio` overlay) with a 4.7 kΩ pull-up to 3.3 V, power from 3.3 V, not
+  parasite power. Checked against the part's datasheet and drawn in the Pi interface
+  block (`schpi`) before it is wired.
+- **Its own process.** `ambientd` (`src/ambient/`) reads
+  `/sys/bus/w1/devices/28-*/w1_slave` every 2 seconds. A reading whose CRC line ends in
+  `NO`, or that holds the 85.0 °C power-on value, is rejected and logged. A missing
+  device is `sensor_absent`, retried every 10 s, and `sensor_present` when it returns.
+- **Its own ring.** A second shared-memory SPSC ring, `ambientd` to `storaged`, with the
+  same type and the same refuse-when-full rule as the first (B.3). Each ring keeps one
+  producer and one consumer, so D-031's reasons for one consumer still hold; `storaged`
+  drains both into the same batches.
+- **Its records.** An ordinary sample record (D-034) with `mode` 0x00, which no OBD2
+  request uses, as the namespace for the box's own sensors, and `pid` 0x01 for this
+  probe, value in °C.
+
+**What it cooperates in.**
+
+- **The cold-soak check** (sensor/electrical area). After the box has been off for hours
+  (the clock says how long, D-030), coolant temperature, intake-air temperature and the
+  probe should agree within a few degrees at key-on. When two agree and one does not,
+  the one that disagrees is the suspect. No single threshold on one value can say that.
+- **Ambient for the cooling area** when the car does not publish PID 0x46, using the
+  key-on reading after a long soak.
+
+**Why.** Camden, 2026-10-26, choosing the audit's option for two rubric risks:
+
+- Handout §3.1 asks for at least two physically distinct sensors that cooperate. Through
+  the dongle alone, every sensor reaches the Pi by one device, one link and one process,
+  and a grader may call that one sensor. The probe is a second device on a second bus.
+- Handout §3.2 words mechanism E as "sensors isolated in separate processes". With
+  `obdd` and `ambientd`, that is now literally true, on top of the isolation of capture,
+  storage and analysis (B.2).
+- Demo day unplugs a sensor (handout §11). The probe is one a grader can pull by hand,
+  without opening the hood of a running car.
+
+**What it does not change.** B and F stay declined: 1-Wire's bit timing is done by the
+kernel, so there is no interrupt of ours to compare against polling, and 0.5 samples a
+second never stresses a ring. D and E remain the committed pair (D-017).
+
+**Cost.**
+
+- One part, a resistor and a GPIO; bought only after it is drawn (`probeorder`) and
+  brought up on the bench with the evidence pasted (`probebench`).
+- A second ring, a fifth daemon, and their rows in the failure table and the soak plot.
+- The probe reads cabin air: equal to outside air only after a long soak, and
+  sun-heated in summer. The design doc states this as a substitution.
+
+**Alternative rejected.** An MPU-6050 (D-017's option): it would bring back B and F, but
+it is more parts and a sensor the user's problem does not need. The written defense
+alone ("the dongle is only transport"): it leaves the §3.1 question to the grader.
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 
@@ -821,6 +893,9 @@ ignored); only short excerpts are committed as evidence.
 `D-034` · Drafted M2, 2026-10-26 · **By:** Claude, in Camden's session, without his review
 of the details · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Finishes:** D-025's open `recfmt` item; keeps every rule of 🔒 C.1 and 🔒 C.2
+
+*Extended 2026-10-26 by D-037 (§B.9): a sample with `mode` 0x00 is from the box's own
+sensors; `pid` 0x01 is the DS18B20 probe, value in °C.*
 
 **Decision (draft).** `storaged` writes a log of self-framing records. Every multi-byte
 field is little-endian, the Pi's native order. Each record is a fixed header, a body whose

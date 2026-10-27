@@ -136,6 +136,10 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #110 -->
 - [ ] M2 decision: add a sensor on the Pi itself — MPU-6050, DS18B20, both, or neither?
       `pisensor` <!-- #93 -->
+- [ ] M2 hardware: order the DS18B20 probe and its 4.7 kΩ resistor, once drawn (D-037)
+      `probeorder`
+- [ ] M2 hardware: DS18B20 bench bring-up on the Pi, with a `w1_slave` read pasted
+      `probebench`
 - [ ] M2 hardware: prove the box's USB-C input: charger dead at key-off, crank dip,
       undervoltage `keyoff` <!-- #61 -->
 - [ ] M2 hardware: measure the OBD2 dongle's key-off current from pin 16 `dongledrain`
@@ -186,6 +190,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #37 -->
 - [ ] M3 obd: rate-limited Mode 01 requester on the adapter tty `canreq`
       <!-- #88 -->
+- [ ] M3 ambient: `ambientd` reads the DS18B20 into its own ring, labeled live (D-037)
+      `ambientd`
 - [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
       <!-- #144 -->
 - [ ] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`

@@ -11,6 +11,7 @@ in the car's OBD2 port (D-019, D-024). Nothing on the car is cut, spliced or pie
                                         ◀── halt-done ─────────────────────── GPIO
   Pi GPIOs ──resistors──▶ tri-color LED ──▶ GND    (the light, D-027)
   Pi I2C (GPIO2 SDA, GPIO3 SCL) ──▶ real-time clock, powered from 3.3 V   (D-030)
+  Pi GPIO4 (1-Wire) ◀── DS18B20 probe on a short lead, 4.7 kΩ pull-up    (D-037)
 ```
 
 GPIO numbers for source-present, halt-done and the light are set in the schematic
@@ -88,6 +89,19 @@ or a dark one while the car runs, means the device is not running (DECISIONS §B
 The part, its backup cell or capacitor, and that backup's temperature rating are chosen in
 `rtcspec`.
 
+## DS18B20 probe → Pi (D-037)
+
+| Probe wire | Pi pin | Pi signal | Note |
+| --- | --- | --- | --- |
+| DQ (data) | 7 | GPIO4 | The default pin of the kernel's `w1-gpio` overlay. A 4.7 kΩ pull-up from DQ to 3.3 V. |
+| VDD | 1 or 17 | 3.3 V | Powered, not parasite mode. Never 5 V: the data line would pull the GPIO above 3.3 V. |
+| GND | 9 | GND | |
+
+Pins and the resistor are the 1-Wire defaults, to be checked against the probe's datasheet
+and drawn in the Pi interface block (`schpi`) before wiring. Probe wire colors vary by
+seller; identify them from the seller's sheet, not by color. The probe sits outside the
+shell, in cabin air, away from the Pi's heat.
+
 ## Bring-up order
 
 1. Pi on the bench, dongle powered, no car: `bluetoothctl` pairs and trusts it, then
@@ -95,7 +109,10 @@ The part, its backup cell or capacitor, and that backup's temperature rating are
    version string. Reboot once and confirm `/dev/obd` comes back without a hand.
 2. Car, key to run, engine off: `0100` returns the supported-PID bitmap.
 3. Car, engine running: `010C` (RPM) changes when you touch the throttle.
-4. The power measurements above: the free ones first (the owner's charger with a meter,
+4. Probe, Pi on the bench: `dtoverlay=w1-gpio` in `/boot/firmware/config.txt`, reboot,
+   then `cat /sys/bus/w1/devices/28-*/w1_slave` shows `YES` on the first line and a
+   `t=` value near room temperature on the second. Paste it here, dated (`probebench`).
+5. The power measurements above: the free ones first (the owner's charger with a meter,
    key off and at crank), the bank only after the power design is signed.
 
 Measured results go in this file, dated. A step without a recorded result has not been

@@ -39,6 +39,8 @@ light, plus a Bluetooth Classic OBD2 dongle (OBDLink LX) in the car's OBD2 port.
 the box are a Raspberry Pi 4, its microSD card, a real-time clock (decision D-030) and a
 power block with a small supercapacitor. Plug the dongle into the OBD2 port and the box
 into any USB-C charger in the car; nothing is cut or wired into the car (decision D-024).
+A small temperature probe on a lead from the box reads cabin air: the box's own sensor,
+which cross-checks the engine's temperature sensors after a long soak (decision D-037).
 The box runs only while the car does: at key-off it shuts itself down cleanly on its
 stored energy and stays dark until the next start. The Pi pairs with the dongle and reads
 it over RFCOMM as `/dev/obd` (decision D-019).
@@ -90,6 +92,7 @@ so to read it at home, plug it into any USB-C charger there.
 ```text
 src/                systems core, C17, -Wall -Wextra -Werror clean
   obd/              capture daemon: Mode 01 requests over the OBD2 adapter tty
+  ambient/          probe daemon: the box's DS18B20 cabin probe (D-037)
   ipc/              SPSC ring + Unix-socket protocol between processes   [mechanism E]
   store/            append-only crash-consistent log                     [mechanism D]
   analysis/         binning, baselines, residuals, trends, model, state machine

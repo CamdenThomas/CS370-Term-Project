@@ -4,8 +4,9 @@
 > order the dongle first: shipping time is the most common silent schedule-killer on this
 > project (handout §16).
 
-The product is one box with one USB-C port and one light, plus a Bluetooth OBD2 dongle in
-the car's OBD2 port (D-019, D-024). The owner supplies the USB-C charger.
+The product is one box with one USB-C port, one light and one temperature probe, plus a
+Bluetooth OBD2 dongle in the car's OBD2 port (D-019, D-024, D-037). The owner supplies the
+USB-C charger.
 
 ## Core: what we buy
 
@@ -38,6 +39,7 @@ a human (`CLAUDE.md` §8.4). Sizes marked *estimate* come from the power workshe
 | 1 | 5 V / 3 A converter that can step up | The bank's voltage falls as it discharges. |
 | 1 | Source-present divider and halt-done switch | GPIOs chosen in the schematic (`schpi`). |
 | 1 | Tri-color LED (red, yellow, green) + its resistors + the boot-time pull | The light (D-027). Two or three GPIOs, depending on the part; resistor values from its datasheet (`ledspec`). |
+| 1 | DS18B20 temperature probe, waterproof, on a lead of about 1 m, + a 4.7 kΩ resistor | The box's own sensor (D-037), about $3 to $8. Bought after it is drawn (`probeorder`); powered from 3.3 V. |
 | 1 | Real-time clock module on I2C, with its own backup cell or capacitor | Keeps wall time while the box is off (D-030). The backup's temperature rating must cover the cabin (`rtcspec`). |
 | 1 | Heatsink for the Pi | A Pi 4 throttles near 80 °C (`thermal`). |
 | 1 | Shell: heat-resistant plastic (ABS, ASA or similar), vent slots, no metal near the antenna | `enclspec`. PLA softens near 60 °C, below a parked cabin's temperature. A food container is an acceptable prototype (handout). |

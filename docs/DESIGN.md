@@ -22,11 +22,12 @@ likely fault area, with measured catch and false-alarm rates on faults we induce
 ## 1. Architecture
 
 ```text
-OBD2 port -- OBDLink LX (STN chip, Bluetooth Classic SPP, D-019)
-               ~~ RFCOMM ~~> kernel: BlueZ -> rfcomm tty -> /dev/obd
-  obdd          Mode 01, one request outstanding, round-robin, ~10-20 req/s
-    | SPSC ring in shared memory, ~10-20 samples/s, refuses when full (B.3)
-    v
+OBD2 port -- OBDLink LX (Bluetooth SPP, D-019)   DS18B20 cabin probe (D-037)
+   ~~ RFCOMM ~~> BlueZ -> rfcomm tty -> /dev/obd    1-Wire -> kernel w1-gpio -> sysfs
+  obdd    Mode 01, one outstanding, ~10-20 req/s   ambientd   one read every 2 s
+    | ring 1: SPSC, ~10-20 samples/s                  | ring 2: SPSC, 0.5 samples/s
+    +------------------------+------------------------+  shared memory, refuse when full
+                             v
   storaged [D]  BEGIN..COMMIT batches, 1 fsync/s, ~1 KB/s -> ext4 on SD (D-025)
     | committed records only, read back from the log, ~1 s behind (D-031)
     v
@@ -41,26 +42,33 @@ power: owner's USB-C charger -> power block + supercapacitor -> Pi 4 (D-024)
 ```
 
 Rates are estimates until the first drive measures them (`firstcap`): D-012 budgets about
-10 requests a second; the logging tool reaches 22 on `obdsim`. One reply is one sample,
-one record and one analysis step. `obdctl` and the page ask the supervisor, which asks
-the process holding the answer; `analyzed` never reads the ring (D-031).
+10 requests a second; the logging tool reaches 22 on `obdsim`. One reply, or one probe
+reading, is one sample, one record and one analysis step. `obdctl` and the page ask the
+supervisor, which asks the process holding the answer; `analyzed` never reads the ring
+(D-031).
 
 > 📏 **DRIVE:** measured request rate, reply-time p50/p99 and PID count replace the
 > estimates here and in §5.
 
 ## 2. Mechanism mapping
 
-D and E are the committed pair (D-017); B and F were declined: no Pi-side sensor, and
-Mode 01 rates never stress a ring (D-029).
+D and E are the committed pair (D-017); B and F stay declined: Mode 01 and a 0.5 Hz
+probe never stress a ring, and the probe's 1-Wire timing belongs to the kernel, not to
+us (D-029, D-037).
 
 | Item | Component | Justification from the user's requirements | Measured by |
 | --- | --- | --- | --- |
 | D | `storaged`; checkpoints in `analyzed` | Power can vanish at any instant (empty bank at a cold start, pulled cable, crank reset, D-024), yet the record and weeks of learned baselines must survive, and no baseline may learn from a sample a cut later erased (D-031). Hence append-only CRC'd records, 1 s commits (D-035), A/B checkpoints (D-025) | 50 cuts of the Pi's 5 V rail mid-write; records lost per cut |
-| E | `supervisor`, `src/ipc/` | A recorder that dies silently harms an owner who thinks it is on duty; the least trusted code (analysis) must not take capture or storage down (B.2). One dongle carries every sensor, so we isolate capture, storage and analysis, not sensors (D-029) | `kill -9` each child 20×: detection, recovery, fd leaks |
+| E | `supervisor`, `src/ipc/` | A recorder that dies silently harms an owner who thinks it is on duty; the least trusted code (analysis) must not take capture or storage down (B.2). Each sensor source has its own process: a hung Bluetooth link cannot stop the probe, nor a dead probe the engine sensors (D-037) | `kill -9` each child 20×: detection, recovery, fd leaks |
 
-**Two physically distinct sensors (handout §3.1).** The dongle is transport. Coolant and
-intake temperature, MAP or MAF, fuel trims and O2 sensors are distinct engine sensors, and
-every diagnostic fuses at least two (§3, D.4).
+**Two physically distinct sensors that cooperate (handout §3.1).** The DS18B20 probe on
+the Pi and the car's coolant and intake-air sensors are different devices on different
+buses, read by different processes (D-037). They cooperate in the cold-soak check (§3):
+after hours off (the clock says how long, D-030) all three should agree, and the one
+that disagrees is the suspect. Beyond the probe, the engine's sensors are distinct
+transducers the dongle only carries, and every diagnostic fuses at least two (D.4). "Both
+sensors alive" (M2) means a real Mode 01 capture and a pasted probe reading; "through the
+pipeline" (M3) means both arrive as committed records labeled `live`.
 
 ## 3. Analysis: how normal is learned and a fault area named
 
@@ -74,9 +82,9 @@ classifier (trained in `tools/train/`, inference in C; without weights, 1–4 st
 
 | Fault area (D-021) | Cooperating sensors | Signature | Induced by (E.2) |
 | --- | --- | --- | --- |
-| Cooling | coolant, intake/ambient temp, load, speed | warm-up slope or warm settling temperature off its bin's normal for the same ambient and load | cardboard over the radiator |
+| Cooling | coolant, intake temp, ambient (PID 0x46, else the probe), load, speed | warm-up slope or warm settling temperature off its bin's normal for the same ambient and load | cardboard over the radiator |
 | Air/fuel | fuel trims, MAP or MAF, rpm, O2 | long-term trim rising at idle with idle MAP, shrinking with load | a small vacuum line opened |
-| Sensor/electrical | the failed PID and its usual partners; module voltage | one PID absent or flat while its partners move | a sensor unplugged |
+| Sensor/electrical | the failed PID and its usual partners; module voltage; at a cold start, coolant, intake temp and the probe | one PID absent or flat while its partners move; after a long soak, one temperature off the other two | a sensor unplugged |
 | Unknown | all | residual high, no area matches | — |
 
 No row can be called by one threshold on one value: each compares sensors that normally
@@ -97,6 +105,7 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | adapter | garbage or timeouts | parse failure; timeout | 3 in a row: `ATZ`, then reopen | `reply_bad`, `adapter_reset` |
 | adapter | engine off, key in ACC | `0100` gets `NO DATA` | poll `0100` every few s, record nothing | `ecu_silent` |
 | ECU | a PID stops (sensor unplugged) | 5 `NO DATA` in a row | mark absent, retry each minute; report it | `pid_absent`, `pid_present` |
+| probe | unplugged, broken wire, bad read | device gone from sysfs; CRC `NO`; the 85.0 °C power-on value | mark absent, retry every 10 s; cold-soak check off, reported | `sensor_absent`, `sensor_present`, `reply_bad` |
 | any child | crash, `kill -9` | `waitpid` | restart with backoff; others run on | `child_exit`, `child_restart` |
 | ring | consumer stalls | sequence gap; late heartbeat | refuse and count (B.3); restart `storaged`; red | `ring_full`, `heartbeat_late` |
 | storaged | power cut mid-write | bad CRC / no `COMMIT` at boot | truncate tail and open batch (D-025) | `recovered` |
@@ -130,11 +139,12 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 One small box: a Pi 4, one USB-C sink input (5.1 kΩ on CC, so never more than 5 V) from
 the owner's charger, fuse and transient protection, an input current and inrush limit, a
 supercapacitor bank (two 2.7 V cells, about 10 F, about 105 J usable, estimate) behind a
-5 V / 3 A boost converter, an I2C real-time clock (D-030) and one tri-color light
-(D-027). Two signals reach the Pi: **source-present** (charger live) and, from the Pi,
-**halt-done**, after which the power stage cuts the Pi even if the source has returned,
-then re-enables it (D-024). Nothing on the car is cut or spliced. Buyer: `hardware/BOM.md`;
-builder: the schematic and `hardware/wiring.md`.
+5 V / 3 A boost converter, an I2C real-time clock (D-030), a DS18B20 probe on a short
+lead outside the shell (D-037) and one tri-color light (D-027). Two signals reach the
+Pi: **source-present** (charger live) and, from the Pi, **halt-done**, after which the
+power stage cuts the Pi even if the source has returned, then re-enables it (D-024).
+Nothing on the car is cut or spliced. Buyer: `hardware/BOM.md`; builder: the schematic
+and `hardware/wiring.md`.
 
 | State | Entered when | Supervisor does | Light |
 | --- | --- | --- | --- |
@@ -158,6 +168,7 @@ crash at any point is still recovered by mechanism D.
 | Wanted | Using | Cost |
 | --- | --- | --- |
 | Every engine sensor | The Mode 01 PIDs the ECU publishes (D-022) | Oil pressure likely absent; lists differ by car |
+| Outside air temperature | A DS18B20 in the cabin (D-037) | Reads cabin air: ambient only after a long soak, and sun-heated in summer |
 | Failing engines | Induced, reversible faults on two healthy cars (D-021) | A few fault areas; no real wear-out |
 | Raw CAN at ECU rate | Bluetooth Mode 01 request/response (D-019) | ~10–20 samples/s, no bus timing, a link that drops; most of the menu leaves the data path (D-017) |
 | 48 continuous hours | 48 h of normal use across key cycles (D-023) | Sessions with gaps; the professor confirmed this reading (D-023) |
@@ -188,7 +199,7 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | --- | --- | --- |
 | `src/ipc/` | Camden | the SPSC ring and its tests (M0) |
 | `tools/` OBD2 logging and analysis tools | Camden | `obdlib` to `obdbins` (M2, PR #155) |
-| `src/obd/`, `src/store/`, `src/analysis/`, `src/supervisor/`, `src/interface/`, `src/common/`, `tools/train/`, `electricalDrawing/` | unclaimed | |
+| `src/obd/`, `src/ambient/`, `src/store/`, `src/analysis/`, `src/supervisor/`, `src/interface/`, `src/common/`, `tools/train/`, `electricalDrawing/` | unclaimed | |
 
 > 🟨 **TEAM:** the rubric grades this map. Agree who takes each unclaimed row (D-026
 > still applies: the first substantive commit is the claim) and fill it in.
