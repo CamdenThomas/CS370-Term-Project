@@ -21,7 +21,7 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/29 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
-| M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
+| M6 | Demo day: live demo, fault injection, individual defenses (date verified, D-008) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
 
 <sub>Edit Deliverable, Week, Due and hours by hand; sync fills Progress and sets the GitHub
 milestone due dates. Dates verified against the syllabus 2026-09-21 (D-008).</sub>
@@ -303,7 +303,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M5 process: REFLECTION.md, both partners `reflection` <!-- #77 -->
 - [ ] M5 submit: assemble the tarball and M5 transcript copy-out `tarball` <!-- #79 -->
 
-## M6 — Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`)
+## M6 — Demo day: live demo, fault injection, individual defenses (date verified, D-008)
 
 Rehearse all three movements: the **demonstration** (they will unplug a sensor; graded
 on graceful degradation, honest reporting through our own interface, and the log line
