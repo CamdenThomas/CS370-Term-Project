@@ -27,7 +27,9 @@ class Adapter:
         self.path, self.timeout = path, timeout
         self.banner = ""
         try:
-            self.port = serial.Serial(path, baud, timeout=0.05)
+            # A write blocked on a stalled Bluetooth link must time out, or Ctrl-C could
+            # never end the session; pyserial reports it as a SerialException (LinkLost).
+            self.port = serial.Serial(path, baud, timeout=0.05, write_timeout=timeout)
         except (serial.SerialException, OSError) as e:
             raise LinkLost(f"cannot open {path}: {e}") from e
 
