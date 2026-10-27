@@ -41,19 +41,25 @@ is ugly, even if it is just raw adapter replies logged to a file. A crude captur
 on time beats an elegant one that starts three weeks late. Every week it slips is a week
 less of normal to learn from, and a weaker catch rate at M5.
 
-Board chain: `order` → `bench` → `firstcap` → **`baseline`**, with `keyoff` (the owner's
-charger proven dead at key-off) also gating `baseline`.
+**Status, 2026-10-27:** M2's date (2026-10-11) has passed with no real-car capture yet, so
+this path is already late; submitting M2 late is open as `m2format`. The logging tool
+exists (D-033), so the first drive needs only the dongle and a laptop.
+
+Board chain: `order` → `firstcap` (the Mac and `tools/obdlog.py`, D-033) → **`baseline`**,
+carried on by `pilogger` (the same tool on the Pi at every key-on) until `obdd` exists.
+Neither the box nor `keyoff` gates it: the Pi or the laptop runs from a plain charger.
 
 ### Critical path B — hardware lead time
 
 ```text
-order (M0) ──▶ adapter arrives ──▶ bench bring-up ──▶ first live car capture ──▶ pipeline (M3)
+order (M1) ──▶ adapter arrives ──▶ first live car capture ──▶ bench bring-up on the Pi ──▶ pipeline (M3)
 ```
 
 Nothing downstream of "arrives" can start early. The handout names shipping time as the most
 common silent schedule-killer, twice. **Order the dongle the day the paper plan is
 signed.** The Bluetooth OBD2 adapter (D-019) is the whole data path — the same part runs
-the PID survey, the bench bring-up and every capture after it.
+the PID survey, the bench bring-up and every capture after it. It has been bought; the
+DS18B20 probe (D-037) is the only other part on this path, and it is cheap and quick.
 
 The box's power block (D-024) is the second chain on this path, and it starts later
 because nothing in it is ordered until its design is signed:
@@ -72,8 +78,8 @@ after them.
 
 **The PID survey (`pidforester`, `pidhonda`).** Ten minutes per car, no custom hardware —
 just the adapter. It answers *which engine sensors does this car actually publish?*, which
-is the model's input list. Better to learn in Week 5, with the design still soft, than in
-Week 11 with the analysis half-written around a sensor that does not exist.
+is the model's input list. Neither car has been surveyed yet; better to learn it now than
+in Week 11 with the analysis half-written around a sensor that does not exist.
 
 ---
 
@@ -127,8 +133,9 @@ quietly stopped being mentioned.
 Every session starts and ends by `CLAUDE.md` §0: read the review queue, `--status`, sync
 and copy transcripts out at the end. On top of that:
 
-- **Monday:** `python tools/board_sync.py --check`, then work the **Ready** column. Cards
-  move out of Backlog on their own as blockers close — what you are looking for is anything
-  Ready that nobody has picked up, and anything still Backlog that should not be.
+- **Monday:** `python tools/board_sync.py --status`, then work the open boxes in
+  milestone order. Since D-020 there are no dependencies on the board, so the order within
+  a milestone in `docs/milestones.md` is the plan; look for open lines nobody has said they
+  are on.
 - **Friday:** cross-review at least one of the other's merged PRs, and log it in
   `PROMPTLOG.md` while it is fresh.

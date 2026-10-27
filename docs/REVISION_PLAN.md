@@ -1,20 +1,18 @@
 # Revision plan: the box redesign and the road to M2
 
-> **STATUS: PROPOSAL, written 2026-10-21 in Camden's session. Nothing in this file is a
-> decision.** A decision exists only when it is recorded in `docs/DECISIONS.md` as
-> ⚠️ UNREVIEWED, in the same commit as whatever enacts it, and signed later by a human.
-> Claude never marks a decision reviewed or 🔒 LOCKED (`CLAUDE.md` §0).
+> **HISTORICAL, frozen 2026-10-27. Do not work from this file.** It was the plan for the
+> box redesign, written 2026-10-21 in Camden's session. It is kept, unedited below this
+> box, because `docs/DECISIONS.md` cites its §1.1 (P1 to P14), §1.2 (R1 to R6) and §9 as
+> the record of what Camden decided and what Claude only recommended.
 >
-> **Update, later on 2026-10-21: stage 1 is done** on branch `camden/m2/revision-plan`.
-> D-022 to D-031 are in `docs/DECISIONS.md` as ⚠️ UNREVIEWED, with every dependent doc
-> edit. Where this file and `DECISIONS.md` disagree, `DECISIONS.md` wins. What was
-> answered, and what is still open, is marked in §1.2, §4.2 and §11.
->
-> **Audience: a fresh Claude session with no memory of the conversation that produced this
-> file.** Everything it needs is here or named by path. Where this file says "Camden
-> decided", that is a statement about the 2026-10-21 conversation, and §1 says exactly
-> which statements those are. Everything else is Claude's recommendation and must be
-> confirmed with Camden before it is written down as settled.
+> - **Done:** stage 1 as D-022 to D-031 (PR #154); stage 2 as `docs/DESIGN.md` (PRs
+>   #166, #167); stage 3 in a different shape, as `tools/obdlog.py`, `obdsim` and
+>   `pidscan` (PR #155, D-033), not `capture.py`.
+> - **Superseded since:** D-029 by D-037 (a DS18B20 probe); the soak definition is
+>   confirmed (D-023); DESIGN.md's section numbers below are the old ones (failure table
+>   now §4, storage §5, constraints §7, evaluation §8, ownership §9).
+> - **Still open:** every remaining item is a line on the board, `docs/milestones.md`,
+>   which is the only list of work. `DECISIONS.md` wins wherever the two disagree.
 
 ## 0. How to use this file
 

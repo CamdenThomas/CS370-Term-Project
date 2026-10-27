@@ -5,7 +5,7 @@ is one GitHub issue. There is no other place work is written down.
 
 ```sh
 python tools/board_sync.py              # make GitHub match the list
-python tools/board_sync.py --status     # open boxes per milestone, by owner
+python tools/board_sync.py --status     # open boxes per milestone
 python tools/board_sync.py --check      # what would change; exit 1 if anything would
 ```
 
@@ -15,16 +15,16 @@ move cards on the `carwatch` project board.
 ## A line
 
 ```markdown
-- [ ] M2 hardware: first live capture from a real car `firstcap` @camden <!-- #20 -->
+- [ ] M2 hardware: supported-PID survey on the 2008 Forester `pidforester` <!-- #133 -->
 ```
 
 | Part | Meaning |
 | --- | --- |
 | `[ ]` / `[x]` | open / done. Tick it, sync, and the issue closes and its card moves to Done. |
 | the text | the issue title. `M<n>:` is added on GitHub if the text does not start with it. |
-| `` `firstcap` `` | optional short name other docs cite (PLAN.md, DECISIONS.md). |
+| `` `pidforester` `` | optional short name other docs cite (PLAN.md, DECISIONS.md). |
 | `@camden`, `@lance` | optional assignee. Open lines carry none (D-026); ticked lines keep theirs as the record of who did the work. Sync only adds assignees: removing a marker does not unassign the issue. |
-| `<!-- #20 -->` | the issue number, hidden when rendered. **Sync writes it; never type one.** |
+| `<!-- #133 -->` | the issue number, hidden when rendered. **Sync writes it; never type one.** |
 
 **Bold** lines are the milestone's exit criteria; the plain lines under them are the tasks
 that get there. Long lines wrap onto continuation lines indented six spaces.

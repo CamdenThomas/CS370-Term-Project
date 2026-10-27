@@ -21,9 +21,9 @@ flags something, it names the likely fault area:
 
 | Fault area | Sensors that cooperate | Why a threshold can't do it |
 | --- | --- | --- |
-| Cooling | coolant temp + intake temp + engine load | A lazy or short-cycling thermostat shows up in *how* temperature moves with load, not in any single reading. |
-| Air/fuel mixture (vacuum leak, MAF, O2) | short+long term fuel trim + MAP + RPM | Trim is only meaningful relative to load; the fault is which way trims move *as load changes*. |
-| Sensor or electrical | any sensor against its usual partners | A dead or unplugged sensor reads a plausible value that no longer agrees with the others. |
+| Cooling | coolant temp + intake temp + ambient (the car's, or the box's probe) + load + speed | A lazy or short-cycling thermostat shows up in *how* temperature moves with load, not in any single reading. |
+| Air/fuel mixture (vacuum leak, MAF, O2) | short+long term fuel trim + MAP or MAF + RPM + O2 | Trim is only meaningful relative to load; the fault is which way trims move *as load changes*. |
+| Sensor or electrical | any sensor against its usual partners; after a long soak, coolant + intake temp + the box's probe | A dead or unplugged sensor reads a plausible value that no longer agrees with the others. |
 | Unusual, area unknown | all of them | Behavior outside the learned normal that matches no known area is still worth a flag. |
 
 We measure how often it catches faults we induce (a vacuum leak, a cooling restriction,
@@ -102,8 +102,9 @@ src/                systems core, C17, -Wall -Wextra -Werror clean
   interface/        obdctl CLI + read-only phone status page and report (D-013, D-028)
   common/           logging and shared helpers
 include/            headers shared between subsystems (common, ipc, store)
-tests/              unit tests (make test)
-tools/              Python only here: board sync, PID scan, replay, training
+tests/              C unit tests; tests/tools/ holds the Python tool tests (make test)
+tools/              Python only here: board sync, PID survey, drive logger, simulator,
+                    plots, replay, training
 scripts/            provision a clean Pi; install the service
 soak/               48-hour soak runner and fault injection
 docs/               everything written — start at docs/README.md
@@ -111,8 +112,9 @@ electricalDrawing/  KiCad schematic
 partners/           each partner's PROMPTLOG, REFLECTION, raw transcripts
 ```
 
-Created when their first file lands, not before: `fixtures/` (labeled captures),
-`models/` (our weights), `build/` and `soak/logs/` (both git-ignored).
+`fixtures/` holds labeled captures (one `synth` drive so far). Created when their first
+file lands, not before: `models/` (our weights), `build/` and `soak/logs/` (both
+git-ignored).
 
 ## The boundary
 

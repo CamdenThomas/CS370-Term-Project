@@ -1,4 +1,4 @@
-# tools/ — Python is allowed HERE ONLY
+# tools/ — Python is allowed here (and in its tests, `tests/tools/`) only
 
 Per the handout: the systems core is C; the interface layer may use anything, but **no
 graded mechanism may hide in it.** Nothing in this directory is part of the shipped
@@ -9,8 +9,7 @@ product's runtime path.
 | Tool | Purpose |
 | --- | --- |
 | `board_sync.py` | Mirrors the checklist in `docs/milestones.md` onto GitHub issues and the project board. Not a product tool at all — it is how the plan is maintained. See `docs/BOARD/BOARD.md`. |
-| `replay.py` | Feed a labeled capture through the real pipeline at real or accelerated speed. A legitimate systems artifact (handout §5), not a workaround — but everything it produces is labeled `replay`. |
-| `pidscan.py` | Mode 01 supported-PID survey for one car: protocol, battery, VIN hash, one reading per PID. Feeds `pid-survey.md`; the input to **D-007**. |
+| `pidscan.py` | Mode 01 supported-PID survey for one car: protocol, battery, VIN hash, one reading per PID. Feeds `pid-survey.md`, which sets each testbed's inputs (**D-022**). |
 | `obdlog.py` | The drive logger: every supported PID, round-robin, to `data/drive-*.jsonl` (**D-033**). Run book: `docs/hardware/first-drive.md`. |
 | `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty with a scripted drive, for development and tests, never the soak's data source (**D-023**). Sessions against it are labeled `synth`. |
 | `obdsum.py` | Per-session and per-PID summary of a drive log: rates, gaps, events. |
@@ -24,11 +23,13 @@ product's runtime path.
 
 | Tool | Purpose | Board item |
 | --- | --- | --- |
+| `replay.py` | Feed an `obdlog` capture through the real pipeline at its recorded timing, labeled `replay` (a `synth` capture stays `synth`). A legitimate systems artifact (handout §5). Today it is an M0 stub that exits 1. | `replay`, `replayjsonl` |
 | `plot_soak.py` | RSS / CPU / event-count series from soak heartbeats → the figure docs/EVALUATION.md §3 requires. | `plots` |
 
-**Setup:** `make toolcheck` builds `.venv/` with `requirements.txt` and runs the tool
-tests (D-032). Run a tool as `PYTHONPATH=tools .venv/bin/python tools/<tool>.py`. Analysis
-helpers need `requirements-analysis.txt`; `--gps` needs `requirements-gps.txt`.
+**Setup:** `make toolcheck` builds `.venv/` from `requirements-analysis.txt` (pyserial,
+matplotlib, numpy) and runs the tool tests in `tests/tools/` (D-032). Run a tool as
+`PYTHONPATH=tools .venv/bin/python tools/<tool>.py`. Logging alone needs only
+`requirements.txt`; `--gps` needs `requirements-gps.txt`.
 
 **The labeling rule is absolute.** Every record and log line these tools produce carries
 its `src`: `live` only for `obdlog.py` and `pidscan.py` talking to a real car, otherwise
