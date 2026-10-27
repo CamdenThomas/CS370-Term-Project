@@ -60,6 +60,7 @@ class AgainstSim(unittest.TestCase):
                 self.assertIn(key, s)
         with open(only_log(self.d)) as f:
             self.assertNotIn(obdsim.SIM_VIN, f.read())
+        self.assertNotIn("host", records[0], "D-033 lists no host name; it names a person")
 
     def test_pid_list_can_be_narrowed(self):
         with obdsim.PtyServer(link=self.link, latency=0.0):

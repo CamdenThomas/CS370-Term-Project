@@ -24,7 +24,6 @@ import datetime
 import json
 import os
 import signal
-import socket
 import sys
 import time
 
@@ -252,9 +251,8 @@ def _run(args, stop):
             vin = ad.vin()
         except obdlib.AdapterError:
             pass
-        header = {"tool": TOOL, "schema": SCHEMA, "host": socket.gethostname(),
-                  "port": args.port, "adapter": ad.banner, "protocol": ad.protocol(),
-                  "voltage": ad.voltage(),
+        header = {"tool": TOOL, "schema": SCHEMA, "port": args.port,
+                  "adapter": ad.banner, "protocol": ad.protocol(), "voltage": ad.voltage(),
                   "vin_hash": obdlib.vin_hash(vin) if vin else None,
                   "supported": [f"{p:02X}" for p in sorted(supported)]}
     except (elm.LinkLost, obdlib.AdapterError) as e:
