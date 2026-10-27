@@ -123,9 +123,12 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 
 - **Format (D-034):** 40-byte header (`magic`, `kind`, `seq`, `mono_ns`, `wall_ns`, `src`,
   flags, `boot_id`), typed body, CRC32. Kinds: sample, begin, commit, boot, shutdown,
-  event; a 56-byte sample keeps raw reply bytes beside the value. 16 MB segments, deleted
-  whole, never edited; how long raw data is kept is open (`retention`).
+  event; a 56-byte sample keeps raw reply bytes beside the value. 16 MB segments, never
+  edited.
 - **Rates:** 10–25 samples/s is 0.56–1.4 KB/s, 2–5 MB per running hour.
+- **Retention (D-041):** every segment is kept until the log filesystem is 80 % full,
+  then whole segments go oldest first, never one the newest checkpoint still needs. A
+  32 GB card holds years of two-hour days. Text logs go to the journal, size-capped.
 - **fsync (D-035):** commit at 1 s or 64 samples, and at clean shutdown. An unclean cut
   loses at most a second (one reading per PID) of signals that move over minutes; longer
   batches lose warm-up at each cold-start reset; per-record `fsync` is 20× the flash wear.

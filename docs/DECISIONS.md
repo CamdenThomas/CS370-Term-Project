@@ -60,6 +60,7 @@ Decisions currently awaiting a human signature:
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
+| D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
@@ -989,6 +990,43 @@ cut (`expcrash`).
 
 **Cost.** One second of data is lost on every unclean cut, by design, and the report says
 how many records each recovery dropped (D-025).
+
+### C.7 — Retention: keep every segment until the disk is 80 % full (draft) ⚠️ UNREVIEWED
+
+`D-041` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** board item `retention`; the "retention" that handout §8 asks
+the storage section to state
+
+**Decision (draft).**
+
+- **Records.** `storaged` keeps every closed segment (D-034) while the filesystem holding
+  the log is under 80 % full. Above that, it deletes whole segments, oldest first, until
+  it is under 75 %, and logs each deletion (`segment_dropped`, with its first and last
+  `seq`). It never deletes the open segment, nor any segment at or after the log offset
+  of the newest valid checkpoint (D-025), so the redo after a power cut always has its
+  input. Nothing is ever edited in place (C.1).
+- **Checkpoints.** The two A/B slots are never deleted; each overwrite replaces the older
+  slot only (D-025).
+- **Text logs.** Daemons log to standard output, which systemd sends to the journal;
+  provisioning caps the journal's size (`SystemMaxUse=`) so logs cannot fill the card.
+  The graded soak's logs are copied out of the journal at the end of each run, raw.
+- **If even that is not enough** (a full disk with nothing deletable), the failure table's
+  `enospc` row applies: hold the durable offset, degrade, show red.
+
+**The arithmetic (estimate).** A 32 GB card with about 24 GB free after the OS, at 80 %,
+holds about 19 GB of segments. At 2 to 5 MB per running hour (D-034) that is about 4,000
+to 9,600 running hours: five years or more of two-hour days. Retention exists for a
+fault, not for normal use.
+
+**Why.** Handout §8 asks what is stored, with what retention. The baseline is the
+product: older data is what lets a slow drift be seen against months of normal, so it is
+kept as long as space allows. Whole segments keep deletion an unlink, never an edit, so
+retention cannot tear a record (C.1). The checkpoint guard keeps the crash story true.
+
+**Cost.** Once the card is full, the oldest raw data goes, and with it the ability to
+re-learn a baseline from scratch out of the log; the checkpoints still hold the learned
+state. The thresholds are estimates for a card nobody has filled.
 
 ---
 
