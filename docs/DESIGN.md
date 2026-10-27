@@ -21,7 +21,7 @@
   │              │                 clean shutdown at key-off (D-024)
   │ Bluetooth    │  RFCOMM tty         ┌────────────────┐
   │ OBD2 adapter │◀ ~ ~ ~ ~ ~ ~ ~ ~ ~ ▶│      obdd      │  Mode 01 requests,
-  │ (D-019)      │  /dev/obd           │  tty reader    │  ~20 req/s, round-robin (D-012)
+  │ (D-019)      │  /dev/obd           │  tty reader    │  ~10-20 req/s, round-robin (D-012)
   └──────────────┘                     └───────┬────────┘
                                                │ SPSC ring in shm, ~20 samples/s,
                                                │ sequence-accounted; one consumer (D-031)
@@ -53,12 +53,12 @@
 `obdctl` and the status page never read samples themselves: they ask the supervisor, which
 asks the process that holds the answer (D-013). `analyzed` never reads the ring (D-031).
 
-Every rate is an estimate until the first drive measures it (`firstcap`): about 20
-requests a second is what `obdsim` gives at a 40 ms reply time (D-012), and the OBDLink
-LX's real reply time is unknown. The ring, the log and `analyzed` all run at the request
-rate, because each reply is one sample, one record and one analysis step. Heartbeat and
-backoff timings are set in the supervisor's design (`supbackoff`). A drawn figure in
-`docs/figures/` is still to do (`archfig`).
+Every rate is an estimate until the first drive measures it (`firstcap`): D-012 budgets
+about 10 requests a second, the unthrottled logging tool reaches 22 against `obdsim` at a
+40 ms reply time, and the OBDLink LX's real reply time is unknown. The ring, the log and
+`analyzed` all run at the request rate, because each reply is one sample, one record and
+one analysis step. Heartbeat and backoff timings are set in the supervisor's design
+(`supbackoff`). A drawn figure in `docs/figures/` is still to do (`archfig`).
 
 ## 2. Mechanism mapping
 >
@@ -134,9 +134,10 @@ through the shared logger in `src/common/`; every one also carries `src` (C.2).
   grouped into `BEGIN` … `COMMIT` batches (D-025). A sample record is 56 bytes and keeps
   the raw reply bytes beside the decoded value.
 - **Rates (estimates until the first drive measures them):** the adapter answers one
-  request at a time, about 15 to 25 a second (D-012; `obdsim` at a 40 ms reply time gives
-  22). Round-robin over the supported PIDs, about 17 on the simulator, gives each PID
-  about 1 Hz. That is 0.8 to 1.4 KB/s, or 3 to 5 MB per running hour.
+  request at a time. D-012 budgets about 10 a second; the unthrottled logging tool reaches
+  22 against `obdsim` at a 40 ms reply time. Round-robin over the model's input PIDs
+  (about 17 on the simulator) gives each PID roughly 0.5 to 1 Hz. That is 0.56 to
+  1.4 KB/s, or 2 to 5 MB per running hour.
 - **Retention and rollup:** open (`retention`). The segment layout (D-034) lets retention
   delete whole segments, oldest first, without editing any file; how long raw data stays
   before only binned aggregates remain is not decided.
@@ -183,7 +184,7 @@ Targets are drafts until a human signs D-036.
 | Measurement | Method | Target |
 | --- | --- | --- |
 | OBD reply → stored, p50/p99 | timestamp at tty read and after `fsync` returns, idle and with a CPU hog | ≤ 1.2 s / ≤ 2.5 s |
-| Sustained request rate | requests answered per second from the log, per drive | ≥ 15/s; every PID at least every 2 s |
+| Sustained request rate | requests answered per second from the log, per drive | ≥ 10/s; every model-input PID at least every 2 s |
 | `kill -9` each child: detection + recovery time | 20 trials per child, from the log | detection ≤ 100 ms; first heartbeat ≤ 5 s; no fd leaked |
 | Drop rate under contention | sequence accounting | zero |
 | RSS per process over the 48 h window | heartbeats at session start, hourly and at session end (D-023), plotted per session | flat: slope under 100 KB per running hour |

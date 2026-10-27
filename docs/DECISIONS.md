@@ -801,6 +801,12 @@ eye and by any analysis tool; the raw hex beside the decoded value means a decod
 never costs data; event lines mean nothing is dropped silently (D-012). Camden chose
 hashing over storing the VIN.
 
+**A departure from D-012, stated.** D-012 budgets about 10 requests a second on a
+rate-limited schedule. This tool keeps D-012's one outstanding request, the core of its
+safety argument, but sends the next request as soon as the last is answered, because the
+first drives exist to measure what the adapter can do. The product's `obdd` keeps a rate
+limit, set from that measurement (`canreq`).
+
 **What this is not.** It is not mechanism D and not the on-disk format of `storaged`
 (`recfmt`, D-025). The product stays C (CLAUDE.md §2.4); this is a collection tool in
 `tools/` (§2.5). `tools/replay.py` will convert these files into the product's records,
@@ -849,8 +855,9 @@ tested) over everything before it, magic included.
 at about 16 MB (about four hours of driving at the D-025 rate). Recovery scans only the
 newest segment; retention deletes whole segments, oldest first, and never edits one.
 
-**Size and rate.** A sample record is 56 bytes. At 15 to 25 requests a second that is
-0.8 to 1.4 KB/s, or 3 to 5 MB per running hour, plus a begin and a commit (112 bytes) per
+**Size and rate.** A sample record is 56 bytes. At 10 to 25 requests a second (D-012's
+budget up to what the unthrottled tool reaches on `obdsim`) that is 0.56 to 1.4 KB/s, or
+2 to 5 MB per running hour, plus a begin and a commit (112 bytes) per
 batch. D-025's estimate of 48 bytes becomes 56.
 
 **Why.** D-025 left the record kinds and the boot id to `recfmt`. The fields come straight
@@ -1082,7 +1089,7 @@ to hit.
 | Measurement | Target | Where the number comes from |
 | --- | --- | --- |
 | Reply to durable, p50 / p99 | ≤ 1.2 s / ≤ 2.5 s, idle and loaded | one batch a second (D-035) plus `fsync` time; nothing the owner sees moves faster |
-| Sustained request rate | ≥ 15 per second, every PID at least every 2 s | D-012's budget; the first drive replaces the estimate |
+| Sustained request rate | ≥ 10 per second; every PID the model uses read at least every 2 s | D-012's budget of about 10; `obdd` polls the model's input list, not every supported PID, so the 2 s bound holds for up to 20 inputs |
 | `kill -9` of each child, detection | ≤ 100 ms, 20 trials per child | `SIGCHLD` arrives at once; slower means the supervisor is blocked |
 | `kill -9` of each child, recovery | ≤ 5 s to the first heartbeat, no fd leaked | a recorder silent for longer has missed a reading of every PID |
 | Ring drops under contention | 0 overruns | B.3: refusals are counted, so zero is checkable |
