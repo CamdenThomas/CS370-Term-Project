@@ -11,7 +11,7 @@
 int main(void)
 {
     log_init("storaged", LOG_INFO);
-    LOG_I("start rec_version=%u", REC_VERSION);
+    LOG_I("start format=CWR1 magic=0x%08X", REC_MAGIC);
 
     /* TODO(M2): decide and document the fsync discipline in docs/DESIGN.md §4 before
      *           writing it. Batch size and interval are a user-requirements argument,
