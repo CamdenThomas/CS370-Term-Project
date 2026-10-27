@@ -111,6 +111,11 @@ class Adapter:
         LinkLost."""
         return obdlib.parse_response(self.command(obdlib.request(mode, pid)), mode, pid)
 
+    def query_all(self, mode, pid):
+        """The data bytes of every line that answered one request, in arrival order: one
+        per ECU that replied. Raises as query does."""
+        return obdlib.parse_all(self.command(obdlib.request(mode, pid)), mode, pid)
+
     def supported_pids(self):
         """Every Mode 01 PID the ECU lists, walking 0x00, 0x20, ... while chained."""
         found, base = set(), 0x00

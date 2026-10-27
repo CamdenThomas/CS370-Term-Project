@@ -68,6 +68,7 @@ Decisions currently awaiting a human signature:
 | D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
+| D-044 | Draft: drive logs keep every line that answers a request (`n_ecu`, `raw_all`, a `multi_ecu` event); headers stay off until a real car is measured (§C.8, amends D-033) | Claude, Camden's session | 2026-10-27 | Either — it decides what the first drive records when two ECUs answer |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet.** The entries that bind storage and analysis now are §C.1 to §C.7 and
@@ -985,7 +986,7 @@ optional `gps` lines and a `footer`. It polls every supported PID round-robin as
 the adapter answers. Writes are append-only and fsync'd every 50 lines or 1 s. The VIN is
 shown on screen and stored only as the first 12 hex digits of its SHA-256. A session
 against `obdsim` is labeled `synth` on every line, because the simulator's reset banner
-says `SIM`.
+says `SIM`. *The `sample` record is amended in draft 2026-10-27 by D-044 (§C.8).*
 
 **Why.** Camden, 2026-10-26: the first drive must log everything the car will answer so
 the data can be studied before the pipeline is designed around it. JSONL is readable by
@@ -1146,6 +1147,33 @@ retention cannot tear a record (C.1). The checkpoint guard keeps the crash story
 **Cost.** Once the card is full, the oldest raw data goes, and with it the ability to
 re-learn a baseline from scratch out of the log; the checkpoints still hold the learned
 state. The thresholds are estimates for a card nobody has filled.
+
+### C.8 — Drive logs keep every answering ECU's line (draft) ⚠️ UNREVIEWED
+
+`D-044` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Amends:** D-033 (§C.4), the `sample` record of `tools/obdlog.py`
+
+**Decision (draft).** Headers stay off (`ATH0`). When more than one line answers a Mode
+01 request, `obdlog` keeps all of them: the sample's `raw` and `val` are the first line,
+as before; `n_ecu` says how many lines answered (on every sample); `raw_all` lists every
+line's hex in arrival order (only when `n_ecu` is more than 1). The first time a PID gets
+more than one answer, a `multi_ecu` event says so, with the lines. Which ECU's line the
+analysis should use is decided after the first drive, from that evidence.
+
+**Why.** Engine and transmission controllers often both answer `05`, `0C` and `0D`. With
+headers off the lines do not say which controller sent them, and their order on the bus
+is not promised, so taking the first line can mix two controllers' readings in one
+series without a trace. Turning headers on (`ATH1`) would name the sender, but the header
+format differs by protocol (11-bit CAN, 29-bit CAN, K-line) and nothing has been measured
+on either car yet (CLAUDE.md §8.4); recording every line costs nothing and loses nothing.
+
+**Cost.** A sample with two answers is about 20 bytes longer. Readers that use only `raw`
+and `val` (`obdsum`, `obdplot`, `obdview`, `obdbins`) are unchanged, and so is their
+risk: until the evidence is in, a series may still mix two controllers.
+
+**Alternative rejected.** `ATH1` now, parsing the CAN ID: right in the end, probably,
+but a guess at formats before the first real reply has been seen.
 
 ---
 

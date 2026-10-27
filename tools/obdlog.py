@@ -7,9 +7,11 @@
 One file per session, data/drive-<time>-<src>.jsonl, one JSON object per line:
 
     header  adapter, protocol, battery, VIN hash, PID list, tool and schema version
-    sample  src, seq, t_mono, t_wall, pid, raw hex, decoded val, unit
+    sample  src, seq, t_mono, t_wall, pid, raw hex, decoded val, unit, n_ecu (lines
+            that answered), raw_all (every line, only when n_ecu > 1; D-044)
     event   no_data, timeout, adapter_error, reinit, pid_absent, link_lost,
-            reconnected, bus_asleep, bus_awake, gps_unavailable, gps_error, ...
+            reconnected, bus_asleep, bus_awake, multi_ecu (a PID's first reply from
+            more than one ECU), gps_unavailable, gps_error, ...
     gps     a Mac location fix, only with --gps
     footer  why the session ended, and its counts
 
@@ -289,6 +291,7 @@ def _run(args, stop):
 
     no_data = {p: 0 for p in pids}
     absent = {}                       # pid -> monotonic time it was set aside
+    multi = set()                     # PIDs already reported as answered by several ECUs
     errors = 0
     asleep_delay = None               # seconds until the next try while the bus is asleep
     next_status = time.monotonic() + args.status_sec
@@ -363,7 +366,7 @@ def _run(args, stop):
                         continue
                     absent[pid] = now
                 try:
-                    data = ad.query(1, pid)
+                    answers = ad.query_all(1, pid)
                 except obdlib.NoData:
                     no_data[pid] += 1
                     event("no_data", pid=key)
@@ -410,9 +413,17 @@ def _run(args, stop):
                 if pid in absent:
                     del absent[pid]
                     event("pid_present", pid=key)
-                value, unit = obdlib.decode(pid, data)
-                out.write("sample", pid=key, raw=data.hex(" ").upper(), val=value,
-                          unit=unit)
+                # With headers off (ATH0) a line does not say which ECU sent it. Decode
+                # the first, as before, and keep every line so the ECUs can be told
+                # apart later (D-044).
+                raws = [a.hex(" ").upper() for a in answers]
+                extra = {"raw_all": raws} if len(raws) > 1 else {}
+                if len(raws) > 1 and pid not in multi:
+                    multi.add(pid)
+                    event("multi_ecu", pid=key, n_ecu=len(raws), raw_all=raws)
+                value, unit = obdlib.decode(pid, answers[0])
+                out.write("sample", pid=key, raw=raws[0], val=value, unit=unit,
+                          n_ecu=len(raws), **extra)
                 counts["samples"] += 1
 
                 poll_gps()

@@ -30,6 +30,13 @@ class AgainstSim(unittest.TestCase):
         self.ad.init()
         self.assertEqual(len(self.ad.query(1, 0x0C)), 2)
 
+    def test_query_all_returns_every_answering_line(self):
+        self.srv.sim.two_ecu = frozenset({0x0C})
+        self.ad.init()
+        answers = self.ad.query_all(1, 0x0C)
+        self.assertEqual(len(answers), 2)
+        self.assertEqual(self.ad.query(1, 0x0C), answers[0])
+
     def test_supported_pids_walks_the_chain(self):
         self.ad.init()
         self.assertEqual(self.ad.supported_pids(), set(obdsim.MODELED))

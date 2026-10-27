@@ -62,6 +62,24 @@ class AgainstSim(unittest.TestCase):
             self.assertNotIn(obdsim.SIM_VIN, f.read())
         self.assertNotIn("host", records[0], "D-033 lists no host name; it names a person")
 
+    def test_every_answering_ecu_is_kept_and_reported_once(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0, two_ecu={0x0C, 0x0D}):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.0",
+                        "--pids", "0C,0D,05"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        samples = [r for r in records if r["type"] == "sample"]
+        for s in samples:
+            if s["pid"] in ("0C", "0D"):
+                self.assertEqual(s["n_ecu"], 2)
+                self.assertEqual(len(s["raw_all"]), 2)
+                self.assertEqual(s["raw"], s["raw_all"][0], "the first line is decoded")
+            else:
+                self.assertEqual(s["n_ecu"], 1)
+                self.assertNotIn("raw_all", s)
+        multi = [r for r in records if r.get("event") == "multi_ecu"]
+        self.assertEqual(sorted(e["pid"] for e in multi), ["0C", "0D"])
+        self.assertTrue(all(r["src"] == "synth" for r in records))
+
     def test_pid_list_can_be_narrowed(self):
         with obdsim.PtyServer(link=self.link, latency=0.0):
             run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "0.8",
@@ -124,7 +142,7 @@ class AgainstSim(unittest.TestCase):
 
         with obdsim.PtyServer(link=self.link, latency=0.0), \
                 mock.patch.object(elm.Adapter, "init", init_once), \
-                mock.patch.object(elm.Adapter, "query",
+                mock.patch.object(elm.Adapter, "query_all",
                                   side_effect=elm.Timeout("010C: no prompt")):
             run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
                         "--backoff-min", "0.2"])
@@ -136,7 +154,7 @@ class AgainstSim(unittest.TestCase):
     def test_a_sleeping_bus_is_waited_out_not_reset(self):
         asleep = mock.Mock(side_effect=obdlib.BusAsleep("UNABLE TO CONNECT"))
         with obdsim.PtyServer(link=self.link, latency=0.0), \
-                mock.patch.object(elm.Adapter, "query", asleep):
+                mock.patch.object(elm.Adapter, "query_all", asleep):
             run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
                         "--backoff-min", "0.2"])
         records, _ = obdlog.read_log(only_log(self.d))
@@ -266,7 +284,7 @@ class Interrupt(unittest.TestCase):
                 raise KeyboardInterrupt
 
             with obdsim.PtyServer(link=link, latency=0.0), \
-                    mock.patch.object(elm.Adapter, "query", interrupted), \
+                    mock.patch.object(elm.Adapter, "query_all", interrupted), \
                     self.assertRaises(KeyboardInterrupt):
                 run_logger(["--port", link, "--out", d, "--max-seconds", "2"])
             records, torn = obdlog.read_log(only_log(d))
@@ -279,7 +297,7 @@ class Footer(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             link = os.path.join(d, "obd")
             with obdsim.PtyServer(link=link, latency=0.0), \
-                    mock.patch.object(elm.Adapter, "query",
+                    mock.patch.object(elm.Adapter, "query_all",
                                       side_effect=RuntimeError("boom")), \
                     self.assertRaises(RuntimeError):
                 run_logger(["--port", link, "--out", d, "--max-seconds", "2"])
