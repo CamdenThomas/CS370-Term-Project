@@ -145,9 +145,9 @@ draw();
 
 def build(path, out):
     records, _ = obdlog.read_log(path)
-    data = obdplot.series(records)
+    t0 = obdplot.start_time(records)
+    data = obdplot.series(records, t0)
     header = next((r for r in records if r["type"] == "header"), {})
-    t0 = min((r["t_mono"] for r in records if r["type"] == "sample"), default=0.0)
     unit = {r["pid"]: r.get("unit", "") for r in records if r["type"] == "sample"}
     seconds = max((max(t) for t, _ in data.values()), default=0.0)
     drive = {

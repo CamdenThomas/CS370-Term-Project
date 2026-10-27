@@ -25,12 +25,19 @@ EVENT = "#d03b3b"       # reserved for events (link lost, timeouts), always labe
 INK, MUTED, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 
 
-def series(records):
-    """{pid: (seconds since the first sample, values)} for decoded samples."""
+def start_time(records):
+    """The log's time zero: its first sample, decoded or not. Series and event lines are
+    both measured from it, so an event sits at the moment it happened on every chart."""
+    return min((r["t_mono"] for r in records if r["type"] == "sample"), default=0.0)
+
+
+def series(records, t0=None):
+    """{pid: (seconds since start_time, values)} for decoded samples."""
     samples = [r for r in records if r["type"] == "sample" and r.get("val") is not None]
     if not samples:
         return {}
-    t0 = min(r["t_mono"] for r in samples)
+    if t0 is None:
+        t0 = start_time(records)
     out = {}
     for r in samples:
         t, v = out.setdefault(r["pid"], ([], []))
@@ -63,10 +70,10 @@ def _events(ax, records, t0):
 
 def plot_session(path, out_dir):
     records, _ = obdlog.read_log(path)
-    data = series(records)
+    t0 = start_time(records)
+    data = series(records, t0)
     os.makedirs(out_dir, exist_ok=True)
     title = title_for(records, path)
-    t0 = min((r["t_mono"] for r in records if r["type"] == "sample"), default=0.0)
     unit = {r["pid"]: r.get("unit", "") for r in records if r["type"] == "sample"}
     written = []
 

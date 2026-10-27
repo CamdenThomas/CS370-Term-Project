@@ -39,6 +39,14 @@ class Plots(unittest.TestCase):
             self.assertEqual([os.path.basename(p) for p in written],
                              ["overview.png", "intervals.png"])
 
+    def test_series_and_events_share_one_time_zero(self):
+        # PID 01 does not decode, and on a real car it is the first PID asked.
+        records = [{"type": "sample", "t_mono": 10.0, "pid": "01", "val": None},
+                   {"type": "sample", "t_mono": 11.0, "pid": "0C", "val": 800.0},
+                   {"type": "event", "t_mono": 12.0, "event": "link_lost"}]
+        self.assertEqual(obdplot.start_time(records), 10.0)
+        self.assertEqual(obdplot.series(records)["0C"], ([1.0], [800.0]))
+
     def test_title_marks_synthetic_data(self):
         records, _ = obdlog.read_log(FIXTURE)
         self.assertIn("SYNTH", obdplot.title_for(records, "x.jsonl"))
