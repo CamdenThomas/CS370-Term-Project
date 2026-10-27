@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 ring_t *ring_create(const char *name)
@@ -40,7 +41,16 @@ ring_t *ring_create(const char *name)
     }
     r = p;
     ring_init(r);
-    LOG_I("ring_created name=%s bytes=%zu capacity=%u", name, sizeof *r, RING_CAPACITY);
+    /* storaged records which ring instance it drained, so after its own restart it skips
+     * slots it already committed, but never skips a ring made fresh at the next boot
+     * (D-039). The wall clock and pid make a new value per creation. */
+    struct timespec now = { 0, 0 };
+    if (clock_gettime(CLOCK_REALTIME, &now) != 0)
+        LOG_W("ring_generation_clock_failed errno=%d (%s)", errno, strerror(errno));
+    r->generation = ((uint64_t)now.tv_sec * 1000000000ull + (uint64_t)now.tv_nsec) ^
+                    ((uint64_t)getpid() << 40);
+    LOG_I("ring_created name=%s bytes=%zu capacity=%u generation=%016llx", name, sizeof *r,
+          RING_CAPACITY, (unsigned long long)r->generation);
     goto out;
 
 unlink:

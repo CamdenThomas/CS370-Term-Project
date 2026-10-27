@@ -94,7 +94,9 @@ static void test_attach_refuses_what_it_cannot_trust(void)
     CHECK(again != NULL, "attach to a good ring");
     ring_detach(again);
 
-    /* A second create replaces a stale ring rather than failing on it. */
+    /* A second create replaces a stale ring rather than failing on it, and gets a new
+     * generation so storaged never mistakes it for the ring it drained before. */
+    uint64_t old_gen = r->generation;
     ring_slot_t s;
     memset(&s, 0, sizeof s);
     s.src = SRC_SYNTH;
@@ -102,6 +104,7 @@ static void test_attach_refuses_what_it_cannot_trust(void)
     ring_detach(r);
     r = ring_create(name);
     CHECK(r != NULL && ring_depth(r) == 0, "re-create starts empty");
+    CHECK(r != NULL && r->generation != old_gen && r->generation != 0, "new generation");
     ring_detach(r);
     CHECK(ring_destroy(name) == 0, "destroy");
 }

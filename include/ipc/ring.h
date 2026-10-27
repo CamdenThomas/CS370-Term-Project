@@ -36,7 +36,7 @@ typedef struct {
 
 #define RING_LINE    64u          /* cache line on the Pi 4's Cortex-A72 */
 #define RING_MAGIC   0x474E5243u  /* the bytes "CRNG" */
-#define RING_VERSION 2u           /* bump whenever ring_t or ring_slot_t changes layout */
+#define RING_VERSION 3u           /* bump whenever ring_t or ring_slot_t changes layout */
 
 /* Shared-memory names (D-039): obdd's ring and ambientd's (D-037). */
 #define RING_NAME_OBD   "/carwatch-obd"
@@ -50,6 +50,7 @@ typedef struct {
     uint16_t version;        /* RING_VERSION */
     uint16_t slot_size;      /* sizeof(ring_slot_t) */
     uint32_t capacity;       /* RING_CAPACITY */
+    uint64_t generation;     /* set once by ring_create: tells this ring from the next one */
     _Alignas(RING_LINE) _Atomic uint64_t head;      /* producer writes */
     _Alignas(RING_LINE) _Atomic uint64_t tail;      /* consumer writes */
     _Alignas(RING_LINE) _Atomic uint64_t overruns;  /* refused pushes — must stay zero */
