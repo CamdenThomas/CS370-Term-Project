@@ -1,15 +1,15 @@
 # carwatch — CS370 term project
 # Systems core is C17 and must stay -Wall -Wextra -Werror clean (CLAUDE.md §2.4).
 
-CC       ?= gcc
+# CC is make's default, cc: gcc on the Pi and in CI, clang on macOS.
 
-# tools/ needs tomllib, which is Python 3.11+. The department machines put 3.9
-# on PATH as python3, where boardcheck dies with ModuleNotFoundError before it
-# can report anything useful. Pick the first interpreter that can actually parse
-# the board; fall back to python3 so the error, if any, still comes from tools/.
+# The tool tests (tests/tools/, D-032) need Python 3.11 or newer, the version Raspberry Pi
+# OS ships; the department machines put 3.9 on PATH as python3. Pick the first interpreter
+# that is new enough; fall back to python3 so the error, if any, names the version.
 PY       ?= $(shell for p in python3 python3.13 python3.12 python3.11; do \
               command -v $$p >/dev/null 2>&1 && \
-              $$p -c 'import tomllib' >/dev/null 2>&1 && { echo $$p; exit 0; }; \
+              $$p -c 'import sys; sys.exit(sys.version_info < (3, 11))' >/dev/null 2>&1 && \
+              { echo $$p; exit 0; }; \
             done; echo python3)
 CSTD      = -std=c17
 WARN      = -Wall -Wextra -Werror -Wshadow -Wconversion -Wvla
