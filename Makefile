@@ -91,8 +91,11 @@ toolcheck: .venv/.installed
 # Sanitized objects live in their own tree. Objects do not depend on the flags that built
 # them, so sharing build/ let a plain `make` link against ASan objects and fail, and let
 # `make test` rerun sanitized binaries without saying so.
+# -fno-sanitize-recover makes a UBSan finding abort the test, so it cannot print PASS.
+# LeakSanitizer is on by default on Linux (the Pi, CI); macOS arm64 does not have it.
 asan:
-	$(MAKE) BUILD=$(BUILD)/asan test OPT="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"
+	$(MAKE) BUILD=$(BUILD)/asan test \
+	  OPT="-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
 
 memcheck: $(TEST_BIN)
 	@for t in $(TEST_BIN); do valgrind --error-exitcode=1 --leak-check=full $$t || exit 1; done
