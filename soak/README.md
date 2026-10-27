@@ -3,8 +3,8 @@
 **What the soak is (D-023):** a 48-hour wall-clock window of the car's normal use. The box
 boots at every key-on, records, and shuts down at every key-off, on the live car
 (`src=live`). The fake OBD2 port (`obdsim`) is a development tool and is never the soak's
-data source. This reading came from the professor verbally and awaits written
-confirmation (board item `profmail`).
+data source. The professor confirmed this reading (reported by Camden, 2026-10-26;
+board item `profmail`).
 
 The handout requires the logs to show, at minimum:
 

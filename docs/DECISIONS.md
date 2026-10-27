@@ -48,17 +48,21 @@ Decisions currently awaiting a human signature:
 | D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation now target fault areas, not three diagnostics |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
-| D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); pending the professor's written confirmation | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
+| D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); confirmed by the professor (Camden, 2026-10-26) | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
 | D-025 | Write-ahead transactions (`BEGIN`, records, `COMMIT`, one `fsync`) and A/B baseline checkpoints; extends 🔒 C.1 (§C.3) | Camden (extended C.1) + Claude | 2026-10-21 | Lance — it is the storage design behind mechanism D |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
-| D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7) | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
+| D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7); revised by D-037 | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
+| D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
+| D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
+| D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
+| D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
@@ -476,6 +480,10 @@ rather than *old*. If that is ever the wrong choice for a diagnostic, reopen thi
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Resolves:** board item `pisensor`, and the "only if" conditions of D-017 (§B.1)
 
+*Revised 2026-10-26 by D-037 (§B.9), before any review: one Pi-side sensor, a DS18B20
+probe, is added for handout §3.1 and mechanism E's wording. B and F stay out of scope,
+and the "no MPU-6050, no DS18B20" below now reads "no MPU-6050".*
+
 **Decision.** No sensor is added on the Pi itself: no MPU-6050, no DS18B20. Mechanisms
 **D** and **E** are the committed pair, implemented and measured. **B** and **F** are out
 of scope. **A**, **C** and raw CAN stay stretch goals.
@@ -510,6 +518,10 @@ hardware, for a sensor the user's problem does not need.
 · **Fixes:** `docs/DESIGN.md` §1, which fanned one single-consumer ring out to three
 readers
 
+*Revised 2026-10-26 by D-037 (§B.9), before any review: a second SPSC ring carries the
+DS18B20 probe's samples from `ambientd` to `storaged`. Each ring keeps one producer and
+one consumer, so the reasoning below holds for both.*
+
 **Decision.** The shared-memory SPSC ring has exactly one producer, `obdd`, and one
 consumer, `storaged`. `analyzed` does not read the ring: it reads `storaged`'s log, in
 order, and only records whose batch has been committed to disk. "Committed" means
@@ -540,11 +552,176 @@ there yet.
 **Open, for the stage-2 architecture (`archdiag`).** The ring carries only samples, so this
 entry does not yet say how `analyzed`'s verdicts and the supervisor's fault and heartbeat
 events reach durable storage, which the report and `obdctl verdicts --since` need. The
-obvious answer is a Unix socket to `storaged`; it is not decided here.
+obvious answer is a Unix socket to `storaged`; it is not decided here. *Answered in draft
+2026-10-27 by D-042 (§B.10).*
 
 **Alternative rejected.** Two rings, `obdd` pushing every sample into both: lower
 analysis latency, but the analysis ring overruns whenever `analyzed` restarts, and
 recovery would need its own replay path.
+
+### B.9 — A DS18B20 probe on the Pi, read by its own process ⚠️ UNREVIEWED
+
+`D-037` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Revises:** D-029 (§B.7), which declined every Pi-side sensor; D-031 (§B.8), which had
+one ring; D-034 (§C.5), whose sample record gains a namespace for it
+· **Answers:** board item `pisensor`
+
+**Decision.** The box gets one sensor of its own: a **DS18B20** digital temperature probe
+on a short lead outside the shell, in cabin air.
+
+- **Wiring.** The standard 1-Wire hookup: data on GPIO4 (header pin 7, the default of
+  the kernel's `w1-gpio` overlay) with a 4.7 kΩ pull-up to 3.3 V, power from 3.3 V, not
+  parasite power. Checked against the part's datasheet and drawn in the Pi interface
+  block (`schpi`) before it is wired.
+- **Its own process.** `ambientd` (`src/ambient/`) reads
+  `/sys/bus/w1/devices/28-*/w1_slave` every 2 seconds. A reading whose CRC line ends in
+  `NO`, or that holds the 85.0 °C power-on value, is rejected and logged. A missing
+  device is `sensor_absent`, retried every 10 s, and `sensor_present` when it returns.
+- **Its own ring.** A second shared-memory SPSC ring, `ambientd` to `storaged`, with the
+  same type and the same refuse-when-full rule as the first (B.3). Each ring keeps one
+  producer and one consumer, so D-031's reasons for one consumer still hold; `storaged`
+  drains both into the same batches.
+- **Its records.** An ordinary sample record (D-034) with `mode` 0x00, which no OBD2
+  request uses, as the namespace for the box's own sensors, and `pid` 0x01 for this
+  probe, value in °C.
+
+**What it cooperates in.**
+
+- **The cold-soak check** (sensor/electrical area). After the box has been off for hours
+  (the clock says how long, D-030), coolant temperature, intake-air temperature and the
+  probe should agree within a few degrees at key-on. When two agree and one does not,
+  the one that disagrees is the suspect. No single threshold on one value can say that.
+- **Ambient for the cooling area** when the car does not publish PID 0x46, using the
+  key-on reading after a long soak.
+
+**Why.** Camden, 2026-10-26, choosing the audit's option for two rubric risks:
+
+- Handout §3.1 asks for at least two physically distinct sensors that cooperate. Through
+  the dongle alone, every sensor reaches the Pi by one device, one link and one process,
+  and a grader may call that one sensor. The probe is a second device on a second bus.
+- Handout §3.2 words mechanism E as "sensors isolated in separate processes". With
+  `obdd` and `ambientd`, that is now literally true, on top of the isolation of capture,
+  storage and analysis (B.2).
+- Demo day unplugs a sensor (handout §11). The probe is one a grader can pull by hand,
+  without opening the hood of a running car.
+
+**What it does not change.** B and F stay declined: 1-Wire's bit timing is done by the
+kernel, so there is no interrupt of ours to compare against polling, and 0.5 samples a
+second never stresses a ring. D and E remain the committed pair (D-017).
+
+**Cost.**
+
+- One part, a resistor and a GPIO; bought only after it is drawn (`probeorder`) and
+  brought up on the bench with the evidence pasted (`probebench`).
+- A second ring, a fifth daemon, and their rows in the failure table and the soak plot.
+- The probe reads cabin air: equal to outside air only after a long soak, and
+  sun-heated in summer. The design doc states this as a substitution.
+
+**Alternative rejected.** An MPU-6050 (D-017's option): it would bring back B and F, but
+it is more parts and a sensor the user's problem does not need. The written defense
+alone ("the dongle is only transport"): it leaves the §3.1 question to the grader.
+
+### B.10 — Events reach storage over one Unix socket to `storaged` (draft) ⚠️ UNREVIEWED
+
+`D-042` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** D-031's open item (§B.8) and board item `verdictpath`
+
+**Decision (draft).** Samples travel by the rings; everything else that must be durable
+is an **event**, and events travel by one socket.
+
+- **The socket.** `storaged` listens on a Unix domain socket of type `SOCK_SEQPACKET`,
+  `/run/carwatch/events.sock`, created by the supervisor's runtime directory, mode 0600.
+  One packet is one event: `code` u16, then up to 200 bytes of `key=value` text. A
+  sequenced packet socket keeps message boundaries and order and never splits an event.
+- **Who sends.** Every daemon sends its own events: `analyzed` its verdicts (and also
+  tells the supervisor, which drives the light), the supervisor its child, power and
+  clock events, `obdd` and `ambientd` their link and sensor events. The event names are
+  the failure table's log events (`docs/DESIGN.md` §4).
+- **What `storaged` does.** It writes each event as an `event` record (D-034) in the next
+  batch, so an event is durable at the same commit as the samples around it and is
+  ordered with them by `seq`.
+- **When `storaged` is down.** A sender keeps up to 64 unsent events in memory and drops
+  the oldest beyond that, counting the drops; the count is in its heartbeat. Every event
+  is also a log line in the journal at the moment it happens, so the journal is the
+  record of last resort and the socket never blocks a sender (`MSG_DONTWAIT`).
+
+**Event codes.** High byte by sender, low byte by event: `0x01` supervisor, `0x02`
+`obdd`, `0x03` `ambientd`, `0x04` `analyzed` (verdicts), `0x05` `storaged` itself (for
+example `recovered`, `segment_dropped`). The table of codes lives in one header,
+`include/common/events.h`, and nowhere else.
+
+**Why.** D-031 left this open, and the report (D-028) and `obdctl verdicts --since` need
+verdicts and faults on disk, in order with the samples. One socket keeps `storaged` the
+only writer of the log (C.1). A packet socket is the simplest IPC that keeps one event
+one message. A sender that blocked on a dead `storaged` would let a storage fault stop
+capture or analysis, which B.2 exists to prevent.
+
+**Cost.** One more listener in `storaged` and one more fd per sender. Events that arrive
+while `storaged` is down and overflow the 64-event queue are lost from the log (but not
+from the journal), and the drop count says how many. The socket is `AF_UNIX`, so the
+boundary rule must allow it outside `src/interface/` (`make boundary`).
+
+**Alternative rejected.** Each process writing its own event file: several writers, no
+common order with the samples, and one more crash-recovery story per file. Events in the
+rings: the slot type is sized for a reply, and the supervisor, which has no ring, could
+not send.
+
+### B.11 — The supervisor's control socket, the five `obdctl` verbs, and `statusd` (draft) ⚠️ UNREVIEWED
+
+`D-043` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** board item `ipcspec`; names the status-page process D-013 and
+D-028 left unnamed
+
+**Decision (draft).**
+
+- **The control socket.** The supervisor listens on `/run/carwatch/ctl.sock`, a Unix
+  domain `SOCK_STREAM` socket, mode 0660. A request is one line, `VERB key=value ...`,
+  at most 512 bytes. A reply is zero or more lines of `key=value` fields, then `ok`, or
+  `err <code> <reason>`, then the connection closes. Text, so it can be typed by hand
+  and quoted in the report and at the defense.
+- **Routing.** The supervisor answers `status` itself, from its children's heartbeats.
+  It forwards `verdicts`, `series` and `faults` to `storaged`, which reads its own
+  committed log up to the durable offset (D-031), and `baseline` to `analyzed`, the only
+  holder of baselines, each over that process's own query socket in the same format. A
+  child that is down gives `err unavailable <name>`; nothing else waits on it.
+
+**The five verbs.**
+
+| Verb | Arguments | Answers |
+| --- | --- | --- |
+| `status` | none | each process: up, down or restarting, pid, uptime, restarts, RSS, CPU, event and drop counts; each ring's depth and overruns; dongle link and probe present or absent; the light's state; whether wall time is trusted; the mix of `src` in this session |
+| `verdicts` | `--since WHEN` (default: this boot) | each surfaced verdict: start, end or active, fault area, the sensors that cooperated, residual, `src` |
+| `series` | `PID --from WHEN --to WHEN [--binned]` | the samples of one PID (`0C`, or `probe`) in the window, each with `src`; `--binned` gives per-bin means instead |
+| `baseline` | `PID [--bin RPM,LOAD,COOLANT]` | the learned mean and variance of one PID in every bin, or in the one bin named |
+| `faults` | `--since WHEN` (default: this boot) | detection, degradation and recovery events (D-042), each with `src` |
+
+`WHEN` is ISO 8601 or relative (`-2h`). `obdctl` exits 0 on `ok`, 1 on `err`, 2 on a
+usage error and 3 when the supervisor cannot be reached.
+
+**`statusd`.** The phone page and the report generator (D-013, D-028) are one supervised
+process, `statusd`, in `src/interface/`. It serves HTTP only on the box's access-point
+address, and builds every page and report from the same control-socket verbs, so it holds
+no state of its own. It is the only process with an `AF_INET` socket.
+
+**Why.** Board item `ipcspec`: B.2, D-013 and D-031 all route queries through the
+supervisor without saying how, the README's `baseline` line was ambiguous about bins,
+and the status page had no process name for the failure table, the Makefile or the
+soak's RSS plot. A line protocol over one socket is the smallest thing that lets the CLI,
+the page and a human at a terminal ask the same questions. History is answered by
+`storaged` because it owns the log; the supervisor does not hold data, so a query can
+never slow the restart path.
+
+**Cost.** Three query sockets (supervisor, `storaged`, `analyzed`) and their parsers,
+each a place for a malformed request to be handled; every parser gets a test with bad
+input. History queries cost `storaged` reads while it writes, which the CPU measurement
+(D-036) will show.
+
+**Alternative rejected.** `obdctl` reading the log files itself: simpler, but it breaks
+D-031's rule that only the process holding the answer reads it, and the page would need a
+second copy of that reader.
 
 ### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
 
@@ -822,6 +999,9 @@ ignored); only short excerpts are committed as evidence.
 of the details · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Finishes:** D-025's open `recfmt` item; keeps every rule of 🔒 C.1 and 🔒 C.2
 
+*Extended 2026-10-26 by D-037 (§B.9): a sample with `mode` 0x00 is from the box's own
+sensors; `pid` 0x01 is the DS18B20 probe, value in °C.*
+
 **Decision (draft).** `storaged` writes a log of self-framing records. Every multi-byte
 field is little-endian, the Pi's native order. Each record is a fixed header, a body whose
 layout depends on its kind, and a CRC32 (the existing `src/store/` CRC, known-answer
@@ -884,7 +1064,7 @@ of the argument · **Reviewed:** Camden ⬜ / Lance ⬜
 
 **Decision (draft).** `storaged` closes a batch, writes its `COMMIT` and calls `fsync` when
 the batch is **one second old or holds 64 samples**, whichever comes first, and always at
-a clean shutdown. A batch is never left open across a ring wakeup that finds no data for
+a clean shutdown. A batch is never left open across a ring wake-up that finds no data for
 a second: the timer closes it.
 
 **The argument, from the user's requirements.**
@@ -899,7 +1079,7 @@ a second: the timer closes it.
   would lose ten seconds of warm-up at every such reset.
 - **Why not every record.** An SD card `fsync` costs milliseconds; twenty a second would
   spend a noticeable share of every second blocked and multiply flash writes about
-  twentyfold for no user benefit, since nothing reads a sample within a second anyway.
+  twenty times over for no user benefit, since nothing reads a sample within a second anyway.
 - **Analysis lag.** `analyzed` reads only durable records (D-031), so it trails capture by
   one batch, about a second. Nothing the owner sees changes faster than that.
 - **Flash wear.** About one page plus metadata per second, a few tens of MB per running
@@ -914,6 +1094,43 @@ cut (`expcrash`).
 
 **Cost.** One second of data is lost on every unclean cut, by design, and the report says
 how many records each recovery dropped (D-025).
+
+### C.7 — Retention: keep every segment until the disk is 80 % full (draft) ⚠️ UNREVIEWED
+
+`D-041` · Drafted M2, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** board item `retention`; the "retention" that handout §8 asks
+the storage section to state
+
+**Decision (draft).**
+
+- **Records.** `storaged` keeps every closed segment (D-034) while the filesystem holding
+  the log is under 80 % full. Above that, it deletes whole segments, oldest first, until
+  it is under 75 %, and logs each deletion (`segment_dropped`, with its first and last
+  `seq`). It never deletes the open segment, nor any segment at or after the log offset
+  of the newest valid checkpoint (D-025), so the redo after a power cut always has its
+  input. Nothing is ever edited in place (C.1).
+- **Checkpoints.** The two A/B slots are never deleted; each overwrite replaces the older
+  slot only (D-025).
+- **Text logs.** Daemons log to standard output, which systemd sends to the journal;
+  provisioning caps the journal's size (`SystemMaxUse=`) so logs cannot fill the card.
+  The graded soak's logs are copied out of the journal at the end of each run, raw.
+- **If even that is not enough** (a full disk with nothing deletable), the failure table's
+  `enospc` row applies: hold the durable offset, degrade, show red.
+
+**The arithmetic (estimate).** A 32 GB card with about 24 GB free after the OS, at 80 %,
+holds about 19 GB of segments. At 2 to 5 MB per running hour (D-034) that is about 4,000
+to 9,600 running hours: five years or more of two-hour days. Retention exists for a
+fault, not for normal use.
+
+**Why.** Handout §8 asks what is stored, with what retention. The baseline is the
+product: older data is what lets a slow drift be seen against months of normal, so it is
+kept as long as space allows. Whole segments keep deletion an unlink, never an edit, so
+retention cannot tear a record (C.1). The checkpoint guard keeps the crash story true.
+
+**Cost.** Once the card is full, the oldest raw data goes, and with it the ability to
+re-learn a baseline from scratch out of the log; the checkpoints still hold the learned
+state. The thresholds are estimates for a card nobody has filled.
 
 ---
 
@@ -1034,8 +1251,8 @@ know what ours mean — and we will be asked at the defense how we know.
 
 `D-023` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜
-· **Answers:** D-006 (§G.7) · **Pending:** the professor's written confirmation
-(`profmail`)
+· **Answers:** D-006 (§G.7) · **Confirmed:** by the professor, reported by Camden on
+2026-10-26 (`profmail`)
 
 **Decision.** The graded soak (handout §3.4) is a **48-hour wall-clock window of the car's
 normal use**. Across that window the box:
@@ -1059,10 +1276,10 @@ gracefully at key-off and boots again at the next start. Camden chose the wall-c
 reading (`docs/REVISION_PLAN.md` §1.1, P3). It also dissolves D-006's conflict: the soak
 runs on live sensors, as handout §5 requires.
 
-**Pending.** The handout's text says "48 continuous hours". Until the professor confirms
-this reading in writing (email draft in `docs/REVISION_PLAN.md` §9; Camden sends it),
-build so that a grader reading the handout literally can still follow the logs: every
-off period is a deliberate gap between a logged shutdown and a logged boot.
+**Confirmed.** The handout's text says "48 continuous hours"; the professor confirmed this
+reading (reported by Camden, 2026-10-26). The logs are still built so that a grader
+reading the handout literally can follow them: every off period is a deliberate gap
+between a logged shutdown and a logged boot.
 
 **Cost.**
 
@@ -1082,6 +1299,11 @@ off period is a deliberate gap between a logged shutdown and a logged boot.
 of the numbers · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Answers (if signed):** board item `evalplan`
 
+*Extended 2026-10-26, before any review, by Claude in Camden's session: rows for CPU per
+process, the fsync batch-size experiment, every failure-table row, and the probe (D-037),
+because handout §9 requires CPU and fault-injection results and mechanism D is measured
+by its write batching.*
+
 **Decision (draft).** `docs/DESIGN.md` §6 commits to these targets. Each one is chosen from
 what the user needs or what an earlier decision already implies, not from what we expect
 to hit.
@@ -1092,8 +1314,12 @@ to hit.
 | Sustained request rate | ≥ 10 per second; every PID the model uses read at least every 2 s | D-012's budget of about 10; `obdd` polls the model's input list, not every supported PID, so the 2 s bound holds for up to 20 inputs |
 | `kill -9` of each child, detection | ≤ 100 ms, 20 trials per child | `SIGCHLD` arrives at once; slower means the supervisor is blocked |
 | `kill -9` of each child, recovery | ≤ 5 s to the first heartbeat, no fd leaked | a recorder silent for longer has missed a reading of every PID |
-| Ring drops under contention | 0 overruns | B.3: refusals are counted, so zero is checkable |
+| Ring drops under contention | 0 overruns, both rings | B.3: refusals are counted, so zero is checkable. Sequence accounting, not a mechanism F claim (D-029) |
+| CPU per process | each daemon ≤ 10 % of one core at steady state; all together ≤ 25 %, idle and loaded | handout §9; a recorder that crowds out its own capture under load has failed the user |
 | RSS per process over the soak | slope under 100 KB per running hour, per process | flat within measurement noise over D-023's sessions |
+| fsync batch size (`expbatch`) | 1 s batches lose ≤ 1 s per cut and write ≤ ⅕ of the bytes of per-record `fsync` | D-035's argument, tested: per record, 1 s and 10 s on the Pi's own SD |
+| Every failure-table row | its log event appears when it is injected; a fault outside capture never stops capture | handout §9 asks for each failure mode in the design table |
+| Probe unplugged (D-037) | `sensor_absent` within 10 s; engine capture unaffected | one retry period plus one read |
 | Detection per fault area (D-021) | catch ≥ 4 of 5 induced events per area | five events per area is what the semester allows |
 | False alarms | ≤ 1 surfaced verdict per 10 hours of normal driving | D.3: a monitor that cries wolf gets unplugged |
 | Recovery after a cut mid-write | 50 of 50 cuts recover; ≤ 1 batch lost each | D-025 and D-035 promise exactly this |

@@ -45,7 +45,10 @@ and coolant temperature only points at the cooling system once ambient temperatu
 have been accounted for. The model therefore learns how the sensors normally move
 *together* at each operating point, and a fault shows up as a broken partnership that no
 single threshold could see. That same pattern also suggests *where* the fault is: cooling,
-air/fuel mixture, or a sensor that has stopped making sense.
+air/fuel mixture, or a sensor that has stopped making sense. The box adds one sensor of its
+own, a DS18B20 temperature probe in the cabin. After the car has sat for hours, it should
+agree with the engine's coolant and intake-air temperatures at key-on, so when one of the
+three disagrees with the other two, that sensor is the suspect.
 
 ## The mechanisms
 
