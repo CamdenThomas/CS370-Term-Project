@@ -202,7 +202,8 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | --- | --- | --- |
 | `src/ipc/` ring; `src/store/` record format and CRC32; `src/common/` logging; build and `board_sync` | Camden | M0: 0e66851, 269e2c5, 795e671, f1812af, 15ac280 |
 | `tools/` OBD2 logging and analysis tools | Camden | `obdlib` to `obdbins` (M2, PR #155) |
-| `src/obd/`, `src/ambient/`, the `storaged` write and recovery path, `src/analysis/`, `src/supervisor/`, `src/interface/`, `tools/train/`, `electricalDrawing/` | unclaimed | scaffolds only so far |
+| `src/store/` write-ahead log and `storaged`; `src/ipc/` shared-memory rings | Camden | M3: 0e465e4, a0d4bf1, b4fb531 |
+| `src/obd/`, `src/ambient/`, `src/analysis/`, `src/supervisor/`, `src/interface/`, `tools/train/`, `electricalDrawing/` | unclaimed | scaffolds only so far |
 
 > 🟨 **TEAM:** the rubric grades this map. Agree who takes each unclaimed row (D-026
 > still applies: the first substantive commit is the claim) and fill it in.

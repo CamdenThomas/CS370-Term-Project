@@ -65,6 +65,8 @@ Decisions currently awaiting a human signature:
 | D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
 | D-038 | `make boundary` allows Unix sockets through `src/ipc/uds.c`, bans every network family outside `src/interface/`, and tests itself (§F.7) | Claude, Camden's session | 2026-10-27 | Both — it is the 60-second check of handout §10.3 |
+| D-039 | The rings live in shared memory the supervisor creates; `storaged` frees slots only after `fsync`, so a `kill -9` loses nothing (§B.12) | Claude, Camden's session | 2026-10-27 | Both — it is what makes mechanism E's restart lossless |
+| D-040 | Draft: `src` 0 is invalid; 1 live, 2 replay, 3 synth, so unlabeled memory is never live (§C.9) | Claude, Camden's session | 2026-10-27 | Both — it is the integrity boundary of CLAUDE.md §2.7 |
 | D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
@@ -879,6 +881,47 @@ input. History queries cost `storaged` reads while it writes, which the CPU meas
 D-031's rule that only the process holding the answer reads it, and the page would need a
 second copy of that reader.
 
+### B.12 — The rings live in shared memory the supervisor creates; `storaged` frees a slot only after `fsync` ⚠️ UNREVIEWED
+
+`D-039` · Decided M3, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** 🔒 B.3 (refuse, never overwrite), whose rule is unchanged; D-031 and
+D-037 (one producer and one consumer per ring) · **Answers:** board item `ringshm`
+
+**Decision.**
+
+- **Peek, then release.** The consumer reads slots with `ring_peek` and frees them with
+  `ring_release(n)`. `storaged` releases a batch's slots only after that batch's
+  `COMMIT` has been `fsync`'d, so a `kill -9` of `storaged` before then loses nothing:
+  the restarted `storaged` finds the same slots still in the ring.
+- **The ring numbers its slots.** `ring_push` sets each slot's `seq` from the ring's own
+  head, so numbering survives a producer restart and a gap is a real loss.
+- **Lifecycle.** The supervisor creates each ring at start with `shm_open` and `mmap`
+  (`ring_create`), removing a stale object left by a previous boot first. `obdd`,
+  `ambientd` and `storaged` attach to it (`ring_attach`), which checks a header (magic,
+  layout version, capacity, slot size) and refuses an object written by a different
+  build. Only the creator initializes; a restarted child attaches and never resets the
+  indices the other side is using.
+- **Duplicates after a restart.** If `storaged` dies after `fsync` returns but before the
+  release, the restarted process sees that batch again. So every batch also records, as
+  an event, the `seq` of the newest ring slot it holds, and each run records which ring
+  instance it drains (its generation, set at creation). After a restart, `storaged` skips
+  slots at or below the last committed ring `seq`, but only for the same ring instance:
+  a ring made fresh at the next boot is never skipped. A batch is never written twice.
+
+**Why.** With `ring_pop`, a slot left the ring the moment `storaged` read it, up to a
+second before it was durable (D-035), so killing `storaged` (the soak's injected fault,
+mechanism E's test) silently lost those samples, the loss B.3 exists to prevent. A
+shared-memory ring that any child re-initializes on restart would reset the other side's
+indices; a header check stops a ring left over from an older build being read with a new
+layout.
+
+**Cost.** A ring holds at most 4096 slots, about 200 s at 20 samples a second, so a
+`storaged` that is down longer makes the producer refuse (counted, B.3). Two small events
+per batch (the ring generation once per run, the newest ring `seq` per batch). A first
+draft skipped by `mono_ns` instead; the restart test lost a sample to two readings with
+the same timestamp, which ring `seq` cannot have.
+
 ---
 
 ## C. Storage and data integrity
@@ -1032,7 +1075,7 @@ tested) over everything before it, magic included.
 | 8 | 8 | `seq` | per log, never reused, continues across boots |
 | 16 | 8 | `mono_ns` | `CLOCK_MONOTONIC` at capture (samples) or at write (others) |
 | 24 | 8 | `wall_ns` | Unix time from the real-time clock (D-030) |
-| 32 | 1 | `src` | 0 `live`, 1 `replay`, 2 `synth` (C.2); any other value fails the record |
+| 32 | 1 | `src` | 1 `live`, 2 `replay`, 3 `synth` (C.2); 0 and any other value fail the record (D-040) |
 | 33 | 1 | `flags` | bit 0: wall time untrusted this session (D-030) |
 | 34 | 2 | reserved | zero |
 | 36 | 4 | `boot_id` | increments at every boot, so `mono_ns` is comparable only within one |
@@ -1199,6 +1242,25 @@ four describes anything that changes while the car runs.
 but a guess at formats before the first real reply has been seen. Polling only the
 model's inputs, as `obdd` will (D-036): the first drives exist to see everything the car
 answers (D-033).
+
+### C.9 — A `src` of zero means unlabeled, never `live` (draft) ⚠️ UNREVIEWED
+
+`D-040` · Drafted M3, 2026-10-27 · **By:** Claude, in Camden's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Revises:** D-034's `src` encoding (§C.5), before any code used it; keeps 🔒 C.2
+
+**Decision (draft).** `data_src_t` and the record's `src` byte are 1 `live`, 2 `replay`,
+3 `synth`. Zero is `SRC_INVALID`: a record, ring slot or log line carrying it is
+rejected, never stored, and `log_src_name` prints `invalid`.
+
+**Why.** With `live` as zero, any slot or record built from zeroed memory, or by code that
+forgot to set the field, was labeled live without anyone choosing that label, and
+`tests/test_ring.c` was already pushing unlabeled test data that way. C.2 makes `src`
+mandatory precisely so the label cannot be forgotten; a zero that means `live` undoes
+that. Moving the values now costs nothing, because no record has been written yet.
+
+**Cost.** Every producer must set `src` explicitly, which is the point. The obdlog JSONL
+files (D-033) use strings, not these numbers, so they are unaffected.
 
 ---
 
