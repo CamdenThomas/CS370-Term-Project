@@ -35,11 +35,12 @@ data_src_t log_get_src(void)     { return g_src; }
 const char *log_src_name(data_src_t src)
 {
     switch (src) {
-    case SRC_LIVE:   return "live";
-    case SRC_REPLAY: return "replay";
-    case SRC_SYNTH:  return "synth";
+    case SRC_INVALID: break;
+    case SRC_LIVE:    return "live";
+    case SRC_REPLAY:  return "replay";
+    case SRC_SYNTH:   return "synth";
     }
-    return "unknown";
+    return "invalid";
 }
 
 static void stamp(char *buf, size_t n)

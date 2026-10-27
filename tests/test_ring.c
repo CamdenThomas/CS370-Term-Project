@@ -35,7 +35,7 @@ static void test_empty_then_fifo(void)
     CHECK(ring_depth(r) == 0, "empty depth");
 
     for (uint64_t i = 0; i < 100; i++)
-        CHECK(ring_push(r, &(ring_slot_t){ .seq = i }), "push should succeed");
+        CHECK(ring_push(r, &(ring_slot_t){ .seq = i, .src = SRC_SYNTH }), "push should succeed");
 
     CHECK(ring_depth(r) == 100, "depth after 100 pushes");
 

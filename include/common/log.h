@@ -9,8 +9,11 @@ typedef enum { LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL } log_level_t
 
 /* Data provenance. CLAUDE.md §2.7: replayed or synthesized data is labeled as such
  * EVERYWHERE it appears. This field exists from day one so that it is impossible to
- * forget later. */
-typedef enum { SRC_LIVE = 0, SRC_REPLAY = 1, SRC_SYNTH = 2 } data_src_t;
+ * forget later. Zero is not a label (D-040): memory nobody labeled reads as invalid,
+ * never as live. */
+typedef enum { SRC_INVALID = 0, SRC_LIVE = 1, SRC_REPLAY = 2, SRC_SYNTH = 3 } data_src_t;
+
+#define SRC_IS_VALID(s) ((s) >= SRC_LIVE && (s) <= SRC_SYNTH)
 
 void        log_init(const char *component, log_level_t min);
 void        log_set_src(data_src_t src);
