@@ -67,14 +67,22 @@ backoff timings are set in the supervisor's design (`supbackoff`). A drawn figur
 > Model the form on the handout's example: "the vibration analysis is meaningless above
 > 2 ms of sampling jitter, hence SCHED_FIFO."
 
-The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); expand each row here with
-the measured numbers that justify it. B and F were considered and declined: no Pi-side
+The committed rationale is `docs/DECISIONS.md` §B.1 (D-017); the measured numbers that
+justify each row arrive with the evaluation (§6).
+
+**Two physically distinct sensors (handout §3.1).** Every sensor reaches the Pi through
+one dongle, but the dongle is their transport, not a sensor. Coolant temperature, intake
+air temperature, manifold pressure or mass air flow, the fuel trims and the O2 sensors are
+physically distinct sensors on the engine, and every diagnostic fuses at least two of them
+(D.4). For example, a vacuum leak is called only when long-term fuel trim rises while
+manifold pressure at idle rises with it in the same operating-point bin; neither signal
+alone can call it. B and F were considered and declined: no Pi-side
 sensor is added, so nothing in the design needs them (D-029).
 
 | Menu item | Component | Justification from requirements | How measured |
 | --- | --- | --- | --- |
-| D | `src/store/` | | recovery after mid-write power cut, N trials |
-| E | `src/supervisor/`, `src/ipc/` | | `kill -9` any child; detection/degradation/recovery in the log |
+| D | `src/store/` (`storaged`), checkpoints in `src/analysis/` | Power can vanish at any instant: the bank is empty at a cold start, a cable can be pulled, a crank can reset the Pi (D-024). The owner needs the record and the learned baselines to survive that, and a baseline must never learn from a sample a cut later erased (D-031). Hence append-only CRC'd records, one-second commits (D-035) and A/B checkpoints (D-025) | 50 cuts of the Pi's 5 V rail mid-write; every recovery logged with bytes and records lost |
+| E | `src/supervisor/`, `src/ipc/` | A recorder that dies silently harms an owner who believes it is on duty. The analysis is the most complex and least trusted code, so it must not be able to take capture or storage down with it (B.2). All sensors share one dongle, so the isolation we defend is between capture, storage and analysis, not between sensors (D-029) | `kill -9` each child 20 times; detection, degradation and recovery times from the log; no fd leaked |
 
 ## 3. Failure-mode table
 >
