@@ -90,6 +90,21 @@ class Sync(unittest.TestCase):
                       "the next run would create #41 a second time")
         self.assertEqual(os.listdir(self.dir.name), ["milestones.md"], "no temp file left")
 
+    def test_a_failed_issue_read_stops_the_run_before_any_create(self):
+        fake = FakeGh(fail={"issue list"})
+        code, _ = self.run_sync(fake)
+        self.assertIn("Fail", str(code))
+        self.assertFalse([c for c in fake.calls if c[:2] == ["issue", "create"]],
+                         "an unreadable issue list looked empty, so every line was new")
+
+    def test_a_failed_milestone_read_stops_the_run_before_any_create(self):
+        fake = FakeGh(fail={"api repos/me/carwatch/milestones?state=all&per_page=100"})
+        code, _ = self.run_sync(fake)
+        self.assertIn("Fail", str(code))
+        self.assertFalse([c for c in fake.calls if c[:2] == ["api", "repos/me/carwatch/"
+                                                             "milestones"]],
+                         "an unreadable milestone list looked empty, so M1 was created")
+
     def test_check_writes_nothing(self):
         code, _ = self.run_sync(FakeGh(), "--check")
         self.assertEqual(code, 1)

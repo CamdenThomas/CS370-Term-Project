@@ -200,14 +200,18 @@ class Gh:
                            encoding="utf-8", errors="replace")
         return p.returncode, p.stdout.strip(), p.stderr.strip()
 
-    def read_json(self, args: list[str], default=None):
+    def read_json(self, args: list[str], soft=None):
+        """The parsed output of a gh read. A failed read raises Fail, unless `soft` is
+        given, which is then returned instead (only the optional project board)."""
         self.reads += 1
         code, out, err = self.run(args)
         if code != 0:
-            if default is not None:
-                return default
+            if soft is not None:
+                return soft
             raise Fail(f"gh {' '.join(args)}\n  -> {err}")
-        return json.loads(out) if out else default
+        if not out:
+            return soft if soft is not None else []
+        return json.loads(out)
 
     def write(self, args: list[str], label: str) -> str:
         if self.dry:
@@ -226,7 +230,7 @@ class Gh:
 
 def sync_milestones(gh: Gh, repo: str, b: Board) -> None:
     have = {m["title"]: m for m in
-            gh.read_json(["api", f"repos/{repo}/milestones?state=all&per_page=100"], [])}
+            gh.read_json(["api", f"repos/{repo}/milestones?state=all&per_page=100"])}
     for ms, cells in b.rows.items():
         due, desc = cells[3], cells[1]
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", due):
@@ -250,7 +254,7 @@ def sync_issues(gh: Gh, b: Board, save=lambda: None) -> list[str]:
     the next run would create a second time."""
     issues = {r["number"]: r for r in gh.read_json(
         ["issue", "list", "--state", "all", "--limit", "1000",
-         "--json", "number,title,state,milestone,assignees"], [])}
+         "--json", "number,title,state,milestone,assignees"])}
     report = []
     for it in list(b.items):
         if it.number is None:
