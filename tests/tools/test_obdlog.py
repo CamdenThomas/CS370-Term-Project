@@ -3,6 +3,7 @@ import contextlib
 import io
 import json
 import os
+import resource
 import tempfile
 import threading
 import time
@@ -71,6 +72,19 @@ class AgainstSim(unittest.TestCase):
         events = [r for r in records if r["type"] == "event"]
         self.assertTrue(any(e["event"] == "no_data" and e.get("pid") == "5C" for e in events))
         self.assertTrue(any(r["type"] == "sample" and r["pid"] == "0C" for r in records))
+
+    def test_idles_instead_of_spinning_when_every_pid_is_absent(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            before = resource.getrusage(resource.RUSAGE_SELF)
+            t0 = time.monotonic()
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "3",
+                        "--pids", "5C"])
+            wall = time.monotonic() - t0
+            after = resource.getrusage(resource.RUSAGE_SELF)
+        cpu = (after.ru_utime - before.ru_utime) + (after.ru_stime - before.ru_stime)
+        self.assertLess(cpu, wall * 0.5, f"{cpu:.2f} s CPU in {wall:.2f} s wall")
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertTrue(any(r.get("event") == "pid_absent" for r in records))
 
     def test_reconnects_after_the_link_drops(self):
         srv = obdsim.PtyServer(link=self.link, latency=0.0).__enter__()

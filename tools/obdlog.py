@@ -237,8 +237,27 @@ def _run(args, stop):
     print(f"obdlog: logging {len(pids)} PIDs to {path} (src={src}); Ctrl-C to stop",
           file=sys.stderr)
 
+    def status():
+        nonlocal next_status
+        if time.monotonic() < next_status:
+            return
+        el = time.monotonic() - t_start
+        print(f"[{int(el) // 60:02d}:{int(el) % 60:02d}] "
+              f"{counts['samples']} samples, "
+              f"{counts['samples'] / el:.1f}/s, {counts['events']} events "
+              f"(last: {last_event[0]}), gps {counts['gps']}",
+              file=sys.stderr)
+        next_status += args.status_sec
+
     try:
         while stop.reason is None and not expired():
+            now = time.monotonic()
+            if all(p in absent and now - absent[p] < ABSENT_RETRY_SEC for p in pids):
+                # Every PID is set aside (engine off, ECU quiet): wait for the next retry
+                # instead of spinning through an empty pass.
+                time.sleep(0.2)
+                status()
+                continue
             for pid in pids:
                 if stop.reason is not None or expired():
                     break
@@ -296,14 +315,7 @@ def _run(args, stop):
                     if err:
                         event("gps_error", detail=err)
 
-                if time.monotonic() >= next_status:
-                    el = time.monotonic() - t_start
-                    print(f"[{int(el) // 60:02d}:{int(el) % 60:02d}] "
-                          f"{counts['samples']} samples, "
-                          f"{counts['samples'] / el:.1f}/s, {counts['events']} events "
-                          f"(last: {last_event[0]}), gps {counts['gps']}",
-                          file=sys.stderr)
-                    next_status += args.status_sec
+                status()
             if ad is None:
                 break
     finally:
