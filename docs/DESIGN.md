@@ -29,42 +29,34 @@ OBD2 port -- OBDLink LX (STN chip, Bluetooth Classic SPP, D-019)
 power: owner's USB-C charger -> power block + supercapacitor -> Pi 4 (D-024)
 ```
 
-Every rate is an estimate until the first drive measures it (`firstcap`): D-012 budgets
-about 10 requests a second; the unthrottled logging tool reaches 22 against `obdsim`.
-Each reply is one sample, one record and one analysis step, so the ring, the log and
-`analyzed` all run at the request rate. `obdctl` and the status page ask the supervisor,
-which asks the process that holds the answer; `analyzed` never reads the ring (D-031).
+Rates are estimates until the first drive measures them (`firstcap`): D-012 budgets about
+10 requests a second; the logging tool reaches 22 on `obdsim`. One reply is one sample,
+one record and one analysis step. `obdctl` and the page ask the supervisor, which asks
+the process holding the answer; `analyzed` never reads the ring (D-031).
 
 ## 2. Mechanism mapping
 
-D and E are the committed pair (D-017, D-029); B and F were declined because no Pi-side
-sensor is added, and Mode 01 rates never stress a ring.
+D and E are the committed pair (D-017); B and F were declined: no Pi-side sensor, and
+Mode 01 rates never stress a ring (D-029).
 
 | Item | Component | Justification from the user's requirements | Measured by |
 | --- | --- | --- | --- |
-| D | `storaged`; checkpoints in `analyzed` | Power can vanish at any instant: the bank is empty at a cold start, a cable can be pulled, a crank can reset the Pi (D-024). The record and the learned baselines must survive, and a baseline must never learn from a sample a cut later erased (D-031). Hence append-only CRC'd records, one-second commits (D-035), A/B checkpoints (D-025) | 50 cuts of the Pi's 5 V rail mid-write; bytes and records lost per cut |
-| E | `supervisor`, `src/ipc/` | A recorder that dies silently harms an owner who believes it is on duty. The analysis is the most complex, least trusted code and must not take capture or storage down (B.2). One dongle carries every sensor, so the isolation we defend is capture / storage / analysis, not sensor / sensor (D-029) | `kill -9` each child 20 times; detection, recovery, no fd leaked |
+| D | `storaged`; checkpoints in `analyzed` | Power can vanish at any instant (empty bank at a cold start, pulled cable, crank reset, D-024), yet the record and weeks of learned baselines must survive, and no baseline may learn from a sample a cut later erased (D-031). Hence append-only CRC'd records, 1 s commits (D-035), A/B checkpoints (D-025) | 50 cuts of the Pi's 5 V rail mid-write; records lost per cut |
+| E | `supervisor`, `src/ipc/` | A recorder that dies silently harms an owner who thinks it is on duty; the least trusted code (analysis) must not take capture or storage down (B.2). One dongle carries every sensor, so we isolate capture, storage and analysis, not sensors (D-029) | `kill -9` each child 20×: detection, recovery, fd leaks |
 
-**Two physically distinct sensors (handout §3.1).** The dongle is transport, not a sensor.
-Coolant and intake temperature, manifold pressure or mass air flow, the fuel trims and the
-O2 sensors are distinct sensors on the engine, and every diagnostic fuses at least two
-(D.4): a vacuum leak is called only when long-term fuel trim and idle manifold pressure
-rise together in one operating-point bin.
+**Two physically distinct sensors (handout §3.1).** The dongle is transport. Coolant and
+intake temperature, MAP or MAF, fuel trims and O2 sensors are distinct engine sensors, and
+every diagnostic fuses at least two (§3, D.4).
 
 ## 3. Analysis: how normal is learned and a fault area named
 
-All of it is our code (handout §3.3; D.1, D.2). `analyzed` runs, per committed sample:
-
-1. **Operating point:** bin by rpm × load × coolant temperature, so a cold idle is never
-   compared with a warm cruise. Bin edges are set from the first drives' data.
-2. **Baseline:** per-bin running mean and covariance of the other sensors (Welford),
-   saved in A/B checkpoints (D-025).
-3. **Residual:** Mahalanobis distance of the current sensor vector from its bin's
-   baseline, which alarms when a *partnership* breaks, not when one value is high.
-4. **Trend:** Theil–Sen slope of each residual across drives, for slow drift.
-5. **Area:** our classifier, trained in `tools/train/` on our labeled captures, inference
-   in C. Without its weights, steps 1–4 still flag; only naming is lost (PLAN §3).
-6. **Verdict:** a state machine with hysteresis and dwell surfaces it (D.3).
+All our code (handout §3.3; D.1, D.2). Per committed sample, `analyzed` (1) bins by
+rpm × load × coolant temperature, so a cold idle is never compared with a warm cruise;
+(2) keeps per-bin running mean and covariance (Welford), in A/B checkpoints; (3) scores the
+Mahalanobis distance from the bin's baseline, which fires when a *partnership* breaks;
+(4) fits Theil–Sen slopes of residuals across drives; (5) names the area with our
+classifier (trained in `tools/train/`, inference in C; without weights, 1–4 still flag);
+(6) surfaces verdicts through a hysteresis-and-dwell state machine (D.3).
 
 | Fault area (D-021) | Cooperating sensors | Signature | Induced by (E.2) |
 | --- | --- | --- | --- |
@@ -74,7 +66,7 @@ All of it is our code (handout §3.3; D.1, D.2). `analyzed` runs, per committed 
 | Unknown | all | residual high, no area matches | — |
 
 No row can be called by one threshold on one value: each compares sensors that normally
-move together, inside one operating-point bin (D.4).
+move together, inside one bin (D.4).
 
 > 🟨 **TEAM DECIDES (Wednesday):** the fault-area rows, signatures and bin axes above are
 > Claude's proposal from D-021 and D.2. The AI-use plan (§9) says analysis design is
@@ -82,62 +74,53 @@ move together, inside one operating-point bin (D.4).
 
 ## 4. Failure-mode table
 
-Log lines take the form `<process> <level> <event> key=value`, carry `src`, and go through
-the shared logger; the table names the event.
+Log lines are `<process> <level> <event> key=value` with `src`; the table names the event.
 
 | Component | Failure | Detection | Response | Log event |
 | --- | --- | --- | --- | --- |
-| adapter | Bluetooth drops mid-drive | `read` 0 / `EIO`, `POLLHUP` | reopen `/dev/obd` with backoff; no restart storm | `link_lost`, `reconnected` |
-| adapter | garbage (`?`, `BUFFER FULL`) or timeouts | parse failure, per-request timeout | three in a row: `ATZ`; if that fails, reopen | `reply_bad`, `adapter_reset` |
-| adapter | no protocol: engine off, key in accessory | `UNABLE TO CONNECT` / `NO DATA` for `0100` | poll `0100` every few s, record nothing | `ecu_silent` |
-| ECU | a PID stops answering (sensor unplugged) | `NO DATA` 5× in a row for it | mark absent, keep the rest, retry each minute; report lists it | `pid_absent`, `pid_present` |
-| obdd, storaged, analyzed, page | crash or `kill -9` | supervisor `waitpid` | restart with backoff; others unaffected | `child_exit`, `child_restart` |
-| ring | consumer stalls | sequence gap; late heartbeat | producer refuses and counts (B.3); restart `storaged`; light red | `ring_full`, `heartbeat_late` |
-| storaged | disk full | `ENOSPC`; free space below floor | drop oldest whole segment if retention allows, else stop and go red | `enospc` |
-| storaged | power cut mid-write | CRC mismatch or no `COMMIT` at boot | truncate torn tail and open batch (D-025) | `recovered` |
-| storaged | `fsync` fails | return value | durable offset not advanced; retry once, then degrade | `fsync_failed` |
-| analyzed | checkpoint torn | slot CRC / generation | load the other slot, redo from the log | `checkpoint_bad` |
-| analyzed | model missing or corrupt | `open` fails; header CRC | residuals only, no area naming | `model_unavailable` |
-| status page | report fails or runs out of memory (D-028) | error return; RSS in heartbeat | page says so; capture unaffected | `report_failed` |
-| supervisor | dies | systemd `Restart=always` | light freezes steady = "not running" (D-027) | systemd journal |
-| clock | RTC lost its backup (D-030) | invalid time at boot | run on `mono_ns`; wall time flagged untrusted | `rtc_invalid` |
-| power | key-off; charger pulled | source-present GPIO | grace period, commit, checkpoint, halt | `source_lost`, `shutdown` |
-| power | crank dip; source back mid-shutdown | GPIO edge timing | ride the bank; finish shutdown, then power-cycle | `source_dip`, `source_back` |
-| power | bank empty at a cold-start crank | next boot finds an unclean end | crash recovery (mechanism D) | `recovered prev_end=recovered` |
-| power, thermal | undervoltage, throttling, live charger with key off | `vcgencmd get_throttled`, SoC temp, engine silent | degrade, log, report; halt policy open (`shutfsm`) | `undervoltage`, `thermal_throttle` |
-| SD card | write errors | `EIO` | degrade and log; do not crash | `write_failed` |
-| radio | Bluetooth and Wi-Fi share one chip | reply-time p99 in the heartbeat | measure (`btcoex`) | heartbeat |
+| adapter | Bluetooth drops | `read` 0/`EIO`, `POLLHUP` | reopen `/dev/obd` with backoff | `link_lost`, `reconnected` |
+| adapter | garbage or timeouts | parse failure; timeout | 3 in a row: `ATZ`, then reopen | `reply_bad`, `adapter_reset` |
+| adapter | engine off, key in ACC | `0100` gets `NO DATA` | poll `0100` every few s, record nothing | `ecu_silent` |
+| ECU | a PID stops (sensor unplugged) | 5 `NO DATA` in a row | mark absent, retry each minute; report it | `pid_absent`, `pid_present` |
+| any child | crash, `kill -9` | `waitpid` | restart with backoff; others run on | `child_exit`, `child_restart` |
+| ring | consumer stalls | sequence gap; late heartbeat | refuse and count (B.3); restart `storaged`; red | `ring_full`, `heartbeat_late` |
+| storaged | power cut mid-write | bad CRC / no `COMMIT` at boot | truncate tail and open batch (D-025) | `recovered` |
+| storaged | disk full; `fsync` or write `EIO` | `ENOSPC`, return values | drop oldest segment if allowed; hold durable offset; degrade, red | `enospc`, `fsync_failed` |
+| analyzed | torn checkpoint; bad model file | slot CRC; header CRC | other slot + redo; residuals only | `checkpoint_bad`, `model_unavailable` |
+| status page | report fails, out of memory | error; RSS | page says so; capture unaffected | `report_failed` |
+| supervisor | dies | systemd `Restart=always` | light freezes steady = "not running" | journal |
+| clock | RTC lost backup (D-030) | invalid time at boot | run on `mono_ns`; wall time untrusted | `rtc_invalid` |
+| power | key-off, cable pulled, crank dip, source back mid-shutdown | source-present GPIO timing | §6 state machine | `source_lost`, `source_dip`, `shutdown` |
+| power | empty bank at cold crank | unclean end at next boot | crash recovery (D) | `recovered` |
+| power, heat | undervoltage, throttling, charger live at key-off | `vcgencmd`, SoC temp | degrade, log, report; halt policy open | `undervoltage`, `thermal` |
+| radio | BT and Wi-Fi share one chip | reply p99 in heartbeat | measure (`btcoex`) | heartbeat |
 
 ## 5. Storage and data
 
 - **Format (D-034):** 40-byte header (`magic`, `kind`, `seq`, `mono_ns`, `wall_ns`, `src`,
-  flags, `boot_id`), typed body, CRC32 over both. Kinds: sample, begin, commit, boot,
-  shutdown, event. A 56-byte sample keeps the raw reply bytes beside the decoded value.
-  Segments of about 16 MB; retention deletes whole segments, never edits one. How long
-  raw data stays before only binned aggregates remain is open (`retention`).
-- **Rates:** 10 to 25 samples a second is 0.56 to 1.4 KB/s, 2 to 5 MB per running hour;
-  each of about 17 PIDs is read roughly every 1 to 2 s.
-- **fsync (D-035):** commit and `fsync` at one second or 64 samples, and at every clean
-  shutdown. An unclean cut then loses at most a second, about one reading per PID, while
-  every signal we watch moves over minutes. Longer batches would lose warm-up data at each
-  cold-start reset; per-record `fsync` would multiply flash writes twenty times for nothing.
-- **Crash story:** at boot `storaged` scans forward from its last committed offset,
-  verifies CRCs, truncates the torn tail and any batch without `COMMIT` (undo is
-  truncation: nothing is overwritten in place), and writes a boot record saying whether
-  the last session ended clean. `analyzed` loads the newest valid A/B checkpoint and redoes
-  every committed batch after it through the live code path (D-025).
+  flags, `boot_id`), typed body, CRC32. Kinds: sample, begin, commit, boot, shutdown,
+  event; a 56-byte sample keeps raw reply bytes beside the value. 16 MB segments, deleted
+  whole, never edited; how long raw data is kept is open (`retention`).
+- **Rates:** 10–25 samples/s is 0.56–1.4 KB/s, 2–5 MB per running hour.
+- **fsync (D-035):** commit at 1 s or 64 samples, and at clean shutdown. An unclean cut
+  loses at most a second (one reading per PID) of signals that move over minutes; longer
+  batches lose warm-up at each cold-start reset; per-record `fsync` is 20× the flash wear.
+- **Crash story:** at boot `storaged` scans from its last committed offset, verifies CRCs,
+  truncates the torn tail and any uncommitted batch (undo is truncation: nothing is
+  overwritten), and logs whether the last session ended clean. `analyzed` loads the newest
+  valid checkpoint and redoes later batches through the live code path (D-025).
 
 ## 6. Constraints and substitutions
 
 | Wanted | Using | Cost |
 | --- | --- | --- |
-| Every engine sensor, direct | The Mode 01 PIDs the ECU publishes (D-022) | Only what the car reports; oil pressure probably absent; lists differ by car |
-| A fleet of failing engines | Induced, reversible faults on two healthy cars (D-021) | A few fault areas; no real wear-out ever seen |
-| Raw CAN at the ECU's rate | Bluetooth Mode 01 request/response (D-019) | ~10-20 samples/s, no interrupt or bus timing, a link that can drop; most of the menu leaves the data path (D-017) |
-| 48 continuous hours | 48 h wall-clock of normal use across key cycles (D-023) | A series of sessions; needs written confirmation (`profmail`) |
-| Full hold-up through crank and shutdown | Owner's charger + seconds-scale supercapacitor (D-024) | Cold-start crank may reset the Pi; a charger live with the key off keeps the box on |
-| Recording from key-on | A Pi 4 boot of about 30 s (`bootbudget`) | The first half-minute of warm-up is lost |
-| The product capturing the first drives | A Python tool, labeled `live` (D-033) | Shapes the design, proves nothing about `obdd`; enters the product only as `replay` |
+| Every engine sensor | The Mode 01 PIDs the ECU publishes (D-022) | Oil pressure likely absent; lists differ by car |
+| Failing engines | Induced, reversible faults on two healthy cars (D-021) | A few fault areas; no real wear-out |
+| Raw CAN at ECU rate | Bluetooth Mode 01 request/response (D-019) | ~10–20 samples/s, no bus timing, a link that drops; most of the menu leaves the data path (D-017) |
+| 48 continuous hours | 48 h of normal use across key cycles (D-023) | Sessions with gaps; awaiting written confirmation (`profmail`) |
+| Full hold-up | Owner's charger + seconds-scale supercapacitor (D-024) | A cold-start crank may reset the Pi |
+| Recording from key-on | A ~30 s Pi 4 boot (`bootbudget`) | The first half-minute of warm-up is lost |
+| The product on the first drives | A Python tool, labeled `live` (D-033) | Proves nothing about `obdd`; enters the product only as `replay` |
 
 ## 7. Evaluation plan
 
