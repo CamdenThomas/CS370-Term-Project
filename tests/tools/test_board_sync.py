@@ -111,5 +111,15 @@ class Sync(unittest.TestCase):
         self.assertEqual(self.read_doc(), DOC)
 
 
+class Render(unittest.TestCase):
+    def test_only_the_marked_table_is_rewritten(self):
+        other = "| M1 | another table that mentions M1 | x | y | z | keep me |"
+        doc = DOC.replace("## M1 — Memo\n", f"## M1 — Memo\n\n{other}\n")
+        b = B.parse(doc)
+        text = B.render(b)
+        self.assertIn(other, text)
+        self.assertIn("| M1 | Memo | 5 | 2026-09-27 | 3 | ⬜ 0/2 |", text)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -153,10 +153,16 @@ def parse(text: str) -> Board:
 
 
 def render(b: Board) -> str:
-    """Rewrite the table's Progress column from the checkboxes."""
+    """Rewrite the table's Progress column from the checkboxes.
+
+    Only rows between the board-sync markers: a `| M2 |` row in any other table is
+    left alone."""
     out = []
+    in_table = False
     for line in b.lines:
-        m = ROW_RE.match(line)
+        if line.strip() in (TABLE_OPEN, TABLE_CLOSE):
+            in_table = line.strip() == TABLE_OPEN
+        m = ROW_RE.match(line) if in_table else None
         if m and m.group(1) in b.rows:
             ms = m.group(1)
             mine = [it for it in b.items if it.milestone == ms]
