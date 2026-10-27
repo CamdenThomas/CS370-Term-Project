@@ -111,7 +111,9 @@ replay: all
 
 deploy: all
 	@test -n "$(PI)" || { echo "usage: make deploy PI=pi@<host>"; exit 1; }
-	rsync -a --exclude build --exclude .git ./ $(PI):~/carwatch/
+	@# Source only: no build trees, no Mac venv, no raw drive data or soak logs, no transcripts.
+	rsync -a --exclude /build --exclude /.git --exclude /.venv --exclude /data \
+	      --exclude /soak/logs --exclude /partners ./ $(PI):~/carwatch/
 	ssh $(PI) 'cd ~/carwatch && make'
 
 # ---------------------------------------------------------------- hardware
