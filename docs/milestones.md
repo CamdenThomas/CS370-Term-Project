@@ -17,9 +17,9 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 3/39 |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/24 |
-| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/29 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 3/42 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/25 |
+| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
 
@@ -164,6 +164,12 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #158 -->
 - [ ] M2 hardware: try obdlog --gps on the Mac once; record whether it works `gpstest`
       <!-- #159 -->
+- [ ] M2 question: which format is submitted for M2 on 2026-10-28, and is it late?
+      `m2format` <!-- #161 -->
+- [ ] M2 decision: how verdicts and supervisor events reach storage (D-031's open item)
+      `verdictpath` <!-- #162 -->
+- [ ] M2 docs: name obdctl's five verbs and the supervisor socket protocol `ipcspec`
+      <!-- #163 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -198,6 +204,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #90 -->
 - [ ] M3 tools: replay.py reads obdlog JSONL captures, emits records labeled replay
       `replayjsonl` <!-- #160 -->
+- [ ] M3 tools: run obdlog on the Pi at every key-on until obdd exists, for baseline
+      `pilogger` <!-- #164 -->
 - [ ] M3 supervisor: power-event handling and clean shutdown `pwrmon` <!-- #145 -->
 - [ ] M3 supervisor: set the clock from the RTC at boot; flag invalid time `rtcboot`
       <!-- #146 -->
@@ -241,6 +249,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `expkill` <!-- #92 -->
 - [ ] M4 experiment: crash consistency — N cuts of the Pi's own rail, bypassing the
       supercapacitor `expcrash` <!-- #60 -->
+- [ ] M4 experiment: fsync batch size — per record, 1 s and 10 s: latency, wear, loss
+      `expbatch` <!-- #165 -->
 - [ ] M4 ground truth: induce and label a vacuum leak on a testbed car `fvac` <!-- #62 -->
 - [ ] M4 ground truth: induce and label a cooling anomaly `fcool` <!-- #63 -->
 - [ ] M4 ground truth: sensor unplug — and demo-day rehearsal `funplug`
