@@ -4,6 +4,7 @@ import io
 import json
 import os
 import resource
+import signal
 import tempfile
 import threading
 import time
@@ -12,6 +13,7 @@ from unittest import mock
 
 import elm
 import macgps
+import obdlib
 import obdlog
 import obdsim
 
@@ -58,6 +60,60 @@ class AgainstSim(unittest.TestCase):
                 self.assertIn(key, s)
         with open(only_log(self.d)) as f:
             self.assertNotIn(obdsim.SIM_VIN, f.read())
+        self.assertNotIn("host", records[0], "D-033 lists no host name; it names a person")
+
+    def test_every_answering_ecu_is_kept_and_reported_once(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0, two_ecu={0x0C, 0x0D}):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.0",
+                        "--pids", "0C,0D,05"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        samples = [r for r in records if r["type"] == "sample"]
+        for s in samples:
+            if s["pid"] in ("0C", "0D"):
+                self.assertEqual(s["n_ecu"], 2)
+                self.assertEqual(len(s["raw_all"]), 2)
+                self.assertEqual(s["raw"], s["raw_all"][0], "the first line is decoded")
+            else:
+                self.assertEqual(s["n_ecu"], 1)
+                self.assertNotIn("raw_all", s)
+        multi = [r for r in records if r.get("event") == "multi_ecu"]
+        self.assertEqual(sorted(e["pid"] for e in multi), ["0C", "0D"])
+        self.assertTrue(all(r["src"] == "synth" for r in records))
+
+    def test_rpm_and_load_are_polled_more_often_and_the_schedule_is_recorded(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertEqual(records[0]["schedule"],
+                         {"fast": ["0C", "04"], "fast_every": 4, "static": []})
+        n = {}
+        for r in records:
+            if r["type"] == "sample":
+                n[r["pid"]] = n.get(r["pid"], 0) + 1
+        # 2 fast PIDs share 1 request in 4; 15 others share 3 in 4: 1/8 against 1/20.
+        for slow in ("05", "0D", "42"):
+            self.assertGreater(n["0C"], 2 * n[slow], n)
+            self.assertGreater(n["04"], 2 * n[slow], n)
+
+    def test_fast_can_be_turned_off(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "0.8",
+                        "--fast", ""])
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertEqual(records[0]["schedule"]["fast"], [])
+        self.assertIsNone(records[0]["schedule"]["fast_every"])
+
+    def test_static_pids_are_read_once_into_the_header(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "0.8",
+                        "--pids", "0C,1C"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        header = records[0]
+        self.assertEqual(header["static"], {"1C": {"error": "NO DATA"}})
+        self.assertEqual(header["pids"], ["0C"])
+        self.assertEqual(header["schedule"]["static"], ["1C"])
+        self.assertFalse([r for r in records[1:] if r.get("pid") == "1C"],
+                         "a static PID is never polled")
 
     def test_pid_list_can_be_narrowed(self):
         with obdsim.PtyServer(link=self.link, latency=0.0):
@@ -121,7 +177,7 @@ class AgainstSim(unittest.TestCase):
 
         with obdsim.PtyServer(link=self.link, latency=0.0), \
                 mock.patch.object(elm.Adapter, "init", init_once), \
-                mock.patch.object(elm.Adapter, "query",
+                mock.patch.object(elm.Adapter, "query_all",
                                   side_effect=elm.Timeout("010C: no prompt")):
             run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
                         "--backoff-min", "0.2"])
@@ -129,6 +185,18 @@ class AgainstSim(unittest.TestCase):
         kinds = [r.get("event") for r in records if r["type"] == "event"]
         self.assertIn("reinit_failed", kinds)
         self.assertIn("reopen", kinds)
+
+    def test_a_sleeping_bus_is_waited_out_not_reset(self):
+        asleep = mock.Mock(side_effect=obdlib.BusAsleep("UNABLE TO CONNECT"))
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(elm.Adapter, "query_all", asleep):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
+                        "--backoff-min", "0.2"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        kinds = [r.get("event") for r in records if r["type"] == "event"]
+        self.assertEqual(kinds.count("bus_asleep"), 1, kinds)
+        self.assertNotIn("reinit", kinds)
+        self.assertLessEqual(asleep.call_count, 5, "tries back off: 0, 0.2, 0.6, 1.4 s")
 
     def test_gps_unavailable_is_an_event_and_logging_continues(self):
         with obdsim.PtyServer(link=self.link, latency=0.0), \
@@ -159,6 +227,47 @@ class AgainstSim(unittest.TestCase):
         records, _ = obdlog.read_log(only_log(self.d))
         self.assertTrue(any(r["type"] == "gps" for r in records))
 
+    def test_bad_pid_lists_are_refused_before_connecting(self):
+        for bad in ("", "0C,", "ZZ", "0C,1FF"):
+            with self.subTest(pids=bad), \
+                    mock.patch.object(elm, "Adapter") as adapter, \
+                    self.assertRaises(SystemExit):
+                run_logger(["--port", self.link, "--out", self.d, "--pids", bad])
+            adapter.assert_not_called()
+
+    def test_a_bad_fast_list_is_refused_before_connecting(self):
+        with mock.patch.object(elm, "Adapter") as adapter, self.assertRaises(SystemExit):
+            run_logger(["--port", self.link, "--out", self.d, "--fast", "0C,QQ"])
+        adapter.assert_not_called()
+
+    def test_an_ecu_that_lists_nothing_ends_the_session_at_once(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(elm.Adapter, "supported_pids", return_value=set()):
+            t0 = time.monotonic()
+            rc = run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "2"])
+        self.assertEqual(rc, 2)
+        self.assertLess(time.monotonic() - t0, 1.5)
+
+    def test_gps_is_logged_while_every_pid_is_absent(self):
+        class FakeGps:
+            polls = 0
+
+            def poll(self):
+                FakeGps.polls += 1
+                return [{"lat": 40.57, "lon": -105.08}], None
+
+            def stop(self):
+                pass
+
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(macgps, "start", return_value=FakeGps()):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
+                        "--pids", "5C", "--gps"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        self.assertFalse(any(r["type"] == "sample" for r in records))
+        self.assertGreaterEqual(sum(r["type"] == "gps" for r in records), 2)
+        self.assertLessEqual(FakeGps.polls, 4, "still at most twice a second")
+
     def test_missing_port_at_start_fails_cleanly(self):
         rc = run_logger(["--port", "/nonexistent/obd", "--out", self.d, "--max-seconds",
                          "0.5", "--connect-tries", "1"])
@@ -185,6 +294,120 @@ class Writer(unittest.TestCase):
             w.tick()
             self.assertGreater(os.path.getsize(p), 0, "tick wrote it out")
             w.close()
+
+    def test_a_field_cannot_relabel_a_record(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "drive-x.jsonl")
+            w = obdlog.LogWriter(p, "synth", fsync_lines=1, fsync_sec=1.0)
+            for field in ("src", "type", "seq", "t_mono", "t_wall"):
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    w.write("gps", **{field: "live", "lat": 40.0})
+            w.close()
+            records, _ = obdlog.read_log(p)
+            self.assertEqual(records, [], "nothing was written")
+
+
+class Scheduling(unittest.TestCase):
+    def picks(self, sched, n, skip=lambda pid: False):
+        return [sched.next(skip) for _ in range(n)]
+
+    def test_fast_pids_get_every_fourth_request_in_turn(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x06, 0x0C, 0x0D, 0x0F], fast=[0x0C, 0x04])
+        self.assertEqual(self.picks(sched, 12),
+                         [0x05, 0x06, 0x0D, 0x0C, 0x0F, 0x05, 0x06, 0x04,
+                          0x0D, 0x0F, 0x05, 0x0C])
+
+    def test_skipped_pids_cost_no_turn(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x06, 0x0C], fast=[0x0C, 0x04])
+        self.assertEqual(self.picks(sched, 4, skip=lambda p: p == 0x06),
+                         [0x05, 0x05, 0x05, 0x0C])
+
+    def test_only_fast_pids_left_are_asked_every_time(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x0C], fast=[0x0C, 0x04])
+        self.assertEqual(self.picks(sched, 4, skip=lambda p: p == 0x05),
+                         [0x0C, 0x04, 0x0C, 0x04])
+
+    def test_everything_skipped_is_none(self):
+        sched = obdlog.Schedule([0x05, 0x0C], fast=[0x0C])
+        self.assertIsNone(sched.next(lambda p: True))
+
+    def test_no_fast_pids_is_plain_round_robin(self):
+        sched = obdlog.Schedule([0x04, 0x05, 0x0C], fast=[])
+        self.assertEqual(self.picks(sched, 6), [0x04, 0x05, 0x0C] * 2)
+
+    def test_a_fast_pid_that_is_not_polled_is_dropped(self):
+        sched = obdlog.Schedule([0x05, 0x0D], fast=[0x0C, 0x04])
+        self.assertEqual(sched.fast, [])
+        self.assertEqual(self.picks(sched, 4), [0x05, 0x0D] * 2)
+
+
+class Interrupt(unittest.TestCase):
+    def test_the_first_signal_asks_the_second_forces(self):
+        stop = obdlog.Stop()
+        stop(signal.SIGINT, None)
+        self.assertEqual(stop.reason, "sigint")
+        with self.assertRaises(KeyboardInterrupt):
+            stop(signal.SIGTERM, None)
+        self.assertEqual(stop.reason, "sigint", "the first reason is kept for the footer")
+
+    def test_a_forced_stop_still_writes_the_footer(self):
+        with tempfile.TemporaryDirectory() as d:
+            link = os.path.join(d, "obd")
+
+            def interrupted(_ad, _mode, _pid):
+                raise KeyboardInterrupt
+
+            with obdsim.PtyServer(link=link, latency=0.0), \
+                    mock.patch.object(elm.Adapter, "query_all", interrupted), \
+                    self.assertRaises(KeyboardInterrupt):
+                run_logger(["--port", link, "--out", d, "--max-seconds", "2"])
+            records, torn = obdlog.read_log(only_log(d))
+            self.assertFalse(torn)
+            self.assertEqual(records[-1]["type"], "footer")
+
+
+class Footer(unittest.TestCase):
+    def test_an_unexpected_error_is_named_in_the_footer(self):
+        with tempfile.TemporaryDirectory() as d:
+            link = os.path.join(d, "obd")
+            with obdsim.PtyServer(link=link, latency=0.0), \
+                    mock.patch.object(elm.Adapter, "query_all",
+                                      side_effect=RuntimeError("boom")), \
+                    self.assertRaises(RuntimeError):
+                run_logger(["--port", link, "--out", d, "--max-seconds", "2"])
+            records, _ = obdlog.read_log(only_log(d))
+            self.assertEqual(records[-1]["reason"], "error: RuntimeError: boom")
+
+
+class Naming(unittest.TestCase):
+    def test_two_sessions_in_one_millisecond_get_two_files(self):
+        with tempfile.TemporaryDirectory() as d, \
+                mock.patch.object(obdlog, "_wall", return_value="2026-10-27T12:00:00.123+00:00"):
+            for _ in range(2):
+                run_logger(["--sim", "--out", d, "--max-seconds", "0.3"])
+            logs = sorted(f for f in os.listdir(d) if f.startswith("drive-"))
+            self.assertEqual(logs, ["drive-20261027T120000.123-2-synth.jsonl",
+                                    "drive-20261027T120000.123-synth.jsonl"])
+            for name in logs:
+                records, _ = obdlog.read_log(os.path.join(d, name))
+                self.assertEqual([r["type"] for r in records].count("header"), 1, name)
+
+    def test_the_writer_never_appends_to_an_existing_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "drive-x.jsonl")
+            obdlog.LogWriter(p, "synth", 50, 1.0).close()
+            with self.assertRaises(FileExistsError):
+                obdlog.LogWriter(p, "synth", 50, 1.0)
+
+
+class Provenance(unittest.TestCase):
+    def test_one_src_is_returned(self):
+        self.assertEqual(obdlog.session_src([{"src": "live"}, {"src": "live"}]), "live")
+
+    def test_mixed_missing_or_no_src_is_refused(self):
+        for records in ([{"src": "live"}, {"src": "synth"}], [{"src": "live"}, {}], []):
+            with self.subTest(records=records), self.assertRaises(ValueError):
+                obdlog.session_src(records)
 
 
 class Reader(unittest.TestCase):

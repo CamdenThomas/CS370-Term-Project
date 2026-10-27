@@ -22,7 +22,7 @@ What sync does, and never does:
   * issue bodies and labels are left alone: GitHub owns them
   * an open issue that no line mentions is reported, never closed
 
-Usage (Python 3.11+, `gh` authenticated):
+Usage (Python 3, standard library only; `gh` authenticated):
 
     python tools/board_sync.py              reconcile, then write tags/ticks back
     python tools/board_sync.py --check      report drift; exit 1 if anything would change
@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -152,10 +153,16 @@ def parse(text: str) -> Board:
 
 
 def render(b: Board) -> str:
-    """Rewrite the table's Progress column from the checkboxes."""
+    """Rewrite the table's Progress column from the checkboxes.
+
+    Only rows between the board-sync markers: a `| M2 |` row in any other table is
+    left alone."""
     out = []
+    in_table = False
     for line in b.lines:
-        m = ROW_RE.match(line)
+        if line.strip() in (TABLE_OPEN, TABLE_CLOSE):
+            in_table = line.strip() == TABLE_OPEN
+        m = ROW_RE.match(line) if in_table else None
         if m and m.group(1) in b.rows:
             ms = m.group(1)
             mine = [it for it in b.items if it.milestone == ms]
@@ -199,14 +206,18 @@ class Gh:
                            encoding="utf-8", errors="replace")
         return p.returncode, p.stdout.strip(), p.stderr.strip()
 
-    def read_json(self, args: list[str], default=None):
+    def read_json(self, args: list[str], soft=None):
+        """The parsed output of a gh read. A failed read raises Fail, unless `soft` is
+        given, which is then returned instead (only the optional project board)."""
         self.reads += 1
         code, out, err = self.run(args)
         if code != 0:
-            if default is not None:
-                return default
+            if soft is not None:
+                return soft
             raise Fail(f"gh {' '.join(args)}\n  -> {err}")
-        return json.loads(out) if out else default
+        if not out:
+            return soft if soft is not None else []
+        return json.loads(out)
 
     def write(self, args: list[str], label: str) -> str:
         if self.dry:
@@ -225,7 +236,7 @@ class Gh:
 
 def sync_milestones(gh: Gh, repo: str, b: Board) -> None:
     have = {m["title"]: m for m in
-            gh.read_json(["api", f"repos/{repo}/milestones?state=all&per_page=100"], [])}
+            gh.read_json(["api", f"repos/{repo}/milestones?state=all&per_page=100"])}
     for ms, cells in b.rows.items():
         due, desc = cells[3], cells[1]
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", due):
@@ -241,11 +252,15 @@ def sync_milestones(gh: Gh, repo: str, b: Board) -> None:
                      f"update milestone {ms} (due {due})")
 
 
-def sync_issues(gh: Gh, b: Board) -> list[str]:
-    """Make each line's issue match it. Returns lines worth reporting."""
+def sync_issues(gh: Gh, b: Board, save=lambda: None) -> list[str]:
+    """Make each line's issue match it. Returns lines worth reporting.
+
+    `save` is called after every tag or tick written into `b`, so an error or Ctrl-C
+    later in the run cannot lose the tag of an issue already created on GitHub, which
+    the next run would create a second time."""
     issues = {r["number"]: r for r in gh.read_json(
         ["issue", "list", "--state", "all", "--limit", "1000",
-         "--json", "number,title,state,milestone,assignees"], [])}
+         "--json", "number,title,state,milestone,assignees"])}
     report = []
     for it in list(b.items):
         if it.number is None:
@@ -263,6 +278,7 @@ def sync_issues(gh: Gh, b: Board) -> list[str]:
                     gh.write([], "close it again (the box is ticked)")
                 continue
             set_tag(b, it, int(url.rsplit("/", 1)[-1]))
+            save()
             issues[it.number] = {"number": it.number, "title": it.title, "state": "OPEN",
                                  "milestone": {"title": it.milestone},
                                  "assignees": [{"login": PEOPLE[it.owner]}]
@@ -278,14 +294,20 @@ def sync_issues(gh: Gh, b: Board) -> list[str]:
         if it.owner and PEOPLE[it.owner] not in {a["login"] for a in issue["assignees"]}:
             edit += ["--add-assignee", PEOPLE[it.owner]]
         if edit:
-            gh.write(["issue", "edit", str(it.number), *edit],
-                     f"edit #{it.number}: {' '.join(e for e in edit if e.startswith('--'))}")
+            # Show a retitle in full: a tag typed on the wrong line retitles another
+            # issue, and --check is where a human sees that before it happens.
+            what = " ".join(e for e in edit if e.startswith("--") and e != "--title")
+            if "--title" in edit:
+                what = f"title {issue['title']!r} -> {it.title!r}" + (f", {what}"
+                                                                     if what else "")
+            gh.write(["issue", "edit", str(it.number), *edit], f"edit #{it.number}: {what}")
         closed = issue["state"].upper() == "CLOSED"
         if it.checked and not closed:
             gh.write(["issue", "close", str(it.number), "--reason", "completed"],
                      f"close #{it.number} (ticked)")
         elif closed and not it.checked:
             set_checked(b, it)
+            save()
             report.append(f"#{it.number} was closed on GitHub; ticked its box")
     listed = {it.number for it in b.items}
     for n, r in sorted(issues.items()):
@@ -362,16 +384,27 @@ def main() -> int:
         raise Fail(f"gh repo view -> {err}")
     say(f"repo: {repo}" + ("   [CHECK ONLY]" if args.check else ""))
     sync_milestones(gh, repo, b)
-    report = sync_issues(gh, b)
+    written = [original]
+
+    def save() -> None:
+        """Write the file now if it changed; never in --check."""
+        new = render(b)
+        if not args.check and new != written[0]:
+            # Replace, never truncate in place: a Ctrl-C mid-write keeps the old file.
+            tmp = LIST_DOC.with_name(LIST_DOC.name + ".tmp")
+            tmp.write_text(new, encoding="utf-8")
+            os.replace(tmp, LIST_DOC)
+            written[0] = new
+
+    report = sync_issues(gh, b, save)
     note = None if args.no_board else sync_board(gh, repo, b)
 
-    new = render(b)
-    if new != original:
+    if render(b) != original:
         if args.check:
             gh.pending += 1
             say("    would: rewrite docs/milestones.md (tags, ticks or progress)")
         else:
-            LIST_DOC.write_text(new, encoding="utf-8")
+            save()
             say("  wrote docs/milestones.md")
     for r in report:
         say(f"  ! {r}")

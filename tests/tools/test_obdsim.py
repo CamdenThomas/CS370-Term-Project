@@ -99,6 +99,20 @@ class ModeOne(unittest.TestCase):
         self.assertIn(0x02, obdlib.support_pids(0x00, data))
 
 
+class TwoEcus(unittest.TestCase):
+    def test_listed_pids_are_answered_by_two_ecus(self):
+        sim = obdsim.Simulator(two_ecu={0x0C})
+        ask(sim, "ATE0")
+        ask(sim, "0100")
+        self.assertEqual(len(obdlib.parse_all(ask(sim, "010C"), 1, 0x0C)), 2)
+        self.assertEqual(len(obdlib.parse_all(ask(sim, "010D"), 1, 0x0D)), 1)
+
+    def test_one_ecu_by_default(self):
+        sim = obdsim.Simulator()
+        ask(sim, "ATE0")
+        self.assertEqual(len(obdlib.parse_all(ask(sim, "010C"), 1, 0x0C)), 1)
+
+
 class DriveProfile(unittest.TestCase):
     def test_phases_cover_idle_acceleration_cruise_and_stop(self):
         speeds = [obdsim.vehicle_state(t)[0x0D] for t in range(0, 140)]

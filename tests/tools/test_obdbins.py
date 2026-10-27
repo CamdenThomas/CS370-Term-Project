@@ -46,6 +46,12 @@ class Binning(unittest.TestCase):
         means = [cells[k]["mean"] for k in sorted(cells)]
         self.assertEqual(means, sorted(means))
 
+    def test_mixed_src_is_refused(self):
+        records = list(self.records)
+        records[5] = dict(records[5], src="live")
+        with self.assertRaises(ValueError):
+            obdbins.render(records, FIXTURE, ["0B"], 500, 20, min_n=10)
+
     def test_render_flags_thin_bins_and_synthetic_data(self):
         text = obdbins.render(self.records, FIXTURE, ["0B"], 500, 20, min_n=10)
         self.assertIn("SYNTH", text)

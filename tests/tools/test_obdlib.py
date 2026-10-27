@@ -26,6 +26,13 @@ class ParseResponse(unittest.TestCase):
         with self.assertRaises(AdapterError):
             obdlib.parse_response("41 0D 3C \r\r>", 0x01, 0x0C)
 
+    def test_bus_init_ok_is_skipped_and_its_error_raises(self):
+        raw = "BUS INIT: ...OK\r41 0C 1A F8 \r\r>"
+        self.assertEqual(obdlib.parse_response(raw, 0x01, 0x0C), bytes([0x1A, 0xF8]))
+        with self.assertRaises(AdapterError) as cm:
+            obdlib.parse_response("BUS INIT: ...ERROR\r\r>", 0x01, 0x0C)
+        self.assertEqual(str(cm.exception), "BUS INIT: ...ERROR")
+
     def test_no_data_is_its_own_error(self):
         with self.assertRaises(NoData):
             obdlib.parse_response("NO DATA\r\r>", 0x01, 0x5C)
@@ -36,6 +43,14 @@ class ParseResponse(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(AdapterError) as cm:
                 obdlib.parse_response(text + "\r\r>", 0x01, 0x0C)
             self.assertNotIsInstance(cm.exception, NoData)
+
+    def test_no_bus_is_its_own_error(self):
+        for text in ("UNABLE TO CONNECT", "CAN ERROR"):
+            with self.subTest(text=text), self.assertRaises(obdlib.BusAsleep):
+                obdlib.parse_response(text + "\r\r>", 0x01, 0x0C)
+        with self.assertRaises(obdlib.BusAsleep):
+            obdlib.check_bus("SEARCHING...\rUNABLE TO CONNECT\r\r>")
+        obdlib.check_bus("SEARCHING...\r41 00 BE 1F A8 13 \r\r>")
 
     def test_nul_bytes_from_the_adapter_are_ignored(self):
         self.assertEqual(obdlib.parse_response("\x0041 0C 1A F8 \x00\r\r>", 0x01, 0x0C),

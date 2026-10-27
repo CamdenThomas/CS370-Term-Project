@@ -74,6 +74,10 @@ caffeinate -i env PYTHONPATH=tools .venv/bin/python tools/obdlog.py \
    PYTHONPATH=tools .venv/bin/python tools/obdsum.py data/drive-*.jsonl
    ```
 
+   A `multi_ecu` event means more than one controller answered that PID; its samples
+   keep every line in `raw_all` (D-044). Note which PIDs it names: that list decides how
+   the analysis picks one controller's reading.
+
 2. Look at it: `tools/obdplot.py` (PNG figures in `data/plots/`), `tools/obdview.py`
    (an offline HTML page per drive) and `tools/obdbins.py` (how well each rpm and load
    cell is filled), each run the same way as `obdsum.py`.

@@ -122,9 +122,15 @@ def _hex(data):
 
 
 class Simulator:
-    """ELM327 command handling, without any I/O. `handle` returns the full reply text."""
+    """ELM327 command handling, without any I/O. `handle` returns the full reply text.
 
-    def __init__(self):
+    `two_ecu` lists PIDs that a second, synthetic ECU (a transmission controller) also
+    answers, on a second line after the engine's, as real cars often do for 05, 0C and
+    0D. With headers off nothing in the reply says which line came from which ECU.
+    """
+
+    def __init__(self, two_ecu=()):
+        self.two_ecu = frozenset(two_ecu)
         self._reset()
 
     def _reset(self):
@@ -163,7 +169,9 @@ class Simulator:
             if pid % 0x20 == 0 and (pid == 0 or pid in self._supported()):
                 return [_hex(bytes([0x41, pid]) + _bitmap(pid))]
             if pid in ENCODE:
-                return [_hex(bytes([0x41, pid]) + ENCODE[pid](vehicle_state(t)[pid]))]
+                line = _hex(bytes([0x41, pid]) + ENCODE[pid](vehicle_state(t)[pid]))
+                # The second ECU relays the same quantity, so its line is the same bytes.
+                return [line, line] if pid in self.two_ecu else [line]
             return ["NO DATA"]
         if mode == 0x09 and pid == 0x00:
             return [_hex(bytes([0x49, 0x00, 0x40, 0, 0, 0]))]
@@ -186,9 +194,9 @@ class Simulator:
 class PtyServer:
     """Serve a Simulator on a pty, optionally behind a symlink (as /dev/obd is, D-019)."""
 
-    def __init__(self, link=None, latency=0.04, speed=1.0):
+    def __init__(self, link=None, latency=0.04, speed=1.0, two_ecu=()):
         self.link, self.latency, self.speed = link, latency, speed
-        self.sim = Simulator()
+        self.sim = Simulator(two_ecu)
         self._stop = threading.Event()
 
     def __enter__(self):
@@ -243,9 +251,12 @@ def main():
     ap.add_argument("--latency", type=float, default=0.04,
                     help="seconds per OBD request, roughly a Bluetooth adapter")
     ap.add_argument("--speed", type=float, default=1.0, help="drive-profile time scale")
+    ap.add_argument("--two-ecu", default="",
+                    help="hex PIDs a second ECU also answers, e.g. 05,0C,0D")
     args = ap.parse_args()
+    two = [int(p, 16) for p in args.two_ecu.split(",") if p.strip()]
     os.makedirs(os.path.dirname(args.link) or ".", exist_ok=True)
-    with PtyServer(args.link, args.latency, args.speed) as srv:
+    with PtyServer(args.link, args.latency, args.speed, two) as srv:
         print(f"obdsim: synthetic ELM327 on {srv.path} (link {args.link}); "
               "every byte is src=synth. Ctrl-C to stop.", file=sys.stderr)
         try:

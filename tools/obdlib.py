@@ -16,12 +16,21 @@ class NoData(AdapterError):
     """The adapter answered `NO DATA`: the ECU did not reply to this request."""
 
 
+class BusAsleep(AdapterError):
+    """The adapter found no bus to talk on: ignition off, or the ECUs asleep. Not a fault
+    of the adapter, so resetting it does not help; waiting does."""
+
+
+# Replies that mean the adapter could not reach the bus at all.
+_ASLEEP_TEXT = ("UNABLE TO CONNECT", "CAN ERROR")
 # Replies that mean the request failed, as text the adapter prints.
-_ERROR_TEXT = ("?", "BUFFER FULL", "UNABLE TO CONNECT", "CAN ERROR", "STOPPED",
+_ERROR_TEXT = ("?", "BUFFER FULL", "STOPPED",
                "BUS BUSY", "BUS ERROR", "DATA ERROR", "<DATA ERROR", "FB ERROR",
-               "LV RESET", "ACT ALERT", "BUS INIT: ERROR", "BUS INIT:...ERROR",
-               "ERROR")
-_SKIP_TEXT = ("SEARCHING...", "BUS INIT: OK", "BUS INIT:...OK")
+               "LV RESET", "ACT ALERT", "BUS INIT: ...ERROR", "BUS INIT: ERROR",
+               "BUS INIT:...ERROR", "ERROR")
+# "BUS INIT: ...OK" is the ELM327's text after an ISO 9141 or KWP slow init; the
+# spellings without the space are kept in case a clone prints them.
+_SKIP_TEXT = ("SEARCHING...", "BUS INIT: ...OK", "BUS INIT: OK", "BUS INIT:...OK")
 _HEX_LINE = re.compile(r"^(?:[0-9A-F]{2})+$")
 
 
@@ -51,8 +60,17 @@ def _hex_bytes(line):
 def _check_text(line):
     if line == "NO DATA":
         raise NoData("NO DATA")
+    if line in _ASLEEP_TEXT:
+        raise BusAsleep(line)
     if line in _ERROR_TEXT:
         raise AdapterError(line)
+
+
+def check_bus(raw):
+    """Raise BusAsleep if a reply says the adapter could not reach the bus."""
+    for line in _lines(raw):
+        if line in _ASLEEP_TEXT:
+            raise BusAsleep(line)
 
 
 def parse_all(raw, mode, pid):

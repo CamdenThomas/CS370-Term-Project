@@ -7,9 +7,9 @@ Run it parked, engine running, with the OBDLink LX paired (D-019):
     tools/pidscan.py --port /dev/obd                  # Pi
 
 It prints the adapter, the protocol, the battery voltage, the VIN (on screen only) and
-every supported PID with one live reading, then writes data/pidscan-<time>.json and a
-markdown block to paste into docs/hardware/pid-survey.md. Files carry the VIN's hash,
-never the VIN itself.
+every supported PID with one live reading, then writes data/pidscan-<time>-<src>.json
+and data/pidscan-<time>-<src>.md, a markdown block to paste into
+docs/hardware/pid-survey.md. Files carry the VIN's hash, never the VIN itself.
 """
 import argparse
 import datetime
