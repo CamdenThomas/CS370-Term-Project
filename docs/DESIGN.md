@@ -35,7 +35,7 @@ OBD2 port -- OBDLink LX (Bluetooth SPP, D-019)   DS18B20 cabin probe (D-037)
     | verdicts over a Unix socket, a few per drive at most
     v
   supervisor [E] spawns, heartbeats, restarts with backoff --GPIO--> light,
-    ^            1-4 Hz pulse = alive, steady = not running (D-027)
+    ^            1-4 Hz pulse = alive; steady, except yellow at boot = not running (D-027)
     | UDS, on demand
   obdctl (CLI), status page + report --> phone on the box's own Wi-Fi (D-013, D-028)
 power: owner's USB-C charger -> power block + supercapacitor -> Pi 4 (D-024)
