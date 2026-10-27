@@ -26,6 +26,13 @@ class ParseResponse(unittest.TestCase):
         with self.assertRaises(AdapterError):
             obdlib.parse_response("41 0D 3C \r\r>", 0x01, 0x0C)
 
+    def test_bus_init_ok_is_skipped_and_its_error_raises(self):
+        raw = "BUS INIT: ...OK\r41 0C 1A F8 \r\r>"
+        self.assertEqual(obdlib.parse_response(raw, 0x01, 0x0C), bytes([0x1A, 0xF8]))
+        with self.assertRaises(AdapterError) as cm:
+            obdlib.parse_response("BUS INIT: ...ERROR\r\r>", 0x01, 0x0C)
+        self.assertEqual(str(cm.exception), "BUS INIT: ...ERROR")
+
     def test_no_data_is_its_own_error(self):
         with self.assertRaises(NoData):
             obdlib.parse_response("NO DATA\r\r>", 0x01, 0x5C)
