@@ -82,32 +82,38 @@ sensor is added, so nothing in the design needs them (D-029).
 > **does**, and what the **log will show**. The soak test grades this table's honesty —
 > so write the modes you are afraid of, not the ones you have already handled.
 
+Log lines are drafts, in the form `<process> <level> <event> key=value ...`, written
+through the shared logger in `src/common/`; every one also carries `src` (C.2).
+
 | Component | Failure | Detection | Response | Log line |
 | --- | --- | --- | --- | --- |
-| OBD2 adapter | Bluetooth link drops mid-drive (out of range, adapter asleep, unplugged) | hangup on the tty: `read` returns 0 or `EIO`, `poll` reports `POLLHUP` | degrade, do not restart-storm; reopen `/dev/obd` with backoff until the link returns | |
-| OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | `ATZ` reset, then back off | |
-| ECU | stops answering a PID (sensor unplugged) | request timeout, per PID (D-012) | mark PID absent, keep the rest | |
-| obdd | crash / `kill -9` | supervisor `waitpid` | restart with backoff | |
-| ring | consumer stalls, producer would overwrite | sequence gap accounting | | |
-| storaged | disk full | | | |
-| storaged | power cut mid-write | CRC mismatch, or a batch with no `COMMIT`, on the recovery scan | truncate the torn tail and the uncommitted batch (D-025) | |
-| analyzed | checkpoint torn by a power cut | slot CRC or generation check | load the other slot; redo from its older offset (D-025) | |
-| analyzed | model file missing or corrupt | | fall back to residuals only | |
-| supervisor | itself dies | systemd `Restart=always` | the light freezes steady, which by design reads "not running" (D-027) | |
-| status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | |
-| status page | report generation fails or runs out of memory (D-028) | error return; RSS in the heartbeat | the page says the report failed; capture and storage unaffected | |
-| clock | the RTC lost its backup or is missing (D-030) | the RTC reports invalid time, or does not answer, at boot | run on `mono_ns`; mark the session's wall time untrusted; the report says so | |
-| power | source disappears: the normal key-off (D-024) | source-present GPIO | grace period, then commit, checkpoint, sync, halt; the power stage cuts the Pi | |
-| power | source dips at crank | source-present drops for less than the grace period | ride through on the supercapacitor; log the dip | |
-| power | source returns during shutdown | source-present rises in `SHUTTING_DOWN` | finish the clean shutdown; the power stage power-cycles the Pi, which boots again | |
-| power | bank empty at key-off or at a cold-start crank | failed shutdown timing; next boot finds an unclean end | crash-consistent recovery at the next boot (mechanism D) | |
-| power | charger pulled mid-drive | source-present GPIO | as key-off, logged as unplanned | |
-| power | weak source; Pi undervolts but keeps running | CC advertisement at start; `vcgencmd get_throttled` polled by supervisor | degrade and log; the bank covers only brief dips; a source too weak for a drive is open (`powerspec`) | |
-| power | charger stays live with the key off (unsupported install) | source present while the engine reports nothing for a long time | log it; the report says so; whether to halt to save the car's battery is open (`shutfsm`) | |
-| thermal | Pi throttles in a hot cabin | `vcgencmd get_throttled`, SoC temperature | degrade; log; the report shows it | |
-| storage | SD card fails | write error | degrade and log; do not crash | |
-| radio | Bluetooth and Wi-Fi contend on the Pi 4's one chip | `btcoex` measurement | measure and document | |
-| boot | the previous session ended unclean | boot record flag, recovery log | recover; list it in the report's sessions | |
+| OBD2 adapter | Bluetooth link drops mid-drive (out of range, adapter asleep, unplugged) | hangup on the tty: `read` returns 0 or `EIO`, `poll` reports `POLLHUP` | degrade, do not restart-storm; reopen `/dev/obd` with backoff until the link returns | `obdd WARN link_lost err=EIO`, then `obdd INFO reconnected attempts=4 down_ms=8200` |
+| OBD2 adapter | hangs or returns garbage (`?`, `NO DATA`, `BUFFER FULL`) | per-request timeout; reply parse failure | three in a row: `ATZ` reset, then back off | `obdd WARN reply_bad pid=0C text="BUFFER FULL"`, `obdd WARN adapter_reset after=3` |
+| OBD2 adapter | answers, but finds no protocol (engine off, key in accessory) | `UNABLE TO CONNECT` or `NO DATA` for every PID, including `0100` | treat as engine off: poll `0100` once a few seconds, record nothing, light stays green | `obdd INFO ecu_silent since_ms=12000` |
+| ECU | stops answering a PID (sensor unplugged) | request timeout or `NO DATA` five times in a row, per PID (D-012) | mark PID absent, keep the rest, retry it once a minute; the report lists it (D-028) | `obdd WARN pid_absent pid=05 after=5`, `obdd INFO pid_present pid=05` |
+| obdd | crash / `kill -9` | supervisor `waitpid` | restart with backoff | `supervisor ERROR child_exit name=obdd signal=9`, `supervisor INFO child_restart name=obdd delay_ms=500` |
+| ring | consumer stalls, producer would overwrite | sequence gap accounting; `storaged` heartbeat late | producer refuses and counts the overrun (B.3); supervisor restarts the stalled `storaged`; light red while overruns grow | `obdd ERROR ring_full overruns=37`, `supervisor WARN heartbeat_late name=storaged ms=4100` |
+| storaged | disk full | `write` returns `ENOSPC`, or free space below a floor at each segment close | delete the oldest whole segment if retention allows; else stop committing, let the ring refuse, light red | `storaged ERROR enospc free_kb=0 action=drop_segment seg=log-123.cwr` |
+| storaged | power cut mid-write | CRC mismatch, or a batch with no `COMMIT`, on the recovery scan | truncate the torn tail and the uncommitted batch (D-025) | `storaged WARN recovered bytes_truncated=213 records_lost=17 prev_end=recovered` |
+| storaged | `fsync` fails (`EIO`) | `fsync` return value | treat the batch as not durable; do not advance the durable offset; retry once, then degrade | `storaged ERROR fsync_failed err=EIO txn=4411` |
+| analyzed | checkpoint torn by a power cut | slot CRC or generation check | load the other slot; redo from its older offset (D-025) | `analyzed WARN checkpoint_bad slot=B using=A redo_txns=812` |
+| analyzed | model file missing or corrupt | `open` fails, or the weights header's CRC or version does not match | fall back to residuals only | `analyzed WARN model_unavailable reason=crc mode=residuals_only` |
+| analyzed | falls behind the durable offset | gap between its read offset and `storaged`'s durable offset | keep reading in order; nothing is lost because it reads the log, not the ring (D-031) | `analyzed WARN lagging behind_records=2400` |
+| supervisor | itself dies | systemd `Restart=always` | the light freezes steady, which by design reads "not running" (D-027) | `systemd: supervisor.service: Main process exited, status=9/KILL` (journal) |
+| status page | crash, or phone floods it with requests (D-013) | supervisor `waitpid` | restart with backoff; capture and storage unaffected | `supervisor ERROR child_exit name=statusd status=1` |
+| status page | report generation fails or runs out of memory (D-028) | error return; RSS in the heartbeat | the page says the report failed; capture and storage unaffected | `statusd ERROR report_failed err=ENOMEM rss_kb=48000` |
+| clock | the RTC lost its backup or is missing (D-030) | the RTC reports invalid time, or does not answer, at boot | run on `mono_ns`; mark the session's wall time untrusted; the report says so | `supervisor WARN rtc_invalid wall_untrusted=1` |
+| power | source disappears: the normal key-off (D-024) | source-present GPIO | grace period, then commit, checkpoint, sync, halt; the power stage cuts the Pi | `supervisor INFO source_lost`, then `supervisor INFO shutdown reason=source_lost` |
+| power | source dips at crank | source-present drops for less than the grace period | ride through on the supercapacitor; log the dip | `supervisor INFO source_dip ms=640` |
+| power | source returns during shutdown | source-present rises in `SHUTTING_DOWN` | finish the clean shutdown; the power stage power-cycles the Pi, which boots again | `supervisor INFO source_back state=shutting_down action=finish` |
+| power | bank empty at key-off or at a cold-start crank | failed shutdown timing; next boot finds an unclean end | crash-consistent recovery at the next boot (mechanism D) | `storaged WARN recovered prev_end=recovered` at the next boot |
+| power | charger pulled mid-drive | source-present GPIO | as key-off, logged as unplanned | `supervisor WARN source_lost engine=running` |
+| power | weak source; Pi undervolts but keeps running | CC advertisement at start; `vcgencmd get_throttled` polled by supervisor | degrade and log; the bank covers only brief dips; a source too weak for a drive is open (`powerspec`) | `supervisor WARN undervoltage throttled=0x50005` |
+| power | charger stays live with the key off (unsupported install) | source present while the engine reports nothing for a long time | log it; the report says so; whether to halt to save the car's battery is open (`shutfsm`) | `supervisor WARN source_live_engine_silent minutes=30` |
+| thermal | Pi throttles in a hot cabin | `vcgencmd get_throttled`, SoC temperature | degrade; log; the report shows it | `supervisor WARN thermal_throttle soc_c=82` |
+| storage | SD card fails | write error | degrade and log; do not crash | `storaged ERROR write_failed err=EIO` |
+| radio | Bluetooth and Wi-Fi contend on the Pi 4's one chip | `btcoex` measurement | measure and document | `obdd INFO reply_ms p99=180` in the heartbeat, compared with Wi-Fi on and off |
+| boot | the previous session ended unclean | boot record flag, recovery log | recover; list it in the report's sessions | `storaged INFO boot boot_id=212 prev_end=recovered` |
 
 ## 4. Storage and data
 >
