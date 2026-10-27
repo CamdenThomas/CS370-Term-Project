@@ -271,6 +271,7 @@ def _run(args, stop):
     asleep_delay = None               # seconds until the next try while the bus is asleep
     next_status = time.monotonic() + args.status_sec
     next_gps = 0.0
+    failure = None                    # what ended the session, if it was an exception
     print(f"obdlog: logging {len(pids)} PIDs to {path} (src={src}); Ctrl-C to stop",
           file=sys.stderr)
 
@@ -388,8 +389,12 @@ def _run(args, stop):
                 status()
             if ad is None:
                 break
+    except BaseException as e:
+        failure = f"error: {type(e).__name__}: {e}"
+        raise
     finally:
-        reason = stop.reason or ("max_seconds" if expired() else "link_gave_up")
+        reason = (stop.reason or failure
+                  or ("max_seconds" if expired() else "link_gave_up"))
         out.write("footer", reason=reason, seconds=round(time.monotonic() - t_start, 3),
                   **counts)
         out.close()

@@ -237,6 +237,19 @@ class Interrupt(unittest.TestCase):
             self.assertEqual(records[-1]["type"], "footer")
 
 
+class Footer(unittest.TestCase):
+    def test_an_unexpected_error_is_named_in_the_footer(self):
+        with tempfile.TemporaryDirectory() as d:
+            link = os.path.join(d, "obd")
+            with obdsim.PtyServer(link=link, latency=0.0), \
+                    mock.patch.object(elm.Adapter, "query",
+                                      side_effect=RuntimeError("boom")), \
+                    self.assertRaises(RuntimeError):
+                run_logger(["--port", link, "--out", d, "--max-seconds", "2"])
+            records, _ = obdlog.read_log(only_log(d))
+            self.assertEqual(records[-1]["reason"], "error: RuntimeError: boom")
+
+
 class Naming(unittest.TestCase):
     def test_two_sessions_in_one_millisecond_get_two_files(self):
         with tempfile.TemporaryDirectory() as d, \
