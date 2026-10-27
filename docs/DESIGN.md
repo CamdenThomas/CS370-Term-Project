@@ -119,13 +119,18 @@ sensor is added, so nothing in the design needs them (D-029).
   22). Round-robin over the supported PIDs, about 17 on the simulator, gives each PID
   about 1 Hz. That is 0.8 to 1.4 KB/s, or 3 to 5 MB per running hour.
 - **Retention and rollup:** [fill — raw window, then binned aggregates?]
-- **fsync discipline:** provisional: one `COMMIT` and one `fsync` per batch of about one
-  second (D-025). [fill — the argument for that size, from the user's requirements
-  (`fsync`)]
+- **fsync discipline (draft, D-035):** one `COMMIT` and one `fsync` when a batch is one
+  second old or holds 64 samples, and always at a clean shutdown. The argument: a cut
+  that beats the clean shutdown (cold-start crank, pulled cable) then loses at most a
+  second, about one reading per PID, while every signal we watch moves over minutes;
+  longer batches would lose warm-up data at every cold-start reset; per-record `fsync`
+  would multiply flash writes about twentyfold for no reader that needs it.
 - **Crash story:** at boot, `storaged` scans forward from its last committed offset,
   verifies every CRC, and truncates the torn tail and any batch with no `COMMIT`
-  (undo is truncation, because nothing is overwritten in place). [fill — what is lost and
-  why losing it is acceptable]
+  (undo is truncation, because nothing is overwritten in place). An unclean cut loses the
+  open batch, at most one second of samples; the boot record counts what was truncated,
+  and the report lists it per session (D-025, D-028). Losing it is acceptable because no
+  analysis stage can tell one missing second from a slow round-robin cycle.
 - **Baseline persistence:** learned per-bin statistics must survive a power cut. This is
   the requirement that made mechanism D non-optional. `analyzed` checkpoints them to A/B
   slots and, at start, redoes every committed batch after the newest valid slot (D-025).

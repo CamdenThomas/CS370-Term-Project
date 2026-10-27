@@ -58,6 +58,7 @@ Decisions currently awaiting a human signature:
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
+| D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
@@ -866,6 +867,45 @@ more.
 **Cost.** A format change touches `storaged`, `analyzed` and `tools/replay.py` at once
 (D-031). Little-endian is fixed in the file, so the log is not portable to a big-endian
 machine without a converter, which nothing here needs.
+
+### C.6 — fsync discipline: one commit a second (draft) ⚠️ UNREVIEWED
+
+`D-035` · Drafted M2, 2026-10-26 · **By:** Claude, in Camden's session, without his review
+of the argument · **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** 🔒 C.1's open sub-decision and board item `fsync`
+
+**Decision (draft).** `storaged` closes a batch, writes its `COMMIT` and calls `fsync` when
+the batch is **one second old or holds 64 samples**, whichever comes first, and always at
+a clean shutdown. A batch is never left open across a ring wakeup that finds no data for
+a second: the timer closes it.
+
+**The argument, from the user's requirements.**
+
+- **What a cut costs.** The clean shutdown commits everything (D-024), so loss happens only
+  when a cut beats it: an empty bank at a cold start, a pulled cable, a crank reset. Then
+  the uncommitted batch is lost: at most one second, about 20 samples, roughly one reading
+  of each PID. The signals we watch move over minutes (warm-up, fuel trim against load,
+  drift over days, D-012), so one second is invisible to every analysis stage.
+- **Why not longer.** Cold-start crank resets are expected, not rare (D-024), and they
+  land in the first minutes of a drive, the most informative ones. Ten-second batches
+  would lose ten seconds of warm-up at every such reset.
+- **Why not every record.** An SD card `fsync` costs milliseconds; twenty a second would
+  spend a noticeable share of every second blocked and multiply flash writes about
+  twentyfold for no user benefit, since nothing reads a sample within a second anyway.
+- **Analysis lag.** `analyzed` reads only durable records (D-031), so it trails capture by
+  one batch, about a second. Nothing the owner sees changes faster than that.
+- **Flash wear.** About one page plus metadata per second, a few tens of MB per running
+  hour including write amplification. Two hours a day for a year is well under the
+  endurance of any current SD card. Estimate, not measured.
+- **The 64-sample cap** bounds a batch if the rate ever rises (a faster adapter, or the
+  raw CAN stretch goal), so the loss stays about a second's worth either way.
+
+**How it is checked.** The evaluation measures `fsync` latency on the Pi (p50, p99) and
+reply-to-durable latency (DESIGN.md §6); the crash tests show at most one batch lost per
+cut (`expcrash`).
+
+**Cost.** One second of data is lost on every unclean cut, by design, and the report says
+how many records each recovery dropped (D-025).
 
 ---
 
