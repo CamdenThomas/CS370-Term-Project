@@ -4,7 +4,7 @@
 > 🟨 **TEAM** = decide or review together. 📏 **DRIVE** = replace with a number from the
 > first Forester drive (`firstcap`, `pidforester`). Checklist:
 >
-> - [ ] Sign, change or reject D-019 to D-036 in `DECISIONS.md` (the doc cites them).
+> - [ ] Sign, change or reject every review-queue entry this doc cites (`DECISIONS.md`).
 > - [ ] Decide the fault-area rows in §3 and fill the ownership map in §9.
 > - [ ] Drive numbers into §1, §3 and §5; Lance's power numbers into §6.
 > - [ ] Three-isolated-workers check: design-only reader, BOM-only buyer, wiring-only
@@ -42,34 +42,31 @@ OBD2 port -- OBDLink LX (Bluetooth SPP, D-019)   DS18B20 cabin probe (D-037)
 power: owner's USB-C charger -> power block + supercapacitor -> Pi 4 (D-024)
 ```
 
-Rates are estimates until the first drive measures them (`firstcap`): D-012 budgets about
-10 requests a second; the logging tool reaches 22 on `obdsim`. One reply, or one probe
-reading, is one sample, one record and one analysis step. `obdctl` and the page ask the
-supervisor, which asks the process holding the answer; `analyzed` never reads the ring
-(D-031).
+Rates are estimates until the first drive (`firstcap`); the logging tool reaches 22
+requests a second on `obdsim`. One reply or probe reading is one sample, one record and
+one analysis step. Queries go to the supervisor, which asks the process holding the
+answer (D-043); `analyzed` never reads a ring (D-031).
 
 > 📏 **DRIVE:** measured request rate, reply-time p50/p99 and PID count replace the
 > estimates here and in §5.
 
 ## 2. Mechanism mapping
 
-D and E are the committed pair (D-017); B and F stay declined: Mode 01 and a 0.5 Hz
-probe never stress a ring, and the probe's 1-Wire timing belongs to the kernel, not to
-us (D-029, D-037).
+D and E are the committed pair (D-017). B and F stay declined: these rates never stress
+a ring, and 1-Wire timing belongs to the kernel, not to us (D-029, D-037).
 
 | Item | Component | Justification from the user's requirements | Measured by |
 | --- | --- | --- | --- |
-| D | `storaged`; checkpoints in `analyzed` | Power can vanish at any instant (empty bank at a cold start, pulled cable, crank reset, D-024), yet the record and weeks of learned baselines must survive, and no baseline may learn from a sample a cut later erased (D-031). Hence append-only CRC'd records, 1 s commits (D-035), A/B checkpoints (D-025) | 50 cuts of the Pi's 5 V rail mid-write; records lost per cut |
-| E | `supervisor`, `src/ipc/` | A recorder that dies silently harms an owner who thinks it is on duty; the least trusted code (analysis) must not take capture or storage down (B.2). Each sensor source has its own process: a hung Bluetooth link cannot stop the probe, nor a dead probe the engine sensors (D-037) | `kill -9` each child 20×: detection, recovery, fd leaks |
+| D | `storaged`; checkpoints in `analyzed` | Power can vanish at any instant (empty bank at a cold crank, pulled cable; D-024), yet the record and weeks of learned baselines must survive, and no baseline may learn a sample a cut later erased (D-031): append-only CRC'd records, 1 s commits, A/B checkpoints (D-025, D-035) | 50 cuts of the Pi's 5 V rail mid-write; records lost per cut |
+| E | `supervisor`, `src/ipc/` | A recorder that dies silently harms an owner who thinks it is on duty. Analysis, the least trusted code, must not take capture or storage down (B.2), and each sensor source has its own process, so a hung link cannot stop the probe (D-037) | `kill -9` each child 20×: detection, recovery, fd leaks |
 
-**Two physically distinct sensors that cooperate (handout §3.1).** The DS18B20 probe on
-the Pi and the car's coolant and intake-air sensors are different devices on different
-buses, read by different processes (D-037). They cooperate in the cold-soak check (§3):
-after hours off (the clock says how long, D-030) all three should agree, and the one
-that disagrees is the suspect. Beyond the probe, the engine's sensors are distinct
-transducers the dongle only carries, and every diagnostic fuses at least two (D.4). "Both
-sensors alive" (M2) means a real Mode 01 capture and a pasted probe reading; "through the
-pipeline" (M3) means both arrive as committed records labeled `live`.
+**Two distinct sensors that cooperate (handout §3.1).** The DS18B20 and the car's
+coolant and intake-air sensors are different devices on different buses, read by
+different processes (D-037). After hours off (the clock says how long, D-030) all three
+should agree at key-on; the one that disagrees is the suspect. The engine's own sensors
+are distinct transducers the dongle only carries, and every diagnostic fuses at least two
+(D.4). "Both sensors alive" (M2) is a real Mode 01 capture plus a probe reading; "through
+the pipeline" (M3) is both as committed records labeled `live`.
 
 ## 3. Analysis: how normal is learned and a fault area named
 
@@ -93,8 +90,8 @@ move together, inside one bin (D.4). 📏 **DRIVE:** strike any sensor the surve
 Forester does not publish.
 
 > 🟨 **TEAM DECIDES (Wednesday):** the fault-area rows, signatures and bin axes above are
-> Claude's proposal from D-021 and D.2. The AI-use plan (§10) says analysis design is
-> ours, so confirm, change or replace each row, and then delete this note.
+> Claude's draft from D-021 and D.2 (§10). Confirm, change or replace each row, and then
+> delete this note.
 
 ## 4. Failure-mode table
 
@@ -105,7 +102,7 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | adapter | Bluetooth drops | `read` 0/`EIO`, `POLLHUP` | reopen `/dev/obd` with backoff | `link_lost`, `reconnected` |
 | adapter | garbage or timeouts | parse failure; timeout | 3 in a row: `ATZ`, then reopen | `reply_bad`, `adapter_reset` |
 | adapter | engine off, key in ACC | `0100` gets `NO DATA` | poll `0100` every few s, record nothing | `ecu_silent` |
-| ECU | a sensor unplugged or failed | 5 `NO DATA` in a row; or the value pinned or flat while its partners move, with the MIL on and the DTC count up (PID 0101) | mark absent or suspect, retry each minute; report it. Most ECUs substitute a default value and light the CEL, so this fault is not caught before the light | `pid_absent`, `pid_flat`, `mil_on`, `pid_present` |
+| ECU | a sensor unplugged or failed | 5 `NO DATA` in a row; or pinned or flat while its partners move, MIL on (PID 0101) | mark absent or suspect, retry each minute. ECUs often substitute a value and light the CEL: not caught before the light | `pid_absent`, `pid_flat`, `mil_on`, `pid_present` |
 | probe | unplugged, broken wire, bad read | device gone from sysfs; CRC `NO`; the 85.0 °C power-on value | mark absent, retry every 10 s; cold-soak check off, reported | `sensor_absent`, `sensor_present`, `reply_bad` |
 | any child | crash, `kill -9` | `waitpid` | restart with backoff; others run on | `child_exit`, `child_restart` |
 | ring | consumer stalls | sequence gap; late heartbeat | refuse and count (B.3); restart `storaged`; red | `ring_full`, `heartbeat_late` |
@@ -131,8 +128,8 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
   then whole segments go oldest first, never one the newest checkpoint still needs. A
   32 GB card holds years of two-hour days. Text logs go to the journal, size-capped.
 - **fsync (D-035):** commit at 1 s or 64 samples, and at clean shutdown. An unclean cut
-  loses at most a second (one reading per PID) of signals that move over minutes; longer
-  batches lose warm-up at each cold-start reset; per-record `fsync` is 20× the flash wear.
+  loses at most a second of signals that move over minutes; longer batches lose warm-up
+  at each cold-start reset; per-record `fsync` is 20× the flash wear.
 - **Crash story:** at boot `storaged` scans from its last committed offset, verifies CRCs,
   truncates the torn tail and any uncommitted batch (undo is truncation: nothing is
   overwritten), and logs whether the last session ended clean. `analyzed` loads the newest
@@ -140,15 +137,13 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 
 ## 6. The box: hardware and safe power-down
 
-One small box: a Pi 4, one USB-C sink input (5.1 kΩ on CC, so never more than 5 V) from
-the owner's charger, fuse and transient protection, an input current and inrush limit, a
-supercapacitor bank (two 2.7 V cells, about 10 F, about 105 J usable, estimate) behind a
-5 V / 3 A boost converter, an I2C real-time clock (D-030), a DS18B20 probe on a short
-lead outside the shell (D-037) and one tri-color light (D-027). Two signals reach the
-Pi: **source-present** (charger live) and, from the Pi, **halt-done**, after which the
-power stage cuts the Pi even if the source has returned, then re-enables it (D-024).
-Nothing on the car is cut or spliced. Buyer: `hardware/BOM.md`; builder: the schematic
-and `hardware/wiring.md`.
+One box: a Pi 4; one USB-C sink input (5 V only) from the owner's charger, with
+protection, current and inrush limits; a supercapacitor bank (about 10 F, 105 J usable,
+estimate) behind a 5 V / 3 A boost converter; an I2C clock (D-030); the DS18B20 on a lead
+outside the shell (D-037); one tri-color light (D-027). **Source-present** tells the Pi
+the charger is live; after **halt-done** the power stage cuts the Pi even if the source
+has returned, then re-enables it (D-024). Nothing on the car is cut. Parts:
+`hardware/BOM.md`; wiring: the schematic and `hardware/wiring.md`.
 
 | State | Entered when | Supervisor does | Light |
 | --- | --- | --- | --- |
@@ -190,10 +185,10 @@ crash at any point is still recovered by mechanism D.
 | Sustained request rate | answers per second from the log, per drive | ≥ 10/s; every model input every ≤ 2 s |
 | `kill -9` each child | 20 trials per child, from the log | detect ≤ 100 ms; heartbeat ≤ 5 s; no fd leak |
 | Ring drops under contention (B.3) | sequence accounting, both rings | 0 |
-| CPU per process | `utime` + `stime` from `/proc/<pid>/stat` in every heartbeat; idle and with a CPU hog | each daemon ≤ 10 % of one core; all ≤ 25 % |
+| CPU per process | `utime` + `stime` in each heartbeat; idle and with a CPU hog | each daemon ≤ 10 % of one core; all ≤ 25 % |
 | RSS over the soak | heartbeats at start, hourly, end, per session | slope < 100 KB per running hour |
-| fsync batch size (`expbatch`) | per record, 1 s and 10 s batches on the Pi's SD: `fsync` p50 / p99, bytes written, records lost per cut | 1 s loses ≤ 1 s per cut and writes ≤ ⅕ of per-record's bytes |
-| Every failure-table row (§4) | inject it as EVALUATION.md §5 lists; read the log | its log event appears; a fault outside capture never stops capture |
+| fsync batch size (`expbatch`) | per record, 1 s, 10 s on the Pi's SD: `fsync` p99, bytes written, loss per cut | 1 s: ≤ 1 s lost, ≤ ⅕ the bytes |
+| Every failure-table row (§4) | inject each (EVALUATION.md §5) | its event logged; capture never stops for another's fault |
 | Probe unplugged (D-037) | pull it with everything running | `sensor_absent` ≤ 10 s; engine capture unaffected |
 | Detection per fault area | 5 induced events per area | ≥ 4 of 5; ≤ 1 false verdict per 10 h |
 | Recovery after a cut mid-write | cut the Pi's 5 V rail after the converter | 50 / 50 recover; ≤ 1 batch lost |
@@ -205,10 +200,7 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 
 | Subsystem | Owner | Evidence |
 | --- | --- | --- |
-| `src/ipc/` | Camden | the SPSC ring and its tests (M0, 0e66851) |
-| `src/store/` record format and CRC32 | Camden | the CRC and its known-answer test (M0, 269e2c5) |
-| `src/common/` logging | Camden | structured logging with `src` tags and heartbeats (M0, 795e671) |
-| Build: `Makefile`, `tools/board_sync.py` | Camden | M0, f1812af and 15ac280 |
+| `src/ipc/` ring; `src/store/` record format and CRC32; `src/common/` logging; build and `board_sync` | Camden | M0: 0e66851, 269e2c5, 795e671, f1812af, 15ac280 |
 | `tools/` OBD2 logging and analysis tools | Camden | `obdlib` to `obdbins` (M2, PR #155) |
 | `src/obd/`, `src/ambient/`, the `storaged` write and recovery path, `src/analysis/`, `src/supervisor/`, `src/interface/`, `tools/train/`, `electricalDrawing/` | unclaimed | scaffolds only so far |
 
@@ -218,14 +210,12 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 ## 10. AI-use plan
 
 Claude Code is used for planning, explaining kernel and serial mechanics, test fixtures,
-tooling, adversarial review of diffs and documentation, and drafting; never at runtime.
-It may draft any part of the design, the analysis included, but a draft binds nothing:
-every choice Claude drafts lands in `DECISIONS.md` as UNREVIEWED until one of us signs
-it. The §3 fault areas are such a draft, from D-021 and D.2, and D-032 to D-036, D-041 to
-D-043 and much of this text were drafted the same way; the transcripts are committed.
-`src/` holds no network code except the read-only status page in `src/interface/`, which
-serves the box's own access point with no upstream (D-013, D-028); `make boundary`, part
-of `make test`, fails the build otherwise.
+tooling, adversarial review and drafting; never at runtime. A draft binds nothing: it
+lands in `DECISIONS.md` as UNREVIEWED until one of us signs it. The §3 fault areas,
+D-032 to D-036, D-041 to D-043 and much of this text are such drafts; the transcripts are
+committed. `src/` holds no network code except `statusd`, which serves the box's own
+access point with no upstream (D-013, D-043); `make boundary`, in `make test`, fails the
+build otherwise.
 
 ## 11. Changelog (M5)
 
