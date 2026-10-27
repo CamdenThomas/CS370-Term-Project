@@ -95,7 +95,7 @@ Mechanisms B and F were declined (D-029, D-037), so they have no comparison here
 ## 7. Limitations
 
 > Plainly. Closes the loop on the constraints and substitutions declared in
-> docs/DESIGN.md §5.
+> docs/DESIGN.md §7.
 
 "An honest limitations section is worth more at the defense than a suspiciously perfect
 results section, and we notice which one we are reading."

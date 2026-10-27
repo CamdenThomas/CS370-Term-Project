@@ -32,6 +32,6 @@ the adapter negotiated (`ATDP`) and the VIN (Mode 09, `0902`).
 
 Every supported PID in the table above becomes an input to the model for that car. Record
 which ones each car answers, with the raw replies, and update the sensor list in
-`docs/DESIGN.md` §4.
+`docs/DESIGN.md` §3.
 Manufacturer (Mode 22) PIDs are a stretch: try them only if a fault area has too few
 sensors to call.

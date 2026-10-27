@@ -116,7 +116,7 @@ records what survives (D and E). Bluetooth costs no further mechanism.
   key-off (`scripts/provision_pi.sh`, board item `bench`).
 - **A new failure mode.** The link can drop while the engine runs (adapter out of range,
   adapter asleep, radio interference). `obdd` sees a hangup on the tty and must reconnect
-  with backoff, not crash-loop (`docs/DESIGN.md` §3, `supbackoff`).
+  with backoff, not crash-loop (`docs/DESIGN.md` §4, `supbackoff`).
 - **One radio, two jobs.** The Pi 4's single Wi-Fi/Bluetooth chip also runs the phone
   access point (D-013). Coexistence is expected to work but is unmeasured: board item
   `btcoex`. Putting the access point on 5 GHz is the first mitigation to try.
@@ -358,7 +358,7 @@ never needs to know what normal *is* ahead of time.
 **Sample-rate consequence.** Signals are round-robined, so each PID is sampled at
 (request rate ÷ PID count) — on the order of 1 Hz each for a ~10 requests/s budget over
 ~8 PIDs. That is ample for what we watch (warm-up over minutes, fuel trim against load,
-drift over days) and must be stated in `docs/DESIGN.md` §4. The request budget itself
+drift over days) and must be stated in `docs/DESIGN.md` §1. The request budget itself
 is a design-doc number to justify, not a constant to pick.
 
 **Cost.** The device sends requests to the car's ECU. Kept safe by the rate limit, one
@@ -889,7 +889,7 @@ wrong numbers you trust are more dangerous than missing numbers you know about.
 
 **Open sub-decision (M2, Lance):** fsync batch size and interval. There is no correct
 value, only one justifiable from user requirements. Document the argument in `docs/DESIGN.md`
-§4 before writing the code.
+§5 before writing the code.
 
 ### C.2 — Every record carries a provenance tag 🔒
 
@@ -945,7 +945,7 @@ pointer.
 second of samples. Records of about 48 bytes at 10 to 20 requests a second come to about
 1 KB/s, or about 3.5 MB per running hour. The worst loss from a power cut that beats the
 clean shutdown is then about one second of samples. The argument for the batch size is
-still written in `docs/DESIGN.md` §4 before the code, as C.1 requires (`fsync`).
+still written in `docs/DESIGN.md` §5 before the code, as C.1 requires (`fsync`).
 
 **Record format.** The new record kinds (transaction begin and commit, boot, clean
 shutdown) and a boot id in the header are settled in `recfmt`. The CRC known-answer test
@@ -1089,7 +1089,7 @@ a second: the timer closes it.
   raw CAN stretch goal), so the loss stays about a second's worth either way.
 
 **How it is checked.** The evaluation measures `fsync` latency on the Pi (p50, p99) and
-reply-to-durable latency (DESIGN.md §6); the crash tests show at most one batch lost per
+reply-to-durable latency (DESIGN.md §8); the crash tests show at most one batch lost per
 cut (`expcrash`).
 
 **Cost.** One second of data is lost on every unclean cut, by design, and the report says
@@ -1304,7 +1304,7 @@ process, the fsync batch-size experiment, every failure-table row, and the probe
 because handout §9 requires CPU and fault-injection results and mechanism D is measured
 by its write batching.*
 
-**Decision (draft).** `docs/DESIGN.md` §6 commits to these targets. Each one is chosen from
+**Decision (draft).** `docs/DESIGN.md` §8 commits to these targets. Each one is chosen from
 what the user needs or what an earlier decision already implies, not from what we expect
 to hit.
 
@@ -1368,7 +1368,7 @@ actually review — and the defense asks us to answer for individual lines.
 **Decision.** No task, subsystem or document has a pre-assigned owner. Any open line on
 the board is for whoever is available. For the ownership map the handout requires (§8,
 §10.1), a subsystem belongs to **whoever lands its first substantive commit**, and
-`docs/DESIGN.md` §7 records the map as it is realized. Ownership still means first
+`docs/DESIGN.md` §9 records the map as it is realized. Ownership still means first
 authorship and answerability at the defense, not exclusivity, and each partner must still
 answer one question from across the boundary.
 
@@ -1382,7 +1382,7 @@ handout still needs a map, and the commit history is where a grader can check on
 
 **What changed with it.**
 
-- `CLAUDE.md` §0 step 3 and §6, and `docs/DESIGN.md` §7.
+- `CLAUDE.md` §0 step 3 and §6, and `docs/DESIGN.md` §9.
 - `@owner` markers are gone from open board lines; ticked lines keep theirs as the record
   of who did the work. `tools/board_sync.py` only ever adds assignees, so removing a
   marker does not unassign the GitHub issue: a human clears those by hand.

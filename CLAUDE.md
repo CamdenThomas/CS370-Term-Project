@@ -112,7 +112,7 @@ two cooperating sensors (the threshold test). Why: DECISIONS §D.
 ## 6. Ownership
 
 No pre-assigned owners (D-026). Any open task is for whoever is free. A subsystem belongs
-to whoever lands its first substantive commit; the realized map is `docs/DESIGN.md` §7.
+to whoever lands its first substantive commit; the realized map is `docs/DESIGN.md` §9.
 First authorship and answerability at the defense, not exclusivity.
 
 ## 7. Git and pull-request law

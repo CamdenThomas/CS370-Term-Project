@@ -16,7 +16,7 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 | Milestone dates | the table in [`milestones.md`](milestones.md) | GitHub milestone due dates (synced) |
 | Milestone exit criteria and the M5 deliverables | [`milestones.md`](milestones.md) (bold lines) | — |
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
-| Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §7 | `DECISIONS.md` §F.2 |
+| Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §9 | `DECISIONS.md` §F.2 |
 | Hardware data path (Bluetooth OBD2 adapter) | `DECISIONS.md` §A.1 (D-019) | README, DESIGN, `hardware/` |
 | The box: power and shutdown, light, clock | `DECISIONS.md` §A.6 (D-024), §B.5 (D-027), §A.8 (D-030) | README, DESIGN, `hardware/` |
 | Testbed cars | `DECISIONS.md` §A.2 (D-022) | README, PROBLEM, `hardware/pid-survey.md` |
