@@ -173,6 +173,22 @@ class AgainstSim(unittest.TestCase):
         records, _ = obdlog.read_log(only_log(self.d))
         self.assertTrue(any(r["type"] == "gps" for r in records))
 
+    def test_bad_pid_lists_are_refused_before_connecting(self):
+        for bad in ("", "0C,", "ZZ", "0C,1FF"):
+            with self.subTest(pids=bad), \
+                    mock.patch.object(elm, "Adapter") as adapter, \
+                    self.assertRaises(SystemExit):
+                run_logger(["--port", self.link, "--out", self.d, "--pids", bad])
+            adapter.assert_not_called()
+
+    def test_an_ecu_that_lists_nothing_ends_the_session_at_once(self):
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(elm.Adapter, "supported_pids", return_value=set()):
+            t0 = time.monotonic()
+            rc = run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "2"])
+        self.assertEqual(rc, 2)
+        self.assertLess(time.monotonic() - t0, 1.5)
+
     def test_missing_port_at_start_fails_cleanly(self):
         rc = run_logger(["--port", "/nonexistent/obd", "--out", self.d, "--max-seconds",
                          "0.5", "--connect-tries", "1"])

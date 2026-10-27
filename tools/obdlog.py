@@ -167,6 +167,21 @@ def connect(path, tries, backoff_min, stop, log=None, idle=None, expired=lambda:
     return None, attempt
 
 
+def parse_pids(text):
+    """'0C,0d, 05' -> [0x0C, 0x0D, 0x05]. ValueError for a bad or empty list."""
+    pids = []
+    for part in text.split(","):
+        part = part.strip()
+        try:
+            pid = int(part, 16)
+        except ValueError:
+            raise ValueError(f"{part!r} is not a hex PID") from None
+        if not 0 <= pid <= 0xFF:
+            raise ValueError(f"{part!r} is not a Mode 01 PID (00 to FF)")
+        pids.append(pid)
+    return pids
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -183,6 +198,11 @@ def main(argv=None):
                     help="attempts at the first connection; 0 = keep trying")
     ap.add_argument("--backoff-min", type=float, default=1.0, help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
+    if args.pids is not None:
+        try:
+            args.pids = parse_pids(args.pids)
+        except ValueError as e:
+            ap.error(f"--pids: {e}")
     if bool(args.port) == bool(args.sim):
         ap.error("give exactly one of --port or --sim")
     os.makedirs(args.out, exist_ok=True)
@@ -241,8 +261,12 @@ def _run(args, stop):
         ad.close()
         print(f"obdlog: session setup failed: {e}", file=sys.stderr)
         return 2
-    pids = ([int(p, 16) for p in args.pids.split(",")] if args.pids
-            else sorted(supported))
+    pids = args.pids if args.pids is not None else sorted(supported)
+    if not pids:
+        # Nothing to poll: the loop would idle until --max-seconds, logging nothing.
+        ad.close()
+        print("obdlog: the ECU lists no supported PIDs; nothing to log", file=sys.stderr)
+        return 2
     header["pids"] = [f"{p:02X}" for p in pids]
 
     out = open_session(args.out, src, args.fsync_lines, args.fsync_sec)
