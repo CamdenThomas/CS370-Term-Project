@@ -40,33 +40,33 @@ Decisions currently awaiting a human signature:
 | ID | Decision | Made by | Session date | Reviewer needed |
 | --- | --- | --- | --- | --- |
 | D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm the engine and transmission from the VIN and sign |
+| D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
 | D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` has no owner yet (D-026) |
 | D-017 | Commit to mechanisms D and E; B and F declined by D-029 (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is half of what we are graded on |
-| D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
-| D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
-| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation now target fault areas, not three diagnostics |
+| D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-020 | `docs/milestones.md` is the board; board.toml retired (§F.5) | Camden + Claude | 2026-09-23 | Lance — changes how you track and close your work |
+| D-021 | One-car monitor that learns normal and names the fault area; supersedes 🔒 D-003 (§E.1) | Camden (reopened D-003) + Claude | 2026-09-23 | Lance — the analysis and evaluation now target fault areas, not three diagnostics |
 | D-022 | Testbeds: Camden's 2008 Forester and Lance's 2015 CR-V; neither required of anyone (§A.2, supersedes D-016) | Camden (in session) + Claude | 2026-10-21 | Both — Lance, it names your car as one of two, and rewords the claim |
 | D-023 | The 48-hour soak is 48 hours wall-clock of normal use across key cycles (§E.3, answers D-006); confirmed by the professor (Camden, 2026-10-26) | Camden (in session) + Claude | 2026-10-21 | Both — it decides what the 30-point final-system soak is |
 | D-024 | One box, one USB-C input, a seconds-scale supercapacitor; clean shutdown at key-off, crash consistency as the guarantee (§A.6, supersedes D-011) | Camden (in session) + Claude | 2026-10-21 | Both — it is the whole hardware design, and nothing is bought until it is signed |
 | D-025 | Write-ahead transactions (`BEGIN`, records, `COMMIT`, one `fsync`) and A/B baseline checkpoints; extends 🔒 C.1 (§C.3) | Camden (extended C.1) + Claude | 2026-10-21 | Lance — it is the storage design behind mechanism D |
+| D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 | D-027 | One tri-color status light; every live state pulses; steady yellow while booting (§B.5, supersedes D-014) | Camden (in session) + Claude | 2026-10-21 | Both — it is the one output a driver sees |
 | D-028 | The phone page also shows trends and downloads a report (HTML + CSV, served by C); an app is a stretch (§B.6, extends D-013) | Camden (in session) + Claude | 2026-10-21 | Either — `src/interface/` has no owner yet |
 | D-029 | `pisensor` declined: no Pi-side sensor, so B and F are out of scope and D and E are the committed pair (§B.7); revised by D-037 | Camden (in session) + Claude | 2026-10-21 | Both — D and E are now the whole mechanism grade, with nothing in reserve |
-| D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
+| D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
+| D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
+| D-037 | A DS18B20 probe on the Pi, read by its own process into a second ring; reopens D-029 (§B.9) | Camden (in session) + Claude | 2026-10-26 | Both — it adds a part, a daemon and a ring, and it is the answer to handout §3.1 |
+| D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
-| D-041 | Draft retention: every segment kept until the disk is 80 % full, then oldest whole segments first, never one a checkpoint needs (§C.7) | Claude, Camden's session | 2026-10-27 | Both — it is how long the device remembers |
-| D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
-| D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
-| D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet.** The entries that bind storage and analysis now are §C.1 to §C.7 and
@@ -482,6 +482,149 @@ looks like a quiet minute. Enforced by `tests/test_ring.c`.
 **Reviewer note.** This is a real trade: under sustained overload we drop *new* data
 rather than *old*. If that is ever the wrong choice for a diagnostic, reopen this.
 
+### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
+
+`D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude
+· **Reviewed:** Camden ✅ / Lance ⬜
+
+*Extended 2026-10-21 by D-028 (§B.6): the page also shows trends and downloads a report,
+and the server-language sub-decision below is closed (C).*
+
+**Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
+upstream connection, no internet**. The owner's phone joins it and opens a status page
+served from `src/interface/` by a supervised child process. The page shows exactly two
+things — **status** and **current verdicts** — rendered from the same supervisor UDS verbs
+`obdctl` uses. It holds no state, runs no analysis, and writes nothing. `obdctl` remains
+the primary, exact interface with all five verbs. No app, no account, no cloud, and the
+phone never pairs over Bluetooth. (The Pi itself pairs with the OBD2 adapter, D-019.)
+
+**Why.** The user is a car owner, not someone with a terminal in the passenger seat, so a
+product that can only be read over SSH has no user. The handout permits it directly
+("Serving a dashboard on the LAN is fine", §3.3; CLAUDE.md §2.1), and the device keeps
+working with no phone present at all. It also sharpens the phone-app test: the Pi is the
+part that is awake at every key-on; the phone is only a window onto what it already
+recorded.
+
+**Why so thin.** The handout warns: *"Resist the pretty web app. A crisp CLI with five
+query verbs and exact semantics is more defensible, and far more extensible at the
+live-modification station."* So the page is a view, not a second interface: two screens,
+no framework, and no number on it that `obdctl` cannot also produce. Every graded behavior
+remains demonstrable through `obdctl` alone.
+
+**Cost.**
+
+- A network listener in the product. It binds only to the AP interface, is read-only, and
+  lives only in `src/interface/`, where `make boundary` already allows network symbols.
+- One more process in the 48-hour RSS plot, and Wi-Fi radio power from the box's supply
+  (D-024).
+- The access point shares the Pi 4's one radio chip with the Bluetooth link to the adapter
+  (D-019). Measured by `btcoex`.
+- **Sub-decision, closed by D-028:** the server's language. C in `src/interface/` keeps an
+  interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
+  §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
+  Camden chose C, 2026-10-21.
+
+### B.5 — One tri-color status light, and every live state pulses ⚠️ UNREVIEWED
+
+`D-027` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Supersedes:** D-014 (§G.10)
+
+**Decision.** One LED, visible through the shell, shows red, yellow or green. It is
+written **only by the supervisor** (D-014's rule, kept).
+
+| Light | Meaning |
+| --- | --- |
+| green, slow pulse (about 1 Hz) | Ready: booted, recording, all systems go |
+| yellow, medium blink (about 2 Hz) | Running on stored energy: riding a supply dip, or shutting down |
+| red, fast blink (about 4 Hz) | An issue, in the box **or** in the car; the report says which |
+| steady yellow | Booting: held on from power-up, before the supervisor runs |
+| any other steady light, or dark while the car runs | **Not running.** Never a valid live state |
+| dark while the car is off | Normal: the box is off |
+
+Priority when more than one applies: red over yellow over green. Steady yellow for more
+than about a minute means the boot never finished.
+
+**What counts as red.** In the box: a child down or restart-limited; the dongle silent
+while the engine runs; storage failing or nearly full; undervoltage or thermal
+throttling; the supercapacitor's self-check failed. In the car: a verdict has surfaced
+after hysteresis and dwell (D.3), or a sensor the car stopped answering.
+
+**Why every live state pulses.** D-014's reasoning, applied to three colors: a GPIO keeps
+its last level after the process driving it dies, so a steady green would freeze into a
+false all-clear if the supervisor crashed. If every live state blinks, a frozen light of
+any color can only mean "not running". Camden asked for whichever pattern is safer (P11),
+and this is.
+
+**The boot state.** The Pi spends roughly half a minute (estimate, `bootbudget`) booting
+before any software can drive the light. Yellow is held on from power-up in hardware: a
+pull keeps it lit while its GPIO is still an input, and once the supervisor drives the
+pin, the pin wins. Camden's choice (R4). The firmware's `gpio=` setting in `config.txt`
+might do the same with no parts; confirm on the board before relying on it.
+
+**Open (`ledspec`).** What the light shows after the supervisor takes the GPIOs but before
+every child's first heartbeat. Yellow blink is taken (stored energy). Claude's
+recommendation, not decided: the supervisor keeps yellow steady until its first
+all-healthy check, so the light still reads "not running yet".
+
+**The part.** Whether yellow is its own die or red and green mixed is a part choice (two
+GPIOs or three), made in `ledspec` from the LED's datasheet, which also sets the
+resistors. Pins are assigned in the schematic (`schpi`).
+
+**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P10, P11): one light, three
+colors, and red means an issue in either the box or the car.
+
+**Cost.** Two or three GPIOs instead of one; the supervisor's blink timer still must never
+delay `waitpid` handling; the colors must stay distinguishable through the shell
+(`enclspec`). Red merges box and car issues, so the report must say which.
+
+**Alternative rejected.** D-014's single-color patterns (a double-blink for a verdict): a
+pattern code the owner has to learn.
+
+### B.6 — The phone page also downloads a report; an app is a stretch ⚠️ UNREVIEWED
+
+`D-028` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** D-013 (§B.4)
+
+**Decision.** The status page (D-013) shows status, current verdicts and trends, and has
+one button: **Download report**. The report is one self-contained HTML file plus a CSV of
+the same data, generated on the box by a C program in `src/interface/`. The page still
+writes nothing to the device. A native phone app is a stretch goal, not planned for M2 to
+M5.
+
+**Report contents** (first draft; finalized in `reportspec`):
+
+| Section | Content |
+| --- | --- |
+| Header | Box id, report time, whether wall-clock time is trustworthy, and the mix of data sources (`live`, `replay`, `synth`), always labeled (C.2) |
+| Sessions | Each key cycle: boot id, start, end, duration, ended cleanly or recovered, records lost on recovery |
+| Box health | Process liveness and restarts, ring overruns (must be zero), undervoltage and throttle events, temperature, the supercapacitor's self-check, free storage |
+| Car findings | Each surfaced verdict: fault area, the sensors that cooperated to call it, residual and trend evidence, when it began and ended, confidence |
+| Baseline maturity | Hours of normal driving learned per operating-point bin, so the owner knows how far to trust the verdicts |
+| Absent signals | Any PID the car stopped answering, and for how long |
+
+**Reachability.** The box is off whenever the car is (D-024), so a phone reaches it only
+while the car runs, or while the box is plugged into any USB-C charger at home, where it
+boots and serves the same page.
+
+**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P12): the owner views data and
+trends on a phone and downloads a report that says what is wrong with the box or the car.
+HTML opens on any phone with no app, and the CSV lets the owner or a mechanic take the
+numbers elsewhere. C, as D-013 recommended: the server is small, and an interpreter would
+add tens of megabytes to the 48-hour memory plot (R3).
+
+**Rule kept from D-013.** The report is assembled from the same supervisor UDS verbs
+`obdctl` uses, so every number in it can also be produced at the CLI, and every graded
+behavior stays demonstrable through `obdctl` alone.
+
+**Cost.** A report generator is new code in the product: it gets rows in the failure
+table, its memory shows in the soak plot, and the boundary check still has to show the
+page is the only network code.
+
+**Alternatives rejected.** A PDF report (needs a PDF writer we would have to defend). A
+native app (a second product to build). A Python server in `ui/` (the soak's memory).
+
 ### B.7 — No Pi-side sensor: mechanisms B and F are out of scope ⚠️ UNREVIEWED
 
 `D-029` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
@@ -730,149 +873,6 @@ input. History queries cost `storaged` reads while it writes, which the CPU meas
 **Alternative rejected.** `obdctl` reading the log files itself: simpler, but it breaks
 D-031's rule that only the process holding the answer reads it, and the page would need a
 second copy of that reader.
-
-### B.4 — The phone is a read-only window over the device's own Wi-Fi ⚠️ UNREVIEWED
-
-`D-013` · Decided M1, 2026-09-21 · **By:** Camden + Claude
-· **Reviewed:** Camden ✅ / Lance ⬜
-
-*Extended 2026-10-21 by D-028 (§B.6): the page also shows trends and downloads a report,
-and the server-language sub-decision below is closed (C).*
-
-**Decision.** The Pi runs its own Wi-Fi access point — WPA2, a per-device passphrase, **no
-upstream connection, no internet**. The owner's phone joins it and opens a status page
-served from `src/interface/` by a supervised child process. The page shows exactly two
-things — **status** and **current verdicts** — rendered from the same supervisor UDS verbs
-`obdctl` uses. It holds no state, runs no analysis, and writes nothing. `obdctl` remains
-the primary, exact interface with all five verbs. No app, no account, no cloud, and the
-phone never pairs over Bluetooth. (The Pi itself pairs with the OBD2 adapter, D-019.)
-
-**Why.** The user is a car owner, not someone with a terminal in the passenger seat, so a
-product that can only be read over SSH has no user. The handout permits it directly
-("Serving a dashboard on the LAN is fine", §3.3; CLAUDE.md §2.1), and the device keeps
-working with no phone present at all. It also sharpens the phone-app test: the Pi is the
-part that is awake at every key-on; the phone is only a window onto what it already
-recorded.
-
-**Why so thin.** The handout warns: *"Resist the pretty web app. A crisp CLI with five
-query verbs and exact semantics is more defensible, and far more extensible at the
-live-modification station."* So the page is a view, not a second interface: two screens,
-no framework, and no number on it that `obdctl` cannot also produce. Every graded behavior
-remains demonstrable through `obdctl` alone.
-
-**Cost.**
-
-- A network listener in the product. It binds only to the AP interface, is read-only, and
-  lives only in `src/interface/`, where `make boundary` already allows network symbols.
-- One more process in the 48-hour RSS plot, and Wi-Fi radio power from the box's supply
-  (D-024).
-- The access point shares the Pi 4's one radio chip with the Bluetooth link to the adapter
-  (D-019). Measured by `btcoex`.
-- **Sub-decision, closed by D-028:** the server's language. C in `src/interface/` keeps an
-  interpreter out of the memory-stability test; Python in `ui/` is permitted by CLAUDE.md
-  §2.5 but adds ~30 MB RSS to the soak. Recommendation: C, because the page is tiny.
-  Camden chose C, 2026-10-21.
-
-### B.6 — The phone page also downloads a report; an app is a stretch ⚠️ UNREVIEWED
-
-`D-028` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
-· **Reviewed:** Camden ⬜ / Lance ⬜
-· **Extends:** D-013 (§B.4)
-
-**Decision.** The status page (D-013) shows status, current verdicts and trends, and has
-one button: **Download report**. The report is one self-contained HTML file plus a CSV of
-the same data, generated on the box by a C program in `src/interface/`. The page still
-writes nothing to the device. A native phone app is a stretch goal, not planned for M2 to
-M5.
-
-**Report contents** (first draft; finalized in `reportspec`):
-
-| Section | Content |
-| --- | --- |
-| Header | Box id, report time, whether wall-clock time is trustworthy, and the mix of data sources (`live`, `replay`, `synth`), always labeled (C.2) |
-| Sessions | Each key cycle: boot id, start, end, duration, ended cleanly or recovered, records lost on recovery |
-| Box health | Process liveness and restarts, ring overruns (must be zero), undervoltage and throttle events, temperature, the supercapacitor's self-check, free storage |
-| Car findings | Each surfaced verdict: fault area, the sensors that cooperated to call it, residual and trend evidence, when it began and ended, confidence |
-| Baseline maturity | Hours of normal driving learned per operating-point bin, so the owner knows how far to trust the verdicts |
-| Absent signals | Any PID the car stopped answering, and for how long |
-
-**Reachability.** The box is off whenever the car is (D-024), so a phone reaches it only
-while the car runs, or while the box is plugged into any USB-C charger at home, where it
-boots and serves the same page.
-
-**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P12): the owner views data and
-trends on a phone and downloads a report that says what is wrong with the box or the car.
-HTML opens on any phone with no app, and the CSV lets the owner or a mechanic take the
-numbers elsewhere. C, as D-013 recommended: the server is small, and an interpreter would
-add tens of megabytes to the 48-hour memory plot (R3).
-
-**Rule kept from D-013.** The report is assembled from the same supervisor UDS verbs
-`obdctl` uses, so every number in it can also be produced at the CLI, and every graded
-behavior stays demonstrable through `obdctl` alone.
-
-**Cost.** A report generator is new code in the product: it gets rows in the failure
-table, its memory shows in the soak plot, and the boundary check still has to show the
-page is the only network code.
-
-**Alternatives rejected.** A PDF report (needs a PDF writer we would have to defend). A
-native app (a second product to build). A Python server in `ui/` (the soak's memory).
-
-### B.5 — One tri-color status light, and every live state pulses ⚠️ UNREVIEWED
-
-`D-027` · Decided M2, 2026-10-21 · **By:** Camden (in session) + Claude
-· **Reviewed:** Camden ⬜ / Lance ⬜
-· **Supersedes:** D-014 (§G.10)
-
-**Decision.** One LED, visible through the shell, shows red, yellow or green. It is
-written **only by the supervisor** (D-014's rule, kept).
-
-| Light | Meaning |
-| --- | --- |
-| green, slow pulse (about 1 Hz) | Ready: booted, recording, all systems go |
-| yellow, medium blink (about 2 Hz) | Running on stored energy: riding a supply dip, or shutting down |
-| red, fast blink (about 4 Hz) | An issue, in the box **or** in the car; the report says which |
-| steady yellow | Booting: held on from power-up, before the supervisor runs |
-| any other steady light, or dark while the car runs | **Not running.** Never a valid live state |
-| dark while the car is off | Normal: the box is off |
-
-Priority when more than one applies: red over yellow over green. Steady yellow for more
-than about a minute means the boot never finished.
-
-**What counts as red.** In the box: a child down or restart-limited; the dongle silent
-while the engine runs; storage failing or nearly full; undervoltage or thermal
-throttling; the supercapacitor's self-check failed. In the car: a verdict has surfaced
-after hysteresis and dwell (D.3), or a sensor the car stopped answering.
-
-**Why every live state pulses.** D-014's reasoning, applied to three colors: a GPIO keeps
-its last level after the process driving it dies, so a steady green would freeze into a
-false all-clear if the supervisor crashed. If every live state blinks, a frozen light of
-any color can only mean "not running". Camden asked for whichever pattern is safer (P11),
-and this is.
-
-**The boot state.** The Pi spends roughly half a minute (estimate, `bootbudget`) booting
-before any software can drive the light. Yellow is held on from power-up in hardware: a
-pull keeps it lit while its GPIO is still an input, and once the supervisor drives the
-pin, the pin wins. Camden's choice (R4). The firmware's `gpio=` setting in `config.txt`
-might do the same with no parts; confirm on the board before relying on it.
-
-**Open (`ledspec`).** What the light shows after the supervisor takes the GPIOs but before
-every child's first heartbeat. Yellow blink is taken (stored energy). Claude's
-recommendation, not decided: the supervisor keeps yellow steady until its first
-all-healthy check, so the light still reads "not running yet".
-
-**The part.** Whether yellow is its own die or red and green mixed is a part choice (two
-GPIOs or three), made in `ledspec` from the LED's datasheet, which also sets the
-resistors. Pins are assigned in the schematic (`schpi`).
-
-**Why.** Camden, 2026-10-21 (`docs/REVISION_PLAN.md` §1.1, P10, P11): one light, three
-colors, and red means an issue in either the box or the car.
-
-**Cost.** Two or three GPIOs instead of one; the supervisor's blink timer still must never
-delay `waitpid` handling; the colors must stay distinguishable through the shell
-(`enclspec`). Red merges box and car issues, so the report must say which.
-
-**Alternative rejected.** D-014's single-color patterns (a double-blink for a verdict): a
-pattern code the owner has to learn.
 
 ---
 
