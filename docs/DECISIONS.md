@@ -775,8 +775,6 @@ does not change.
 byte offset, then `expcrash` on the device) must cover both. Checkpoint frequency trades
 write load against redo time at boot.
 
----
-
 ### C.4 — Drive captures are JSONL from a Python tool, VIN hashed ⚠️ UNREVIEWED
 
 `D-033` · Decided M2, 2026-10-26 · **By:** Camden (in session) + Claude
@@ -1100,8 +1098,6 @@ second copy.
 **Cost.** Less structure: no enforced dependency order, and a closed issue explains
 itself only through its body and comments. If the board grows unwieldy again, the
 fix is fewer lines, not more tooling.
-
----
 
 ### F.6 — Python tools are tested in `make test`, in a venv built on first use ⚠️ UNREVIEWED
 
