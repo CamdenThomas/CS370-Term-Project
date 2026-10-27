@@ -257,6 +257,7 @@
     "UNREVIEWED",
     "unthrottled",
     "unticked",
+    "usermod",
     "USERPROFILE",
     "userspace",
     "utime",

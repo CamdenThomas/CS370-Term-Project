@@ -12,7 +12,7 @@ only unknown, so expect the port name and the timing to need a look.
 1. Set up the tools once (needs the network):
 
    ```sh
-   make toolcheck          # builds .venv with pyserial and runs the tool tests
+   make toolcheck          # builds .venv (pyserial, matplotlib) and runs the tool tests
    ```
 
 2. Rehearse the whole path against the simulator:
@@ -26,7 +26,8 @@ only unknown, so expect the port name and the timing to need a look.
 3. Charge the laptop. Optional: `pip install -r tools/requirements-gps.txt` into the
    venv for `--gps`, then run the rehearsal once with `--gps` so macOS asks for the
    location permission at the desk, not in the car.
-4. Turn off sleep for the drive: run the logger under `caffeinate -i` (below).
+4. Turn off sleep for the drive: run the logger under `caffeinate -i` (below), and keep
+   the lid open. `caffeinate -i` does not stop the sleep a closed lid causes on battery.
 
 ## In the car, parked (about 10 minutes)
 
@@ -61,7 +62,8 @@ caffeinate -i env PYTHONPATH=tools .venv/bin/python tools/obdlog.py \
 - Start it parked, engine running. It needs no input; a status line prints every 5 s.
 - A passenger watches the status line, or nobody does. Never the driver.
 - Drive a mix: a cold start if possible, idle, town, a highway stretch, a stop.
-- Ctrl-C ends the session cleanly. A closed lid or a crash loses at most a second.
+- Ctrl-C ends the session cleanly. A crash loses at most a second; a closed lid stops
+  logging until it is opened again.
 - A Bluetooth drop shows as `link_lost` and the logger reconnects by itself.
 
 ## Afterward
@@ -78,7 +80,8 @@ caffeinate -i env PYTHONPATH=tools .venv/bin/python tools/obdlog.py \
 3. Paste the survey's markdown block, from `data/pidscan-*-live.md`, into
    `docs/hardware/pid-survey.md` under the Forester column.
 4. Keep the full logs out of git (`data/` is ignored). Commit a short excerpt as
-   evidence in its own commit, with the `obdsum` output.
+   evidence in its own commit, with the `obdsum` output. If the drive used `--gps`, leave
+   the `gps` lines out of the excerpt: they show where the car is parked at home.
 5. Tick `pidforester`, `firstcap` and `baseline` yourself when they are true, then run
    `python3 tools/board_sync.py`.
 
@@ -92,7 +95,9 @@ sudo rfcomm bind 0 <MAC> 1
 ls -l /dev/rfcomm0
 ```
 
-Then run the same two commands with `--port /dev/rfcomm0`. Record the MAC address in
+Then run the same two commands with `--port /dev/rfcomm0`, without `caffeinate`, which is
+macOS only. If opening the port is refused, add the user to the `dialout` group (`sudo
+usermod -aG dialout $USER`, then log in again). Record the MAC address in
 `docs/hardware/wiring.md`.
 
 ## Results
