@@ -96,8 +96,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 
 - [ ] **`docs/DESIGN.md` complete and the three-isolated-workers check passes**
       `designdoc` <!-- #28 -->
-- [ ] **Both sensors alive: real Mode 01 replies from a real car, captured to a file**
-      `firstcap` <!-- #20 -->
+- [ ] **Both sensors alive: real Mode 01 replies from a real car captured to a file, and a
+      DS18B20 reading pasted (D-037)** `firstcap` <!-- #20 -->
 - [ ] **Baseline data collection started on a real car; the model learns normal from it**
       `baseline` <!-- #21 -->
 - [ ] M2 decision: 48-hour soak on a fake OBD2 port — ask Pallickara `soakq`
@@ -174,6 +174,14 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `verdictpath` <!-- #162 -->
 - [ ] M2 docs: name obdctl's five verbs and the supervisor socket protocol `ipcspec`
       <!-- #163 -->
+- [ ] M2 build: `make` after `make asan` fails to link; the sanitizer build needs its own
+      directory `asanbuild`
+- [ ] M2 build: `make boundary` allows Unix sockets and bans every network family outside
+      `src/interface/` (D-038) `boundaryrule`
+- [ ] M2 build: Linux CI runs `make`, `make test` and `make asan` on every PR `linuxci`
+- [ ] M2 tools: fix the board_sync, adapter and logger bugs the 2026-10-26 audit found
+      `toolfix`
+- [ ] M2 process: confirm Lance's identity in `.mailmap` `mailmap`
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -220,6 +228,12 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 interface: report generator (HTML and CSV), labeled by data source `report`
       <!-- #148 -->
 - [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg` <!-- #149 -->
+- [ ] M3 process: `provision_pi.sh` and `install.sh` take a clean Pi to a running box
+      `provision`
+- [ ] M3 interface: `statusd` runs as a supervised child and is built by the Makefile
+      (D-043) `statusd`
+- [ ] M3 question: where the checkpoint demo runs with a live car, agreed with the TA
+      `m3venue`
 - [ ] M3 process: transcript copy-out `tx3` <!-- #48 -->
 
 ## M4 — Feature freeze; 48-hour soak begins
