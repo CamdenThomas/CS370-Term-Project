@@ -17,8 +17,8 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 3/42 |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/25 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 3/49 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/29 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date assumed — see `dates`) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
@@ -137,9 +137,9 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 decision: add a sensor on the Pi itself — MPU-6050, DS18B20, both, or neither?
       `pisensor` <!-- #93 -->
 - [ ] M2 hardware: order the DS18B20 probe and its 4.7 kΩ resistor, once drawn (D-037)
-      `probeorder`
+      `probeorder` <!-- #168 -->
 - [ ] M2 hardware: DS18B20 bench bring-up on the Pi, with a `w1_slave` read pasted
-      `probebench`
+      `probebench` <!-- #169 -->
 - [ ] M2 hardware: prove the box's USB-C input: charger dead at key-off, crank dip,
       undervoltage `keyoff` <!-- #61 -->
 - [ ] M2 hardware: measure the OBD2 dongle's key-off current from pin 16 `dongledrain`
@@ -175,13 +175,14 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 docs: name obdctl's five verbs and the supervisor socket protocol `ipcspec`
       <!-- #163 -->
 - [ ] M2 build: `make` after `make asan` fails to link; the sanitizer build needs its own
-      directory `asanbuild`
+      directory `asanbuild` <!-- #170 -->
 - [ ] M2 build: `make boundary` allows Unix sockets and bans every network family outside
-      `src/interface/` (D-038) `boundaryrule`
+      `src/interface/` (D-038) `boundaryrule` <!-- #171 -->
 - [ ] M2 build: Linux CI runs `make`, `make test` and `make asan` on every PR `linuxci`
+      <!-- #172 -->
 - [ ] M2 tools: fix the board_sync, adapter and logger bugs the 2026-10-26 audit found
-      `toolfix`
-- [ ] M2 process: confirm Lance's identity in `.mailmap` `mailmap`
+      `toolfix` <!-- #173 -->
+- [ ] M2 process: confirm Lance's identity in `.mailmap` `mailmap` <!-- #174 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -199,7 +200,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 obd: rate-limited Mode 01 requester on the adapter tty `canreq`
       <!-- #88 -->
 - [ ] M3 ambient: `ambientd` reads the DS18B20 into its own ring, labeled live (D-037)
-      `ambientd`
+      `ambientd` <!-- #175 -->
 - [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
       <!-- #144 -->
 - [ ] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`
@@ -229,11 +230,11 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       <!-- #148 -->
 - [ ] M3 process: trimmed Pi image and boot-time measurement `bootimg` <!-- #149 -->
 - [ ] M3 process: `provision_pi.sh` and `install.sh` take a clean Pi to a running box
-      `provision`
+      `provision` <!-- #176 -->
 - [ ] M3 interface: `statusd` runs as a supervised child and is built by the Makefile
-      (D-043) `statusd`
+      (D-043) `statusd` <!-- #177 -->
 - [ ] M3 question: where the checkpoint demo runs with a live car, agreed with the TA
-      `m3venue`
+      `m3venue` <!-- #178 -->
 - [ ] M3 process: transcript copy-out `tx3` <!-- #48 -->
 
 ## M4 — Feature freeze; 48-hour soak begins
