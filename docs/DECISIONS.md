@@ -848,7 +848,7 @@ at about 16 MB (about four hours of driving at the D-025 rate). Recovery scans o
 newest segment; retention deletes whole segments, oldest first, and never edits one.
 
 **Size and rate.** A sample record is 56 bytes. At 15 to 25 requests a second that is
-0.8 to 1.4 KB/s, or 3 to 5 MB per running hour, plus a begin and a commit (68 bytes) per
+0.8 to 1.4 KB/s, or 3 to 5 MB per running hour, plus a begin and a commit (112 bytes) per
 batch. D-025's estimate of 48 bytes becomes 56.
 
 **Why.** D-025 left the record kinds and the boot id to `recfmt`. The fields come straight
