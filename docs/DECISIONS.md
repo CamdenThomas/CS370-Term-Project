@@ -57,7 +57,7 @@ Decisions currently awaiting a human signature:
 | D-030 | A real-time clock module on I2C keeps wall time while the box is off; the phone page stays read-only (§A.8) | Camden (in session) + Claude | 2026-10-21 | Both — it adds a part, and the soak's timeline depends on it |
 | D-031 | One SPSC ring, `obdd` to `storaged`; `analyzed` reads only committed records from the log (§B.8) | Camden (in session) + Claude | 2026-10-21 | Both — it fixes the M2 diagram and sets how analysis gets its input |
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
-| D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs one package |
+| D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -1109,9 +1109,11 @@ fix is fewer lines, not more tooling.
 · **Reviewed:** Camden ⬜ / Lance ⬜
 
 **Decision.** `make toolcheck`, part of `make test`, runs the tests in `tests/tools/` with
-stdlib `unittest`. If `.venv/` does not exist it creates one with the `PY` interpreter and
-installs `tools/requirements.txt` (pyserial, pinned). Analysis and GPS dependencies live in
-their own requirements files and are never needed to log a drive.
+stdlib `unittest`. If `.venv/` does not exist, or a requirements file is newer than its
+last install, it creates or refreshes it with the `PY` interpreter from
+`tools/requirements-analysis.txt` (pyserial and matplotlib, pinned), so the plotting tool
+is tested too. The GPS dependency lives in its own file and is never needed to log a
+drive; logging itself needs only pyserial.
 
 **Why.** The drive logger, the PID survey and the simulator are on the path to the M2
 exit criteria `firstcap` and `pidforester`, and CLAUDE.md §2.8 forbids shipping behavior
@@ -1120,8 +1122,8 @@ demand keeps a fresh clone green without a manual setup step. The standard libra
 `unittest` avoids a second test dependency.
 
 **Cost.** The first `make test` on a new machine needs the network once, to install
-pyserial. That is a development step; the product, which has no Python, never does. Python
-stays in `tools/` and `tests/tools/` (CLAUDE.md §2.5).
+pyserial and matplotlib (with numpy). That is a development step; the product, which has
+no Python, never does. Python stays in `tools/` and `tests/tools/` (CLAUDE.md §2.5).
 
 ---
 

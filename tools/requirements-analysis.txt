@@ -1,4 +1,3 @@
-# Post-drive analysis helpers (tools/obdplot.py, tools/obdbins.py). Not needed to log.
+# Post-drive analysis helpers (tools/obdplot.py). Not needed to log a drive.
 -r requirements.txt
-numpy
-matplotlib
+matplotlib==3.11.2

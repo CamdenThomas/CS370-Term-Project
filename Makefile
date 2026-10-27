@@ -74,11 +74,15 @@ boundary:
 boardcheck:
 	@$(PY) tools/test_board.py
 
-# Python tool tests (stdlib unittest, tests/tools/). The venv is made on first use so a
-# fresh clone stays green; it needs the network once, to install pyserial. Dev only.
-toolcheck:
-	@test -x .venv/bin/python || { $(PY) -m venv .venv && \
-		.venv/bin/pip install -q -r tools/requirements.txt; }
+# Python tool tests (stdlib unittest, tests/tools/). The venv is made on first use, and
+# refreshed when a requirements file changes, so a fresh clone stays green; it needs the
+# network for that install. Dev only (D-032).
+.venv/.installed: tools/requirements.txt tools/requirements-analysis.txt
+	@test -x .venv/bin/python || $(PY) -m venv .venv
+	@.venv/bin/pip install -q -r tools/requirements-analysis.txt
+	@touch $@
+
+toolcheck: .venv/.installed
 	@PYTHONPATH=tools .venv/bin/python -m unittest discover -s tests/tools -q && \
 		echo "toolcheck                    PASS"
 
