@@ -14,6 +14,9 @@ product's runtime path.
 | `obdlog.py` | The drive logger: every supported PID, round-robin, to `data/drive-*.jsonl` (**D-033**). Run book: `docs/hardware/first-drive.md`. |
 | `obdsim.py` | The fake OBD2 port: an ELM327 emulator on a pty with a scripted drive, for development and tests, never the soak's data source (**D-023**). Sessions against it are labeled `synth`. |
 | `obdsum.py` | Per-session and per-PID summary of a drive log: rates, gaps, events. |
+| `obdplot.py` | PNG figures of a drive log: every PID on one time axis, speed against rpm, reply intervals. |
+| `obdview.py` | One offline HTML page per drive log to scrub, zoom and read every PID at once. |
+| `obdbins.py` | Operating-point binning prototype: per rpm x load cell, each PID's mean and spread. A look at the data, not the product's analysis. |
 | `obdlib.py`, `elm.py`, `macgps.py` | Shared code: reply parsing and PID decoding; one adapter session; optional Mac location. |
 | `train/` | Model training (skeleton). Weights land in `models/` with the training commit in the header. |
 

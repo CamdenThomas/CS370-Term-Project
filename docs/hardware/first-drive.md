@@ -66,13 +66,20 @@ caffeinate -i env PYTHONPATH=tools .venv/bin/python tools/obdlog.py \
 
 ## Afterward
 
-1. Check the capture: `PYTHONPATH=tools .venv/bin/python tools/obdsum.py data/drive-*.jsonl`
-   (rates, gaps, events per PID).
-2. Paste the survey's markdown block, from `data/pidscan-*-live.md`, into
+1. Check the capture (rates, gaps and events per PID):
+
+   ```sh
+   PYTHONPATH=tools .venv/bin/python tools/obdsum.py data/drive-*.jsonl
+   ```
+
+2. Look at it: `tools/obdplot.py` (PNG figures in `data/plots/`), `tools/obdview.py`
+   (an offline HTML page per drive) and `tools/obdbins.py` (how well each rpm and load
+   cell is filled), each run the same way as `obdsum.py`.
+3. Paste the survey's markdown block, from `data/pidscan-*-live.md`, into
    `docs/hardware/pid-survey.md` under the Forester column.
-3. Keep the full logs out of git (`data/` is ignored). Commit a short excerpt as
+4. Keep the full logs out of git (`data/` is ignored). Commit a short excerpt as
    evidence in its own commit, with the `obdsum` output.
-4. Tick `pidforester`, `firstcap` and `baseline` yourself when they are true, then run
+5. Tick `pidforester`, `firstcap` and `baseline` yourself when they are true, then run
    `python3 tools/board_sync.py`.
 
 ## If the Mac cannot see the adapter: use the Pi
