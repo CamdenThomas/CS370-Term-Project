@@ -4,6 +4,7 @@ import io
 import json
 import os
 import resource
+import signal
 import tempfile
 import threading
 import time
@@ -209,6 +210,31 @@ class Writer(unittest.TestCase):
             w.close()
             records, _ = obdlog.read_log(p)
             self.assertEqual(records, [], "nothing was written")
+
+
+class Interrupt(unittest.TestCase):
+    def test_the_first_signal_asks_the_second_forces(self):
+        stop = obdlog.Stop()
+        stop(signal.SIGINT, None)
+        self.assertEqual(stop.reason, "sigint")
+        with self.assertRaises(KeyboardInterrupt):
+            stop(signal.SIGTERM, None)
+        self.assertEqual(stop.reason, "sigint", "the first reason is kept for the footer")
+
+    def test_a_forced_stop_still_writes_the_footer(self):
+        with tempfile.TemporaryDirectory() as d:
+            link = os.path.join(d, "obd")
+
+            def interrupted(_ad, _mode, _pid):
+                raise KeyboardInterrupt
+
+            with obdsim.PtyServer(link=link, latency=0.0), \
+                    mock.patch.object(elm.Adapter, "query", interrupted), \
+                    self.assertRaises(KeyboardInterrupt):
+                run_logger(["--port", link, "--out", d, "--max-seconds", "2"])
+            records, torn = obdlog.read_log(only_log(d))
+            self.assertFalse(torn)
+            self.assertEqual(records[-1]["type"], "footer")
 
 
 class Naming(unittest.TestCase):

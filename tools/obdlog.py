@@ -126,10 +126,16 @@ def read_log(path):
 
 
 class Stop:
+    """The first Ctrl-C or SIGTERM asks the loop to finish its request and stop. A second
+    one raises KeyboardInterrupt, which ends a blocked open or a long reconnect wait at
+    once; the session's finally still writes the footer with the first reason."""
+
     def __init__(self):
         self.reason = None
 
     def __call__(self, signum, _frame):
+        if self.reason is not None:
+            raise KeyboardInterrupt
         self.reason = "sigint" if signum == signal.SIGINT else "sigterm"
 
 
@@ -397,4 +403,8 @@ def _run(args, stop):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        print("obdlog: stopped at once (second interrupt)", file=sys.stderr)
+        sys.exit(130)
