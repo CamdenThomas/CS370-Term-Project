@@ -178,7 +178,7 @@ cannot read a diff of coordinate tuples: the regenerated schematic SVG in the PR
 it the PR is unreviewable, and §7.6 then blocks it — correctly), and pasted `make hwcheck`
 output (ERC violations are build failures, the same way `-Werror` findings are).
 
-**What Claude may not do here.** Claude cannot see the board. Symbol pin numbering,
+**What Claude may not do here.** Claude cannot see the physical board. Symbol pin numbering,
 footprint choice, placement, thermal, EMI and mechanical fit are all things it reasons about
 blind, and hand-writing `.kicad_pcb` geometry is forbidden — the coordinate math fails
 silently at fab. It is useful for netlist review, datasheet cross-checks, design rules, BOM
