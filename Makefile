@@ -55,7 +55,9 @@ $(BIN)/test_%: tests/test_%.c $(COMMON_OBJ)
 	@mkdir -p $(BIN)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-test: $(TEST_BIN) boundary boardcheck toolcheck
+# `all` first: every daemon must compile under the same flags as the tests, so `make asan`
+# builds the daemons with the sanitizers too, not only the unit tests.
+test: all $(TEST_BIN) boundary boardcheck toolcheck
 	@fail=0; for t in $(TEST_BIN); do \
 		printf '%-28s ' "$$(basename $$t)"; \
 		if $$t; then echo PASS; else echo FAIL; fail=1; fi; done; \
