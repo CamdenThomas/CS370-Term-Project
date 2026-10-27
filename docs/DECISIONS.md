@@ -844,7 +844,7 @@ tested) over everything before it, magic included.
 
 | Kind | Body |
 | --- | --- |
-| sample | `mode` u8, `pid` u8, `raw_len` u8 (0 to 4), reserved u8, `raw[4]`, `value` f32 (12 bytes): the raw reply bytes are kept beside the decoded value so a decoding bug never costs data |
+| sample | `mode` u8, `pid` u8, `raw_len` u8 (0 to 5), `raw[5]`, `value` f32 (12 bytes): the raw reply bytes are kept beside the decoded value so a decoding bug never costs data. Five bytes is the most a single-frame Mode 01 reply carries (0x64, for one, uses all five); a longer, multi-frame reply is stored as an event holding its hex |
 | begin | `txn_id` u64 |
 | commit | `txn_id` u64, `records` u32 (samples in the batch), reserved u32 |
 | boot | `prev_end` u8 (0 clean shutdown, 1 recovered, 2 first boot), reserved u8[3], `bytes_truncated` u32, `records_lost` u32 |
