@@ -99,6 +99,14 @@ class SupportBitmap(unittest.TestCase):
         supported = obdlib.support_pids(0x20, bytes([0x80, 0, 0, 0]))
         self.assertEqual(supported, {0x21})
 
+    def test_bitmaps_from_every_answering_ecu_are_combined(self):
+        # Engine and transmission both answer 0100; with headers off either may be first.
+        raw = "41 00 80 00 00 00 \r41 00 BE 1F A8 13 \r\r>"
+        supported = obdlib.support_from_reply(raw, 0x00)
+        self.assertIn(0x01, supported)
+        self.assertIn(0x0C, supported)
+        self.assertIn(0x20, supported)
+
     def test_wrong_length_is_an_error(self):
         with self.assertRaises(AdapterError):
             obdlib.support_pids(0x00, bytes([1, 2, 3]))
@@ -115,6 +123,12 @@ class Vin(unittest.TestCase):
         raw = ("49 02 01 00 00 00 31\r49 02 02 48 47 43 4D\r49 02 03 38 32 36 33\r"
                "49 02 04 33 41 30 30\r49 02 05 34 33 35 32\r\r>")
         self.assertEqual(obdlib.decode_vin(raw), "1HGCM82633A004352")
+
+    def test_second_ecu_frames_do_not_overwrite_the_first(self):
+        other = ("014\r0: 49 02 01 32 32 32\r1: 32 32 32 32 32 32 32\r"
+                 "2: 32 32 32 32 32 32 32\r")
+        self.assertEqual(obdlib.decode_vin(self.MULTI.replace("\r>", "") + other + "\r>"),
+                         "1HGCM82633A004352")
 
     def test_no_data_means_no_vin(self):
         with self.assertRaises(NoData):

@@ -77,7 +77,9 @@ class Adapter:
         """Every Mode 01 PID the ECU lists, walking 0x00, 0x20, ... while chained."""
         found, base = set(), 0x00
         while base <= 0xE0:
-            block = obdlib.support_pids(base, self.query(1, base))
+            # Every ECU that answers contributes; the engine may not answer first.
+            raw = self.command(obdlib.request(1, base))
+            block = obdlib.support_from_reply(raw, base)
             found |= {p for p in block if p % 0x20}
             if base + 0x20 not in block:
                 break

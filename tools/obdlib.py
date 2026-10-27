@@ -55,14 +55,14 @@ def _check_text(line):
         raise AdapterError(line)
 
 
-def parse_response(raw, mode, pid):
-    """Data bytes after the `<mode+0x40> <pid>` header of the first matching line.
+def parse_all(raw, mode, pid):
+    """Data bytes of every line answering this request: one per ECU that replied.
 
     Raises NoData for `NO DATA` and AdapterError for any other failure, including a reply
     that holds no line for this request.
     """
     want = (mode + 0x40, pid)
-    seen = False
+    seen, found = False, []
     for line in _lines(raw):
         seen = True
         if line in _SKIP_TEXT:
@@ -70,8 +70,19 @@ def parse_response(raw, mode, pid):
         _check_text(line)
         data = _hex_bytes(line)
         if data is not None and len(data) >= 2 and (data[0], data[1]) == want:
-            return data[2:]
-    raise AdapterError("no matching reply" if seen else "empty reply")
+            found.append(data[2:])
+    if not found:
+        raise AdapterError("no matching reply" if seen else "empty reply")
+    return found
+
+
+def parse_response(raw, mode, pid):
+    """Data bytes of the first line answering this request (see parse_all).
+
+    With headers off (ATH0) the lines do not say which ECU sent them, so a reading of one
+    value takes the first answer. Support bitmaps must use support_from_reply instead.
+    """
+    return parse_all(raw, mode, pid)[0]
 
 
 def _u16(d):
@@ -150,26 +161,35 @@ def support_pids(base, data):
     return {base + 1 + i for i in range(32) if bits & (1 << (31 - i))}
 
 
+def support_from_reply(raw, base):
+    """Every PID any answering ECU lists in a support-bitmap reply (PID 0x00, 0x20, ...)."""
+    found = set()
+    for data in parse_all(raw, 1, base):
+        found |= support_pids(base, data)
+    return found
+
+
 def decode_vin(raw):
     """The VIN from a Mode 09 PID 02 reply, multi-frame or one frame per line."""
-    chunks = []
+    chunks = {}
     framed = {}
     for line in _lines(raw):
         _check_text(line)
         m = re.match(r"^(\d+):\s*(.*)$", line)
         if m:
             data = _hex_bytes(m.group(2))
-            if data is not None:
-                framed[int(m.group(1))] = data
+            index = int(m.group(1))
+            if data is not None and index not in framed:
+                framed[index] = data          # a repeated index is a second ECU: keep the first
             continue
         data = _hex_bytes(line)
         if data is not None and len(data) >= 3 and data[:2] == b"\x49\x02":
-            chunks.append((data[2], data[3:]))
+            chunks.setdefault(data[2], data[3:])   # first ECU's chunk per sequence number
     if framed:
         body = b"".join(framed[k] for k in sorted(framed))
         body = body[3:] if body[:2] == b"\x49\x02" else body
     elif chunks:
-        body = b"".join(c for _, c in sorted(chunks))
+        body = b"".join(chunks[k] for k in sorted(chunks))
     else:
         raise AdapterError("no VIN in reply")
     vin = body.replace(b"\x00", b"").decode("ascii", errors="replace").strip()
