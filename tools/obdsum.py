@@ -13,6 +13,9 @@ import sys
 import obdlib
 import obdlog
 
+# Per-PID events that are failed requests; pid_absent and pid_present are only markers.
+FAILURES = ("no_data", "timeout", "adapter_error")
+
 
 def summarize(records):
     srcs = {r["src"] for r in records}
@@ -35,7 +38,7 @@ def summarize(records):
         if r["type"] != "event":
             continue
         events[r["event"]] = events.get(r["event"], 0) + 1
-        if "pid" in r:
+        if "pid" in r and r["event"] in FAILURES:
             p = pids.setdefault(r["pid"], {"vals": [], "times": [], "unit": "",
                                            "no_data": 0, "errors": 0})
             p["no_data" if r["event"] == "no_data" else "errors"] += 1

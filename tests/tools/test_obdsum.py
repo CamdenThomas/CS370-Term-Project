@@ -39,6 +39,14 @@ class Summary(unittest.TestCase):
         self.assertEqual(s["events"]["no_data"], 1)
         self.assertEqual(s["pids"]["0C"]["no_data"], 1)
 
+    def test_absent_and_present_markers_are_not_errors(self):
+        ev = {"type": "event", "src": "synth", "seq": 99, "t_mono": 0, "t_wall": ""}
+        recs = self.records[:3] + [dict(ev, event="pid_absent", pid="0C", after=5),
+                                   dict(ev, event="pid_present", pid="0C"),
+                                   dict(ev, event="timeout", pid="0C")]
+        s = obdsum.summarize(recs)
+        self.assertEqual(s["pids"]["0C"]["errors"], 1)
+
     def test_render_warns_about_synthetic_data(self):
         text = obdsum.render(self.s, FIXTURE)
         self.assertIn("SYNTH", text)
