@@ -5,8 +5,9 @@ you can find what you need without knowing an ID. This is an **audit log**, not 
 reference doc — its job is to let Camden and Lance verify, after any working session,
 that no decision was made on their behalf that they disagree with.
 
-**This file holds what is DECIDED. Open work and open questions live on the GitHub
-board** as issues with milestones, and no pre-assigned owners (D-026, `CLAUDE.md` §7.11).
+**This file holds what is DECIDED. Open work and open questions live on the board**,
+`docs/milestones.md`, mirrored to GitHub issues, with no pre-assigned owners (D-020, D-026,
+`CLAUDE.md` §7.11).
 An ❓ OPEN entry below exists only as a pointer to its issue, so the reasoning sits beside
 the decisions it will eventually join.
 
@@ -38,10 +39,10 @@ Decisions currently awaiting a human signature:
 
 | ID | Decision | Made by | Session date | Reviewer needed |
 | --- | --- | --- | --- | --- |
-| D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm and close issue `honda` |
+| D-007 | Honda testbed is a 2015 Honda CR-V EX-L (§A.3) | Camden + Claude | 2026-09-21 | Lance — it is your car; confirm the engine and transmission from the VIN and sign |
 | D-012 | Rate-limited, round-robin Mode 01 requests are the data path (§A.7) | Camden + Claude | 2026-09-21 | Lance — sets the sample rate every analysis stage sees |
-| D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` is shared |
-| D-017 | Commit to mechanisms D and E; B and F only if a Pi-side sensor is added (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is half of what we are graded on |
+| D-013 | Phone views status over the device's own Wi-Fi; read-only, obdctl stays primary (§B.4) | Camden + Claude | 2026-09-21 | Lance — `src/interface/` has no owner yet (D-026) |
+| D-017 | Commit to mechanisms D and E; B and F declined by D-029 (§B.1, supersedes D-002) | Camden + Claude | 2026-09-21 | Lance — D is half of what we are graded on |
 | D-008 | Milestone dates verified against the syllabus (§F.3) | Camden | 2026-09-21 | Camden — your answer; mark it LOCKED in your own commit |
 | D-019 | The Pi reads OBD2 over a Bluetooth Classic (SPP) adapter, OBDLink LX; USB is the fallback (§A.1, supersedes D-015) | Camden + Claude | 2026-09-23 | Both — Camden signs his call; Lance checks the radio-sharing and key-off risks |
 | D-018 | Markdown linted at a 90-column wrap, American spelling checked by cSpell (§F.4) | Claude, Camden's session | 2026-09-23 | Either — it sets the style both of you write docs in |
@@ -68,8 +69,8 @@ Decisions currently awaiting a human signature:
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
-> any of them yet** — Lance, read at minimum §B.1, §C.1 and §D.1, since those bind storage
-> and analysis.
+> any of them yet.** The entries that bind storage and analysis now are §C.1 to §C.7 and
+> §D.1.
 
 ---
 
@@ -86,7 +87,7 @@ by the owner's USB-C charger, not wired to the car's USB. The adapter's key-off 
 now board item `dongledrain`.*
 
 **Decision.** An **OBDLink LX** (STN chip, **Bluetooth Classic, Serial Port Profile**; not
-BLE) plugs into the OBD2 port. The Pi, powered from the car's USB (D-011), talks to it with
+BLE) plugs into the OBD2 port. The Pi, in the box (D-024), talks to it with
 its built-in Bluetooth radio over RFCOMM. Provisioning pairs and trusts the adapter once,
 binds it with `rfcomm bind` to `/dev/rfcomm0`, and a udev rule links that to **`/dev/obd`**,
 so every consumer still opens `/dev/obd` and sends Mode 01 requests (D-012). No MCP2515, no
@@ -189,6 +190,10 @@ a ten-minute experiment. Record in `docs/hardware/pid-survey.md`.
 
 `D-009` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
 
+*Note 2026-10-27, not a reopening: the MCP2515 named below is now a stretch goal only
+(D-019), and owners are per D-026. `make hwdocs` emits the schematic SVG, `bom.csv` and a
+netlist; `BOM.md` and `wiring.md` are still written by hand and checked against them.*
+
 **Decision.** We draw the full schematic in KiCad (`electricalDrawing/`, KiCad 10, owned
 by Lance) and treat it as the source of truth for wiring and the BOM. We do **not**
 fabricate a custom PCB unless we take The Reach (handout §14). The empty `.kicad_pcb`
@@ -212,6 +217,9 @@ build. `docs/hardware/wiring.md` and `BOM.md` become **derived** artifacts. `CLA
 ### A.5 — ERC is a build failure, and the schematic SVG is committed 🔒
 
 `D-010` · Decided M0 · **By:** Camden + Claude · **Reviewed:** Camden ✅ / Lance ⬜
+
+*Note 2026-10-27, not a reopening: nothing has been drawn yet, so `docs/figures/` and its
+SVG do not exist; the first PR that draws a block commits them (`hwgate`).*
 
 **Decision.** `kicad-cli sch erc --exit-code-violations` runs as `make hwcheck`; violations
 fail the build. `make hwdocs` renders the schematic to `docs/figures/electricalDrawing.svg`,
@@ -400,7 +408,7 @@ page on every drive) and over no wall clock at all (`docs/REVISION_PLAN.md` §1.
 
 ## B. Systems architecture and mechanisms
 
-### B.1 — Mechanism commitments: D and E; B and F only with a Pi-side sensor ⚠️ UNREVIEWED
+### B.1 — Mechanism commitments: D and E; B and F declined ⚠️ UNREVIEWED
 
 `D-017` · Decided M1, 2026-09-21 · **By:** Camden + Claude
 · **Reviewed:** Camden ✅ / Lance ⬜
@@ -876,7 +884,7 @@ pattern code the owner has to learn.
 
 *Extended 2026-10-21 by D-025 (§C.3), with Camden's explicit yes: records are written in
 committed batches, and baselines are saved in A/B checkpoint slots. Every rule below
-stays.*
+stays. Note 2026-10-27: the open sub-decision below is drafted as D-035 (§C.6).*
 
 Records are never rewritten in place. Each carries a magic number for resynchronization
 and a CRC32 over its whole body. Recovery scans from the last known-good offset, verifies
@@ -940,6 +948,9 @@ the defense, and do not claim an undo log the design does not need.
 the 2026-10-21 session (`docs/REVISION_PLAN.md` §1.1, P4), because it ties the storage
 layer to the logging and checkpoint techniques taught in class. C.1 stays 🔒 and gains a
 pointer.
+
+*Numbers revised 2026-10-26 by D-034 and D-035, before any review: a sample record is 56
+bytes, 2 to 5 MB per running hour, and the batch argument is D-035 (§C.6).*
 
 **Provisional numbers (estimates).** One `COMMIT` and one `fsync` per batch of about one
 second of samples. Records of about 48 bytes at 10 to 20 requests a second come to about
@@ -1203,7 +1214,8 @@ adding a diagnostic** — this is checked at the defense.
 · **Reviewed:** Camden ⬜ / Lance ⬜ · **Supersedes:** D-003 (§G.5)
 
 *Claim reworded 2026-10-21 by D-022 (§A.2), before any review: "this CR-V" became "the
-car it is installed in", since two cars are now testbeds.*
+car it is installed in", since two cars are now testbeds. The "USB-powered Pi" below is
+now the box of D-024.*
 
 **Decision.** carwatch is a rough-draft demo of one idea: plug it into one car, let it learn
 that car's normal, and have it say when something acts strange. The claim we defend:
@@ -1522,7 +1534,7 @@ rejected, at no further mechanism cost.
 ### G.2 — (was A.2) Testbeds: Subaru Outback and Lance's Honda 🗑
 
 `D-005` · Decided M0 · **By:** Camden · **Reviewed:** Camden ✅ / Lance ⬜
-· **Superseded 2026-09-21 by D-016 (§A.2)** — the second vehicle was cut, as this entry
+· **Superseded 2026-09-21 by D-016 (now §G.6)** — the second vehicle was cut, as this entry
 said it would be first.
 
 **Decision.** Two daily-driven vehicles — Camden's Subaru Outback and Lance's Honda.
