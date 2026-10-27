@@ -1,6 +1,7 @@
 """elm: one serial session with an ELM327-compatible adapter, run against obdsim."""
 import os
 import tempfile
+import time
 import unittest
 
 import elm
@@ -37,6 +38,13 @@ class AgainstSim(unittest.TestCase):
         self.assertIn("15765", self.ad.protocol())
         self.assertRegex(self.ad.voltage(), r"V$")
         self.assertEqual(self.ad.vin(), obdsim.SIM_VIN)
+
+    def test_a_reply_returns_as_soon_as_its_prompt_arrives(self):
+        self.ad.init()
+        t0 = time.monotonic()
+        for _ in range(40):
+            self.ad.query(1, 0x0C)
+        self.assertLess(time.monotonic() - t0, 1.0, "40 queries to a zero-latency sim")
 
     def test_link_lost_when_the_port_goes_away(self):
         self.ad.init()

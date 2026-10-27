@@ -52,7 +52,9 @@ class Adapter:
             while not buf.rstrip().endswith(b">"):
                 if time.monotonic() > deadline:
                     raise Timeout(f"{cmd}: no prompt after {timeout or self.timeout}s")
-                buf += self.port.read(256)
+                # Read what is waiting, or block for one byte, so the reply returns as
+                # soon as its prompt arrives instead of at the end of a read timeout.
+                buf += self.port.read(self.port.in_waiting or 1)
         except (serial.SerialException, OSError) as e:
             raise LinkLost(f"{cmd}: {e}") from e
         return buf.decode("ascii", errors="replace")
