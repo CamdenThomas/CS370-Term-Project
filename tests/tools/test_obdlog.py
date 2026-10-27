@@ -10,6 +10,7 @@ import time
 import unittest
 from unittest import mock
 
+import elm
 import macgps
 import obdlog
 import obdsim
@@ -106,6 +107,27 @@ class AgainstSim(unittest.TestCase):
         self.assertIn("reconnected", kinds)
         back = next(i for i, r in enumerate(records) if r.get("event") == "reconnected")
         self.assertTrue(any(r["type"] == "sample" for r in records[back:]))
+
+    def test_reopens_the_port_when_the_adapter_stops_answering(self):
+        real_init = elm.Adapter.init
+        calls = {"n": 0}
+
+        def init_once(ad):
+            calls["n"] += 1
+            if calls["n"] > 1:
+                raise elm.Timeout("ATZ: no prompt")
+            return real_init(ad)
+
+        with obdsim.PtyServer(link=self.link, latency=0.0), \
+                mock.patch.object(elm.Adapter, "init", init_once), \
+                mock.patch.object(elm.Adapter, "query",
+                                  side_effect=elm.Timeout("010C: no prompt")):
+            run_logger(["--port", self.link, "--out", self.d, "--max-seconds", "1.5",
+                        "--backoff-min", "0.2"])
+        records, _ = obdlog.read_log(only_log(self.d))
+        kinds = [r.get("event") for r in records if r["type"] == "event"]
+        self.assertIn("reinit_failed", kinds)
+        self.assertIn("reopen", kinds)
 
     def test_gps_unavailable_is_an_event_and_logging_continues(self):
         with obdsim.PtyServer(link=self.link, latency=0.0), \

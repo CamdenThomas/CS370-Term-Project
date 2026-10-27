@@ -112,10 +112,11 @@ class Stop:
         self.reason = "sigint" if signum == signal.SIGINT else "sigterm"
 
 
-def connect(path, tries, backoff_min, stop, log=None, idle=None):
-    """Open and init the adapter, retrying with exponential backoff. None if stopped."""
+def connect(path, tries, backoff_min, stop, log=None, idle=None, expired=lambda: False):
+    """Open and init the adapter, retrying with exponential backoff. None if stopped,
+    out of tries, or past the session's --max-seconds."""
     delay, attempt = backoff_min, 0
-    while stop.reason is None and (tries <= 0 or attempt < tries):
+    while stop.reason is None and not expired() and (tries <= 0 or attempt < tries):
         attempt += 1
         ad = None
         try:
@@ -131,7 +132,7 @@ def connect(path, tries, backoff_min, stop, log=None, idle=None):
             if tries > 0 and attempt >= tries:
                 break
             end = time.monotonic() + delay
-            while stop.reason is None and time.monotonic() < end:
+            while stop.reason is None and not expired() and time.monotonic() < end:
                 time.sleep(0.05)
                 if idle:
                     idle()
@@ -245,6 +246,16 @@ def _run(args, stop):
     print(f"obdlog: logging {len(pids)} PIDs to {path} (src={src}); Ctrl-C to stop",
           file=sys.stderr)
 
+    def reopen(old_ad):
+        """Close the port and reconnect with backoff. None if stopped first."""
+        old_ad.close()
+        new_ad, attempts = connect(args.port, 0, args.backoff_min, stop,
+                                   log=lambda n, **f: event(n, **f), idle=out.tick,
+                                   expired=expired)
+        if new_ad is not None:
+            event("reconnected", attempts=attempts)
+        return new_ad
+
     def status():
         nonlocal next_status
         if time.monotonic() < next_status:
@@ -287,26 +298,25 @@ def _run(args, stop):
                     continue
                 except elm.LinkLost as e:
                     event("link_lost", detail=str(e))
-                    ad.close()
-                    ad, attempts = connect(args.port, 0, args.backoff_min, stop,
-                                           log=lambda n, **f: event(n, **f),
-                                           idle=out.tick)
-                    if ad is None:
-                        break
-                    event("reconnected", attempts=attempts)
+                    ad = reopen(ad)
                     errors = 0
                     break
                 except obdlib.AdapterError as e:
                     errors += 1
                     event("timeout" if isinstance(e, elm.Timeout) else "adapter_error",
                           pid=key, detail=str(e))
-                    if errors >= ERROR_LIMIT:
-                        errors = 0
-                        try:
-                            event("reinit", banner=ad.init())
-                        except (elm.LinkLost, obdlib.AdapterError) as e2:
-                            event("reinit_failed", detail=str(e2))
-                    continue
+                    if errors < ERROR_LIMIT:
+                        continue
+                    errors = 0
+                    try:
+                        event("reinit", banner=ad.init())
+                        continue
+                    except (elm.LinkLost, obdlib.AdapterError) as e2:
+                        event("reinit_failed", detail=str(e2))
+                    # Connected but deaf: close the port and open it again, as for a drop.
+                    event("reopen", detail="adapter stopped answering")
+                    ad = reopen(ad)
+                    break
                 errors = 0
                 no_data[pid] = 0
                 if pid in absent:
