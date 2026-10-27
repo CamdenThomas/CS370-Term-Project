@@ -159,6 +159,9 @@ through the shared logger in `src/common/`; every one also carries `src` (C.2).
 | 48 continuous hours on live sensors | 48 hours wall-clock of normal use across key cycles (D-023), pending the professor's written confirmation | The log is a series of sessions with deliberate gaps while parked; the memory plot is per session; the soak needs a car driven normally for two days |
 | A supply with full hold-up through crank and shutdown | The owner's USB-C charger plus a seconds-scale supercapacitor (D-024) | Shutdown is clean only once the bank has charged. At a cold start the bank is empty, so the first crank may reset the Pi. A charger that stays live with the key off keeps the box on |
 | A device that is recording the instant the key turns | A stock Pi 4 boot, roughly half a minute (estimate, `bootbudget`) | The start of each drive's warm-up, among its most informative minutes, goes unrecorded |
+| A wired link with steady timing to the adapter | Bluetooth Classic SPP to the OBDLink LX (D-019) | A new failure mode (the link drops mid-drive), a radio shared with the phone's Wi-Fi (`btcoex`), and a reply time not yet measured |
+| The product's own capture path recording the first drives | A Python logging tool on a laptop or the Pi (D-033), labeled `live` | The first captures shape the design but prove nothing about `obdd`'s timing or about mechanism D; they enter the product only through `replay`, labeled so |
+| A live demonstration at the bench | A running testbed car at the demo, since the box is off unless powered (D-024) | The demo depends on a car being on site (`democar`) |
 
 ## 6. Evaluation plan
 >
