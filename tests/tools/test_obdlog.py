@@ -56,7 +56,8 @@ class AgainstSim(unittest.TestCase):
         for s in samples[:5]:
             for key in ("t_mono", "t_wall", "raw", "val", "unit"):
                 self.assertIn(key, s)
-        self.assertNotIn(obdsim.SIM_VIN, open(only_log(self.d)).read())
+        with open(only_log(self.d)) as f:
+            self.assertNotIn(obdsim.SIM_VIN, f.read())
 
     def test_pid_list_can_be_narrowed(self):
         with obdsim.PtyServer(link=self.link, latency=0.0):
