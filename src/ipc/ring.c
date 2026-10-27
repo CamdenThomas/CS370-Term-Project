@@ -20,11 +20,21 @@ _Static_assert(ATOMIC_LLONG_LOCK_FREE == 2, "the ring needs lock-free 64-bit ato
 
 void ring_init(ring_t *r)
 {
+    r->magic     = RING_MAGIC;
+    r->version   = RING_VERSION;
+    r->slot_size = (uint16_t)sizeof(ring_slot_t);
+    r->capacity  = RING_CAPACITY;
     memset(r->slot, 0, sizeof r->slot);
     atomic_init(&r->head, 0);
     atomic_init(&r->tail, 0);
     atomic_init(&r->overruns, 0);
     atomic_init(&r->rejected, 0);
+}
+
+bool ring_layout_ok(const ring_t *r)
+{
+    return r->magic == RING_MAGIC && r->version == RING_VERSION &&
+           r->slot_size == sizeof(ring_slot_t) && r->capacity == RING_CAPACITY;
 }
 
 bool ring_push(ring_t *r, const ring_slot_t *in)

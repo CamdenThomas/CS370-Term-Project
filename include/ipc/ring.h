@@ -32,11 +32,22 @@ typedef struct {
     uint8_t  data[RING_PAYLOAD];
 } ring_slot_t;
 
-#define RING_LINE 64u   /* cache line on the Pi 4's Cortex-A72 */
+#define RING_LINE    64u          /* cache line on the Pi 4's Cortex-A72 */
+#define RING_MAGIC   0x474E5243u  /* the bytes "CRNG" */
+#define RING_VERSION 1u           /* bump whenever ring_t or ring_slot_t changes layout */
 
-/* head and tail each own a cache line, so the producer's stores never invalidate the
+/* Shared-memory names (D-039): obdd's ring and ambientd's (D-037). */
+#define RING_NAME_OBD   "/carwatch-obd"
+#define RING_NAME_PROBE "/carwatch-probe"
+
+/* The header lets an attaching process refuse a ring written by a different build.
+ * head and tail each own a cache line, so the producer's stores never invalidate the
  * line the consumer is spinning on, and the reverse. */
 typedef struct {
+    uint32_t magic;          /* RING_MAGIC */
+    uint16_t version;        /* RING_VERSION */
+    uint16_t slot_size;      /* sizeof(ring_slot_t) */
+    uint32_t capacity;       /* RING_CAPACITY */
     _Alignas(RING_LINE) _Atomic uint64_t head;      /* producer writes */
     _Alignas(RING_LINE) _Atomic uint64_t tail;      /* consumer writes */
     _Alignas(RING_LINE) _Atomic uint64_t overruns;  /* refused pushes — must stay zero */
@@ -44,7 +55,21 @@ typedef struct {
     _Alignas(RING_LINE) ring_slot_t      slot[RING_CAPACITY];
 } ring_t;
 
+/* Initializes an unshared ring. Only the creator calls it (ring_create does). */
 void     ring_init(ring_t *r);
+
+/* True when r's header matches this build's layout. */
+bool     ring_layout_ok(const ring_t *r);
+
+/* Shared memory (src/ipc/shm.c, D-039). ring_create removes any stale object of that
+ * name, makes a new one and initializes it: the supervisor calls it once at start.
+ * ring_attach maps an existing ring and returns NULL, having logged why, if it is
+ * missing, too small or of another layout: producers and storaged call it, and never
+ * initialize. Every failure is logged with errno. */
+ring_t  *ring_create(const char *name);
+ring_t  *ring_attach(const char *name);
+void     ring_detach(ring_t *r);
+int      ring_destroy(const char *name);
 
 /* Returns false when full (never overwriting an unread slot; counts an overrun) or when
  * the slot carries no valid src (counts a rejection, D-040). */
