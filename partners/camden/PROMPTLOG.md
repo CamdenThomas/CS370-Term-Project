@@ -120,3 +120,29 @@ Items absent from the manifest are never touched.
 too long before even beginning the dreaded goal of untangling the car's CAN messages.
 
 **Outcome.** Commit(s), and what I would do differently.
+
+### E-03 — Which adapter, and does it work on a Mac?
+
+**Milestone:** M2  **Date:** 2026-10-22 to 2026-10-26  **Category:** plan
+
+> **DRAFT — evidence only,** written by the agent from the session, like E-01. Rewrite it
+> in my own voice, write "My judgment" myself, and delete this note.
+
+**Context.** Before buying the OBDLink LX (D-019), I wanted to log a drive from my Mac to
+study the data before designing the pipeline around it.
+
+**What I asked.** Whether the LX would connect to a Mac, since OBDLink lists only Android
+and Windows, and whether a cheaper adapter was guaranteed to work on both the Mac and the
+Pi.
+
+**What came back.** The agent first said "yes" too confidently, then corrected itself:
+the vendor list is a support statement, macOS normally exposes a Bluetooth SPP device as
+`/dev/cu.*`, but no adapter is *guaranteed* on macOS, and it found no report of the LX
+itself on a Mac. It recommended buying from a returnable seller and testing at the car.
+
+**My judgment.** *(Mine to write.)* Was "likely, not guaranteed" enough to buy on? What is
+my rule for an agent's first confident answer about hardware compatibility?
+
+**Outcome.** Bought the LX. Tools and a run book for the first drive on branch
+`camden/m2/car-ready-tools` (PR #155). The Mac pairing result goes in
+`docs/hardware/first-drive.md`.
