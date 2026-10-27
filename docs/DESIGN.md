@@ -165,14 +165,18 @@ through the shared logger in `src/common/`; every one also carries `src` (C.2).
 > The measurements we will take, each with **method and committed target**. Numbers
 > committed now are twice as credible when hit later, and instructive either way.
 
+Targets are drafts until a human signs D-036.
+
 | Measurement | Method | Target |
 | --- | --- | --- |
-| OBD reply → stored, p50/p99 | timestamp at tty read and at fsync | |
-| `kill -9` each child: detection + recovery time | N trials per child, from the log | |
+| OBD reply → stored, p50/p99 | timestamp at tty read and after `fsync` returns, idle and with a CPU hog | ≤ 1.2 s / ≤ 2.5 s |
+| Sustained request rate | requests answered per second from the log, per drive | ≥ 15/s; every PID at least every 2 s |
+| `kill -9` each child: detection + recovery time | 20 trials per child, from the log | detection ≤ 100 ms; first heartbeat ≤ 5 s; no fd leaked |
 | Drop rate under contention | sequence accounting | zero |
-| RSS per process over the 48 h window | heartbeats at session start, hourly and at session end (D-023), plotted per session | flat |
-| Detection: TPR / FPR per fault area (D-021) | induced-fault fixtures | |
-| Recovery after mid-write power cut | N cuts of the Pi's 5 V rail after the converter, so the supercapacitor cannot cover them (pulling the charger now triggers a clean shutdown) | 100% |
+| RSS per process over the 48 h window | heartbeats at session start, hourly and at session end (D-023), plotted per session | flat: slope under 100 KB per running hour |
+| Detection: TPR / FPR per fault area (D-021) | induced-fault fixtures, five events per area | ≥ 4 of 5 caught per area; ≤ 1 false verdict per 10 h of normal driving |
+| Recovery after mid-write power cut | N cuts of the Pi's 5 V rail after the converter, so the supercapacitor cannot cover them (pulling the charger now triggers a clean shutdown) | 50 of 50 recover; ≤ 1 batch lost per cut |
+| Boot to first durable sample | log timestamps against the source-present edge | ≤ 45 s |
 
 ## 7. Ownership map
 

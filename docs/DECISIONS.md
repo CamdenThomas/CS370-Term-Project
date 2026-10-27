@@ -59,6 +59,7 @@ Decisions currently awaiting a human signature:
 | D-033 | Drive logs are JSONL from a Python tool on the Mac, one file per session, VIN stored only as a hash; not the product's storage format (§C.4) | Camden (in session) + Claude | 2026-10-26 | Either — it is the format of every real-car capture until `obdd` exists |
 | D-034 | Draft on-disk record format: a 40-byte header, typed body and CRC32, six record kinds, little-endian, 16 MB segments (§C.5, finishes D-025) | Claude, Camden's session | 2026-10-26 | Both — it is the format `storaged` writes and `analyzed` reads; nothing is coded yet |
 | D-035 | Draft fsync discipline: commit and fsync once a second or every 64 samples, whichever comes first (§C.6, closes C.1's open sub-decision if signed) | Claude, Camden's session | 2026-10-26 | Both — it sets what a power cut can lose and how far analysis lags |
+| D-036 | Draft evaluation targets: latency, kill-and-recover, drops, memory, detection and crash recovery, each with a number (§E.4) | Claude, Camden's session | 2026-10-26 | Both — numbers committed at M2 are what M5 is judged against |
 | D-032 | Python tools are tested with stdlib `unittest` in a venv that `make test` builds on first use (§F.6) | Camden (in session) + Claude | 2026-10-26 | Either — it adds a step to `make test` and installs two pinned packages |
 | D-026 | No pre-assigned owners; a subsystem belongs to its first substantive commit; supersedes 🔒 F.2 (§F.2) | Camden (reopened F.2) + Claude | 2026-10-21 | Lance — it removes every assignment the M0 map gave you, and changes CLAUDE.md §0 and §6 |
 
@@ -1067,6 +1068,37 @@ off period is a deliberate gap between a logged shutdown and a logged boot.
 - Two days of normal driving may hold only a few powered hours, which is thin evidence
   against a slow leak. A continuous bench run against `obdsim`, labeled `synth`, could
   add memory evidence alongside the soak, never in place of it. Open: not decided here.
+
+### E.4 — Committed evaluation targets (draft) ⚠️ UNREVIEWED
+
+`D-036` · Drafted M2, 2026-10-26 · **By:** Claude, in Camden's session, without his review
+of the numbers · **Reviewed:** Camden ⬜ / Lance ⬜
+· **Answers (if signed):** board item `evalplan`
+
+**Decision (draft).** `docs/DESIGN.md` §6 commits to these targets. Each one is chosen from
+what the user needs or what an earlier decision already implies, not from what we expect
+to hit.
+
+| Measurement | Target | Where the number comes from |
+| --- | --- | --- |
+| Reply to durable, p50 / p99 | ≤ 1.2 s / ≤ 2.5 s, idle and loaded | one batch a second (D-035) plus `fsync` time; nothing the owner sees moves faster |
+| Sustained request rate | ≥ 15 per second, every PID at least every 2 s | D-012's budget; the first drive replaces the estimate |
+| `kill -9` of each child, detection | ≤ 100 ms, 20 trials per child | `SIGCHLD` arrives at once; slower means the supervisor is blocked |
+| `kill -9` of each child, recovery | ≤ 5 s to the first heartbeat, no fd leaked | a recorder silent for longer has missed a reading of every PID |
+| Ring drops under contention | 0 overruns | B.3: refusals are counted, so zero is checkable |
+| RSS per process over the soak | slope under 100 KB per running hour, per process | flat within measurement noise over D-023's sessions |
+| Detection per fault area (D-021) | catch ≥ 4 of 5 induced events per area | five events per area is what the semester allows |
+| False alarms | ≤ 1 surfaced verdict per 10 hours of normal driving | D.3: a monitor that cries wolf gets unplugged |
+| Recovery after a cut mid-write | 50 of 50 cuts recover; ≤ 1 batch lost each | D-025 and D-035 promise exactly this |
+| Boot to first durable sample | ≤ 45 s | what `bootbudget` must defend; the start of warm-up is lost before it |
+
+**Why commit numbers now.** Handout §8: numbers committed at M2 are twice as credible when
+hit later, and instructive when missed. Each target is written so a miss says something
+specific.
+
+**Cost.** Some targets will be missed, and the evaluation report must say so plainly.
+Five induced events per fault area gives a coarse rate (4 of 5 is 80 %, with a wide
+interval); the report states the counts, not just the ratio.
 
 ---
 
