@@ -21,7 +21,7 @@ static void test_records(void)
 {
     kv_line_t l;
 
-    CHECK(parse("proc name=obdd up=1 pid=412 src=synth", &l) == KV_RECORD, "a record");
+    CHECK(parse("proc name=\"obdd\" up=1 pid=412 src=\"synth\"", &l) == KV_RECORD, "a record");
     CHECK(strcmp(l.tag, "proc") == 0 && l.nfields == 3 + 1, "tag and four fields");
     CHECK(strcmp(l.f[0].key, "name") == 0 && strcmp(l.f[0].val, "obdd") == 0,
           "fields keep their order");
@@ -33,13 +33,60 @@ static void test_records(void)
 
     CHECK(parse("idle", &l) == KV_RECORD && l.nfields == 0 && strcmp(l.tag, "idle") == 0,
           "a tag with no fields");
-    CHECK(parse("v a=", &l) == KV_RECORD && strcmp(kv_get(&l, "a"), "") == 0,
-          "an empty value");
-    CHECK(parse("v t=2026-10-28T10:30:00Z s=coolant,intake x=-1.5e+3 p=/a/b", &l) == KV_RECORD &&
-          strcmp(kv_get(&l, "t"), "2026-10-28T10:30:00Z") == 0 &&
+    CHECK(parse("v a=\"\"", &l) == KV_RECORD && strcmp(kv_get(&l, "a"), "") == 0,
+          "an empty string");
+    CHECK(parse("v t=\"2026-10-28T10:30:00Z\" s=\"coolant,intake\" x=-1.5e+3 p=\"/a/b\"", &l) ==
+          KV_RECORD && strcmp(kv_get(&l, "t"), "2026-10-28T10:30:00Z") == 0 &&
           strcmp(kv_get(&l, "s"), "coolant,intake") == 0 &&
           strcmp(kv_get(&l, "x"), "-1.5e+3") == 0, "punctuation inside a value");
-    CHECK(parse("k_1 a_b2=c", &l) == KV_RECORD, "digits and underscores in a tag and a key");
+    CHECK(parse("k_1 a_b2=\"c\"", &l) == KV_RECORD, "digits and underscores in a tag and a key");
+}
+
+/* A value carries its type (D-045): quoted is a string, bare is a number or null. */
+static void test_typed_values(void)
+{
+    kv_line_t l;
+
+    CHECK(parse("v a=1 b=-3.5 c=1e5 d=0 e=-0 f=null g=\"x\"", &l) == KV_RECORD, "one of each");
+    CHECK(l.f[0].type == KV_NUM && strcmp(l.f[0].val, "1") == 0, "1 is a number");
+    CHECK(l.f[1].type == KV_NUM && strcmp(l.f[1].val, "-3.5") == 0, "-3.5 is a number");
+    CHECK(l.f[2].type == KV_NUM && l.f[3].type == KV_NUM && l.f[4].type == KV_NUM,
+          "1e5, 0 and -0 are numbers");
+    CHECK(l.f[5].type == KV_NULL && strcmp(l.f[5].val, "null") == 0, "null is null");
+    CHECK(l.f[6].type == KV_STR && strcmp(l.f[6].val, "x") == 0, "quoted is a string");
+
+    CHECK(parse("v a=\"0C\" b=\"46\" c=\"1\" d=\"null\"", &l) == KV_RECORD &&
+          l.f[0].type == KV_STR && l.f[1].type == KV_STR && l.f[2].type == KV_STR &&
+          l.f[3].type == KV_STR && strcmp(l.f[1].val, "46") == 0 &&
+          strcmp(l.f[3].val, "null") == 0, "quotes keep a number-like or null-like text a string");
+
+    CHECK(parse("v a=\"a b\" b=\"a=b\" c=\" x \" d=\"two  spaces\"", &l) == KV_RECORD &&
+          strcmp(kv_get(&l, "a"), "a b") == 0 && strcmp(kv_get(&l, "b"), "a=b") == 0 &&
+          strcmp(kv_get(&l, "c"), " x ") == 0 && strcmp(kv_get(&l, "d"), "two  spaces") == 0,
+          "a string may hold spaces and '='");
+    CHECK(parse("v a=\"x\" b=2", &l) == KV_RECORD && l.nfields == 2 && l.f[1].type == KV_NUM,
+          "a field after a quoted one");
+
+    static const char *bare_bad[] = {
+        "v a=0C", "v a=46abc", "v a=01", "v a=+1", "v a=.5", "v a=1.", "v a=NaN",
+        "v a=true", "v a=synth", "v a=", "v a=nul", "v a=NULL", "v a=x\"y\"", "v a=b=c",
+    };
+    for (size_t i = 0; i < sizeof bare_bad / sizeof bare_bad[0]; i++)
+        CHECK(parse(bare_bad[i], &l) == KV_BAD, bare_bad[i]);
+
+    static const char *quote_bad[] = {
+        "v a=\"abc", "v a=\"", "v a=\"x\"y", "v a=\"\"x", "v a=\"x\"b=\"y\"",
+        "v a=\"x\\y\"", "v a=\"x\" ", "v a=\"x\"  b=1", "v a=\"x\"\"y\"",
+    };
+    for (size_t i = 0; i < sizeof quote_bad / sizeof quote_bad[0]; i++)
+        CHECK(parse(quote_bad[i], &l) == KV_BAD, quote_bad[i]);
+
+    char s[KV_MAX_VALUE + 16];
+    memset(s, '1', sizeof s);
+    memcpy(s, "v a=", 4); s[4 + KV_MAX_VALUE - 1] = '\0';
+    CHECK(parse(s, &l) == KV_RECORD && l.f[0].type == KV_NUM, "the longest bare number");
+    s[4 + KV_MAX_VALUE - 1] = '1'; s[4 + KV_MAX_VALUE] = '\0';
+    CHECK(parse(s, &l) == KV_BAD, "a bare number one too long");
 }
 
 static void test_terminators(void)
@@ -109,12 +156,12 @@ static void test_limits(void)
     CHECK(parse(s, &l) == KV_BAD, "a key one too long");
 
     memset(val, 'v', sizeof val); val[KV_MAX_VALUE - 1] = '\0';
-    snprintf(s, sizeof s, "t a=%s", val);
+    snprintf(s, sizeof s, "t a=\"%s\"", val);
     CHECK(parse(s, &l) == KV_RECORD && strlen(kv_get(&l, "a")) == KV_MAX_VALUE - 1,
-          "longest value");
+          "longest string");
     val[KV_MAX_VALUE - 1] = 'v'; val[KV_MAX_VALUE] = '\0';
-    snprintf(s, sizeof s, "t a=%s", val);
-    CHECK(parse(s, &l) == KV_BAD, "a value one too long");
+    snprintf(s, sizeof s, "t a=\"%s\"", val);
+    CHECK(parse(s, &l) == KV_BAD, "a string one too long");
 
     /* Fields: sixteen fit, seventeen do not. */
     s[0] = 't'; s[1] = '\0';
@@ -124,19 +171,20 @@ static void test_limits(void)
     snprintf(s + strlen(s), sizeof s - strlen(s), " kx=1");
     CHECK(parse(s, &l) == KV_BAD, "seventeen fields");
 
-    /* The line cap: 1 + 5 * 99 + 16 = 512 bytes is the longest line, 513 is refused. */
+    /* The line cap: 1 + 5 * 100 + 11 = 512 bytes is the longest line, 513 is refused. */
     char big[KV_MAX_LINE + 64];
     char longv[KV_MAX_VALUE];
-    memset(longv, 'v', KV_MAX_VALUE - 1); longv[KV_MAX_VALUE - 1] = '\0';
-    for (size_t last = 12; last <= 13; last++) {
+    memset(longv, 'v', KV_MAX_VALUE - 2); longv[KV_MAX_VALUE - 2] = '\0';
+    for (size_t last = 5; last <= 6; last++) {
         char tail[32];
         memset(tail, 'w', last); tail[last] = '\0';
         int n = snprintf(big, sizeof big, "t");
-        for (int i = 0; i < 5; i++) n += snprintf(big + n, sizeof big - (size_t)n, " k%d=%s", i, longv);
-        n += snprintf(big + n, sizeof big - (size_t)n, " k5=%s", tail);
-        CHECK((size_t)n == KV_MAX_LINE - 12 + last, "built the line I meant to build");
-        CHECK(kv_parse_line(big, (size_t)n, &l) == (last == 12 ? KV_RECORD : KV_BAD),
-              last == 12 ? "a 512-byte line" : "a 513-byte line");
+        for (int i = 0; i < 5; i++)
+            n += snprintf(big + n, sizeof big - (size_t)n, " k%d=\"%s\"", i, longv);
+        n += snprintf(big + n, sizeof big - (size_t)n, " k5=\"%s\"", tail);
+        CHECK((size_t)n == KV_MAX_LINE - 5 + last, "built the line I meant to build");
+        CHECK(kv_parse_line(big, (size_t)n, &l) == (last == 5 ? KV_RECORD : KV_BAD),
+              last == 5 ? "a 512-byte line" : "a 513-byte line");
     }
 }
 
@@ -154,7 +202,7 @@ static void test_cleared_between_lines(void)
 
 static void test_reply_next(void)
 {
-    const char reply[] = "proc name=obdd\r\nproc name=storaged\nbad line=\x01\nok\r\n";
+    const char reply[] = "proc name=\"obdd\"\r\nproc name=\"storaged\"\nbad line=\x01\nok\r\n";
     const char *cur = reply, *end = reply + sizeof reply - 1;
     kv_line_t l;
 
@@ -177,7 +225,7 @@ static void test_reply_next(void)
 static void test_reply_check(void)
 {
     kv_line_t f;
-    const char *good = "proc name=obdd up=1\r\nproc name=storaged up=0\r\nok\r\n";
+    const char *good = "proc name=\"obdd\" up=1\r\nproc name=\"storaged\" up=0\r\nok\r\n";
     const char *errs = "err unavailable storaged is down\r\n";
 
     CHECK(kv_reply_check(good, strlen(good), NULL) == KV_OK, "a good reply");
@@ -204,7 +252,7 @@ static void test_reply_check(void)
 
 static void test_every_split_is_incomplete_until_whole(void)
 {
-    const char *reply = "proc name=obdd up=1\r\nproc name=storaged up=0\r\nok\r\n";
+    const char *reply = "proc name=\"obdd\" up=1\r\nproc name=\"storaged\" up=0\r\nok\r\n";
     size_t n = strlen(reply);
 
     for (size_t cut = 0; cut < n; cut++)
@@ -216,6 +264,7 @@ int main(void)
 {
     log_init("test_kv", LOG_FATAL);
     test_records();
+    test_typed_values();
     test_terminators();
     test_bad_lines();
     test_limits();

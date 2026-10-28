@@ -1,5 +1,6 @@
 /* The control socket's reply lines: see include/interface/kv.h. No allocation. */
 #include "interface/kv.h"
+#include "interface/json.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -44,7 +45,19 @@ static kv_kind_t parse_err(const char *s, size_t len, const char *sp, kv_line_t 
     return KV_ERR;
 }
 
-/* One "key=value" token, t[0, n), appended to *out. */
+/* The length of the token at t[0, room): up to the next space outside double quotes. */
+static size_t token_len(const char *t, size_t room)
+{
+    bool quoted = false;
+    size_t n = 0;
+
+    for (; n < room && (quoted || t[n] != ' '); n++)
+        if (t[n] == '"') quoted = !quoted;
+    return n;
+}
+
+/* One "key=value" token, t[0, n), appended to *out. A quoted value is a string; a bare one
+ * must be a JSON number or null. */
 static bool add_field(const char *t, size_t n, kv_line_t *out)
 {
     const char *eq = memchr(t, '=', n);
@@ -54,15 +67,30 @@ static bool add_field(const char *t, size_t n, kv_line_t *out)
     const char *val = eq + 1;
     size_t vlen = n - klen - 1;
 
-    if (!is_name(t, klen, KV_MAX_KEY) || vlen >= KV_MAX_VALUE) return false;
-    if (memchr(val, '=', vlen) != NULL) return false;
+    if (!is_name(t, klen, KV_MAX_KEY)) return false;
     for (size_t i = 0; i < out->nfields; i++)
         if (strlen(out->f[i].key) == klen && memcmp(out->f[i].key, t, klen) == 0)
             return false;
 
+    kv_type_t type = KV_STR;
+    if (vlen > 0 && val[0] == '"') {
+        if (vlen < 2 || val[vlen - 1] != '"') return false;
+        val++;
+        vlen -= 2;
+        if (vlen >= KV_MAX_VALUE || memchr(val, '"', vlen) != NULL ||
+            memchr(val, '\\', vlen) != NULL) return false;
+    } else {
+        char text[KV_MAX_VALUE];
+        if (vlen >= KV_MAX_VALUE) return false;
+        copy(text, val, vlen);
+        type = strcmp(text, "null") == 0 ? KV_NULL : KV_NUM;
+        if (type == KV_NUM && !json_is_number(text)) return false;
+    }
+
     kv_field_t *f = &out->f[out->nfields++];
     copy(f->key, t, klen);
     copy(f->val, val, vlen);
+    f->type = type;
     return true;
 }
 
@@ -91,8 +119,7 @@ kv_kind_t kv_parse_line(const char *s, size_t len, kv_line_t *out)
     while (pos < len) {
         const char *t = s + pos + 1;                 /* s[pos] is the separating space */
         size_t room = len - pos - 1;
-        const char *next = memchr(t, ' ', room);
-        size_t n = next != NULL ? (size_t)(next - t) : room;
+        size_t n = token_len(t, room);
 
         if (n == 0 || !add_field(t, n, out)) return KV_BAD;   /* n == 0: doubled or trailing space */
         pos += 1 + n;

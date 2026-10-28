@@ -3,14 +3,16 @@
  * A reply is zero or more record lines, then one terminator, each line ending in "\n"
  * (a "\r\n" is accepted):
  *
- *     proc name=obdd up=1 pid=412 src=synth      a record: a tag, then key=value fields
+ *     proc name="obdd" up=1 pid=412 src="synth"  a record: a tag, then key=value fields
  *     ok                                         the end of a good reply
  *     err unavailable storaged is down           the end of a refused one: a code, then text
  *
- * Tags, keys and codes are [a-z0-9_]. A value is printable ASCII with no space and no '='
- * ("sensors=coolant,intake" is how a list goes), so nothing is quoted and a line can be
- * typed by hand. Parsing copies into fixed-size fields: no allocation, and the caller's
- * buffer can go away afterward.
+ * Tags, keys and codes are [a-z0-9_]. A value carries its type: in double quotes it is a
+ * string (printable ASCII, no '"' and no '\', so nothing is unescaped), bare it is a JSON
+ * number (json.h) or null, and anything else bare is refused. So pid="46" and pid=46 are
+ * different things, and forgetting the quotes is an error, not a silent change of type.
+ * Parsing copies into fixed-size fields: no allocation, and the caller's buffer can go
+ * away afterward.
  */
 #ifndef CARWATCH_KV_H
 #define CARWATCH_KV_H
@@ -33,9 +35,12 @@ typedef enum {
     KV_INCOMPLETE    /* no whole line yet, or no terminator yet */
 } kv_kind_t;
 
+typedef enum { KV_STR, KV_NUM, KV_NULL } kv_type_t;
+
 typedef struct {
-    char key[KV_MAX_KEY];
-    char val[KV_MAX_VALUE];
+    char      key[KV_MAX_KEY];
+    char      val[KV_MAX_VALUE];   /* a string without its quotes; a number or "null" as typed */
+    kv_type_t type;
 } kv_field_t;
 
 typedef struct {

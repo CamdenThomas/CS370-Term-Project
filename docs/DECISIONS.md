@@ -955,9 +955,13 @@ the same timestamp, which ring `seq` cannot have.
 - **A tagged reply grammar.** D-043's "lines of `key=value` fields" cannot say which
   record a field belongs to when a reply is a list (processes, verdicts, samples). So
   each line is one **record**: a tag, then space-separated `key=value` fields, ending
-  with `ok` or `err <code> <reason>`. Tags, keys and codes are `[a-z0-9_]`; a value is
-  printable ASCII with no space and no `=` (lists use commas), so nothing is quoted. A
-  line holds at most 512 bytes and 16 fields, and a key may not repeat within a line.
+  with `ok` or `err <code> <reason>`. Tags, keys and codes are `[a-z0-9_]`. A value
+  carries its type: in double quotes it is a string (printable ASCII, no `"` and no `\`,
+  so nothing is unescaped; it may hold spaces and `=`), bare it is a JSON number or
+  `null`, and any other bare value is refused. So `pid="46"` and `pid=46` differ, and a
+  forgotten quote is an error, never a silent change of type: the converter to JSON
+  needs no table of numeric keys. A line holds at most 512 bytes and 16 fields, and a
+  key may not repeat within a line.
 - **Standalone first.** `statusd` is built by the Makefile and run by hand until the
   supervisor can start children (`supfork`); the supervisor then spawns it.
 
