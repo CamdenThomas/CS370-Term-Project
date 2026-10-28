@@ -17,7 +17,6 @@ product's runtime path.
 | `obdview.py` | One offline HTML page per drive log to scrub, zoom and read every PID at once. |
 | `obdbins.py` | Operating-point binning prototype: per rpm x load cell, each PID's mean and spread. A look at the data, not the product's analysis. |
 | `obdlib.py`, `elm.py`, `macgps.py` | Shared code: reply parsing and PID decoding; one adapter session; optional Mac location. |
-| `train/` | Model training (skeleton). Weights land in `models/` with the training commit in the header. |
 
 **Planned — not written yet.** Listed so nobody looks for them:
 

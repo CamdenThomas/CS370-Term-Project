@@ -68,6 +68,6 @@ No document has an owner (D-026); "first author" is history, not an assignment.
 | Path | What |
 | --- | --- |
 | [`../CLAUDE.md`](../CLAUDE.md) | Team rules, read by both partners and by Claude every session |
-| [`../tools/README.md`](../tools/README.md) | The Python tools, present and planned; `tools/train/README.md` for training |
+| [`../tools/README.md`](../tools/README.md) | The Python tools, present and planned |
 | [`../soak/README.md`](../soak/README.md) | The 48-hour soak runner and fault injection |
 | [`../partners/`](../partners/) | Each partner's PROMPTLOG, REFLECTION and raw `.jsonl` transcripts |
