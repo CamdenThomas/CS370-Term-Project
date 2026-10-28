@@ -148,3 +148,38 @@ my rule for an agent's first confident answer about hardware compatibility?
 **Outcome.** Bought the LX. Tools and a run book for the first drive on branch
 `camden/m2/car-ready-tools` (PR #155). The Mac pairing result goes in
 `docs/hardware/first-drive.md`.
+
+### E-04 — The adapter that answered once
+
+**Milestone:** M2  **Date:** 2026-10-28  **Category:** hardware loop
+
+> **DRAFT — evidence only,** written by the agent from the session and the commits, like
+> E-01. Rewrite it in my own voice, write "My judgment" myself, and delete this note.
+
+**Context.** The first drive of the Forester, with `scripts/capture.sh` recording the
+video clip for the M2 zip. The script ran `pidscan` (survey) and then `obdlog` (the drive
+log) against the same Bluetooth serial port, as the run book said, and both had worked
+back to back against `obdsim`.
+
+**What I asked.** Why the survey printed 43 PIDs and then the logger sat at zero samples
+on the same port, seconds later, engine running.
+
+**What came back.** The evidence was the logger's own status line (0 samples, no error)
+against the survey that had just succeeded, and `ls /dev/cu.*` still listing the port.
+The agent's reading: on macOS, closing a Bluetooth SPP serial port drops the RFCOMM
+link, and reopening the device node does not re-establish it, so the second process gets
+a port that accepts writes and never answers. It is recorded in the script itself:
+
+> On macOS, closing a Bluetooth serial port drops the link, and reopening the port does
+> not bring it back: obdlog then gets no bytes at all (2026-10-28, OBDLink LX).
+
+The fix (`b1a6819`): open a real adapter once per run. The logger owns the port, and
+step 1 shows the newest live survey from disk instead of re-running `pidscan`. The next
+run logged 1042 samples in 50.9 s (ended by Ctrl-C), and the one after it, 1113 samples
+in 53.8 s at 20.7 samples/s, is the capture committed as `02ba151`.
+
+**My judgment.** *(Mine to write.)* The simulator never showed this because a pty does
+not have a link to drop. What is my rule for "it works on the simulator" from here on?
+
+**Outcome.** Commits `b1a6819`, `02ba151`; `captures/forester/20261028T220659.957/`.
+Open: whether the Pi's RFCOMM behaves the same way (`bench`).
