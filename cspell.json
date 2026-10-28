@@ -3,6 +3,10 @@
   "language": "en-US",
   "ignorePaths": [
     "docs/handout/**",
+    "data/**",
+    "build/**",
+    ".venv/**",
+    "node_modules/**",
     "partners/*/transcripts/*.jsonl",
     "**/*.kicad_*",
     "**/*.svg",
@@ -12,6 +16,7 @@
     "carwatci"
   ],
   "words": [
+    "lintall",
     "scopecut",
     "macbuild",
     "SNDBUF",
