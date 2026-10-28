@@ -943,6 +943,13 @@ the same timestamp, which ring `seq` cannot have.
   past that), a path under 128 bytes, a query under 256. A target must start with `/` and
   carry no control byte, NUL or backslash, and no `..` segment *after* percent-decoding,
   so `%2e%2e` cannot pass. Headers are checked for stray control bytes and then ignored.
+- **Connection limits.** At most 4 connections at once (one phone and a few tabs); a
+  fifth is closed at once and counted. Each connection gets 5 s to deliver its request
+  and 5 s to receive the response, and trickled bytes do not extend either. A response
+  body is at most 48 KB. The handler that builds a response is not trusted: a status the
+  HTTP layer cannot write, a missing or control-byte content type, or a length past the
+  buffer sends a fixed 500 and logs an error. When `accept` runs out of descriptors the
+  listener is left alone for 100 ms instead of spinning.
 - **A plain page.** HTML, CSS and JavaScript written by us, embedded in the binary, with
   no CDN and no library: the box is offline. Every chart is drawn through one function,
   `drawSeries(el, ts, ys)`, so a charting library such as uPlot can replace it later
@@ -967,8 +974,9 @@ the same timestamp, which ring `seq` cannot have.
   supervisor can start children (`supfork`); the supervisor then spawns it.
 
 **What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
-`lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`) and the
-synthetic source (`synth_source.c`). The server and the page follow on the same branch.
+`lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`), the
+synthetic source (`synth_source.c`) and the connection loop (`server.c`). The routes,
+`statusd` itself and the page follow on the same branch.
 
 **Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
 are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
