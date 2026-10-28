@@ -48,8 +48,6 @@ make test         # C unit tests + Python tool tests + boundary + milestones.md 
 make asan         # tests under AddressSanitizer + UBSan
 make memcheck     # valgrind over the test binaries
 make soakcheck    # 1-hour miniature of the 48h run
-make hwcheck      # KiCad ERC; violations fail the build
-make hwdocs       # regenerate schematic SVG, BOM and netlist
 make replay FIX=fixtures/<name>   # a labeled capture through the real pipeline
 make deploy PI=pi@<host>          # rsync + remote build
 python tools/board_sync.py --status | --check | (no flag = reconcile)
@@ -84,13 +82,16 @@ is pasted.** Not "should pass." Output.
 A Raspberry Pi in a car. The testbeds are Camden's **2008 Subaru Forester** and Lance's
 **2015 Honda CR-V EX-L**, and neither is required of anyone (D-022). A Bluetooth
 Classic OBD2 adapter in the OBD2 port is read over RFCOMM as `/dev/obd` (D-019). The Pi
-lives in one small box with one USB-C port, fed by the owner's own charger, and a
-seconds-scale supercapacitor lets it shut down cleanly at key-off; it is off while the car
-is, and nothing is cut (D-024). Mode 01 requests (D-012) read every engine sensor
-the car publishes; the device learns *this car's* normal per operating point, flags what
-leaves it, and names the likely fault area. A rough first draft, not a finished product.
-The owner reads it on a phone over the device's own Wi-Fi (D-013) or with `obdctl`; one
-tri-color light pulses while on duty (D-027).
+lives in one small box with one USB-C port, fed by the owner's own charger: it boots at
+key-on, loses power at key-off, and nothing on the car is cut. **Scope, cut on 2026-10-28
+with the TA's agreement:** no battery, no supercapacitor, no cooling and no sensor of our
+own; the engine's own sensors, read over Bluetooth, and the phone page over Wi-Fi are the
+product. Every key-off is therefore a power cut, which mechanism D recovers from at the
+next boot. Mode 01 requests (D-012) read every engine sensor the car publishes (43 on
+the Forester, `captures/forester/`); the device learns *this car's* normal per operating
+point, flags what leaves it, and names the likely fault area. A rough first draft, not a
+finished product. The owner reads it on a phone over the device's own Wi-Fi (D-013) or
+with `obdctl`; one tri-color light pulses while on duty (D-027).
 
 **The claim we defend (D-021, D-022):** *"learns the normal of the car it is installed in
 across its engine sensors, flags behavior outside it and names the likely fault area, with
@@ -100,8 +101,8 @@ measured catch and false-alarm rates on faults we induce."* Not "predicts failur
 ## 4. Mechanisms
 
 Committed and measured: **D** (append-only, crash-consistent storage) and **E**
-(multi-process with a supervisor). **B** and **F** are declined: no Pi-side sensor
-(D-029). **A**, **C** and raw CAN are stretch.
+(multi-process with a supervisor). **B** and **F** are declined: no sensor of our own.
+**A**, **C** and raw CAN are stretch.
 
 ## 5. The intelligence
 
@@ -151,7 +152,7 @@ the test and say in `WHY` why it is indivisible. Details: `docs/PROCESS.md`.
 ### 7.4 Commit messages
 
 Format: `.gitmessage` (`M<n> <area>: <imperative summary>`, then `WHAT` / `WHY` /
-`REVIEW` / `VERIFY`). `<area>` is one of `obd`, `ambient`, `ipc`, `store`, `analysis`, `supervisor`,
+`REVIEW` / `VERIFY`). `<area>` is one of `obd`, `ipc`, `store`, `analysis`, `supervisor`,
 `interface`, `common`, `build`, `tests`, `tools`, `soak`, `hw`, `docs`, `process`. **Banned:**
 `wip`, `fix`, `fixes`, `updates`, `misc`, `cleanup`, `changes`, `more work`,
 `address feedback`, or anything that does not say what changed.
@@ -200,13 +201,6 @@ retitle, re-milestone or re-assign an issue with `gh` or the web UI: edit the li
 `python tools/board_sync.py`. Never type or change a `<!-- #n -->` tag; sync owns it.
 Humans may comment and close on GitHub. **Claude never ticks a question, decision or
 hardware line**; ticking is the human act. Details: `docs/BOARD/BOARD.md`.
-
-### 7.12 Hardware (KiCad)
-
-Every PR touching `electricalDrawing/` includes the regenerated schematic SVG
-(`make hwdocs`) and pasted `make hwcheck` output. Never commit `.kicad_prl`, `.history/`,
-autosave or backup files. Claude never hand-writes `.kicad_pcb` geometry. Schematic rules:
-`docs/hardware/schematic-conventions.md`.
 
 ## 8. Workflow
 
