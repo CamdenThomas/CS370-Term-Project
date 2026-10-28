@@ -17,7 +17,7 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 7/49 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 7/50 |
 | M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | 🟡 3/29 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
@@ -183,6 +183,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [x] M2 tools: fix the board_sync, adapter and logger bugs the 2026-10-26 audit found
       `toolfix` <!-- #173 -->
 - [ ] M2 process: confirm Lance's identity in `.mailmap` `mailmap` <!-- #174 -->
+- [ ] M2 process: retire the decision log; choices live in CLAUDE.md, DESIGN.md and the
+      commit that made them `dropdecisions` <!-- #186 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
