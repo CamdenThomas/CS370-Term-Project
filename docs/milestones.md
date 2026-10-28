@@ -17,7 +17,7 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | ✅ 9/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 20/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-28 | 8–10 | 🟡 26/51 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-28 | 8–10 | 🟡 26/52 |
 | M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | 🟡 8/33 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 3/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
@@ -187,6 +187,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       commit that made them `dropdecisions` <!-- #186 -->
 - [ ] M2 docs: bring every document, the board and the tree in line with the 2026-10-28
       scope cut `scopecut` <!-- #191 -->
+- [ ] M2 process: every Markdown file passes markdownlint-cli2 and the whole tree passes
+      cspell, with the tools' raw output exempt `lintall` <!-- #193 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
