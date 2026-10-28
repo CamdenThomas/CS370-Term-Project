@@ -72,6 +72,7 @@ Decisions currently awaiting a human signature:
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
 | D-044 | Draft: drive logs keep every line that answers a request (`n_ecu`, `raw_all`, a `multi_ecu` event), headers stay off until a real car is measured; rpm and load get one request in four, and static PIDs are read once (§C.8, amends D-033) | Claude, Camden's session | 2026-10-27 | Either — it decides what the first drive records when two ECUs answer, and how fresh its operating point is |
 | D-046 | Every live drive capture from `scripts/capture.sh` is committed whole under `captures/<car>/`; amends D-033's "raw logs stay out of git" (§C.10) | Camden (in session) + Claude | 2026-10-28 | Both — the repository is public, so it publishes every capture |
+| D-045 | Draft: `statusd` is a GET-only HTTP server we write with no web library, a vanilla page, and a synthetic data source behind D-043's reply format until the real one exists (§B.13, extends D-043) | Claude, Lance's session | 2026-10-28 | Both — it is the only network code in the product, and the HEAD, size and library choices are yours to confirm |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet.** The entries that bind storage and analysis now are §C.1 to §C.7 and
@@ -922,6 +923,105 @@ layout.
 per batch (the ring generation once per run, the newest ring `seq` per batch). A first
 draft skipped by `mono_ns` instead; the restart test lost a sample to two readings with
 the same timestamp, which ring `seq` cannot have.
+
+### B.13 — `statusd` is a GET-only server we write, with no web library and a synthetic source first (draft) ⚠️ UNREVIEWED
+
+`D-045` · Drafted M3, 2026-10-28 · **By:** Claude, in Lance's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** D-043 (§B.11), which names `statusd` but not how it serves or what feeds it
+· **Follows:** D-013 and D-028 (§B.4, §B.6), which chose C for the server
+
+**Decision (draft).**
+
+- **A server we write.** `statusd` is a single-threaded `poll()` loop in `src/interface/`
+  over an HTTP layer of ours (`http.c`: pure functions, no sockets, no allocation). No
+  HTTP or web library: not libmicrohttpd, Mongoose or CivetWeb.
+- **GET only.** Every other method is refused with 405 and `Allow: GET`, and that includes
+  **HEAD**: nothing we serve is asked for with it. Requests are HTTP/1.0 or 1.1, one per
+  connection (`Connection: close`), and every response says `Cache-Control: no-store`, so
+  a phone never shows stale vitals.
+- **Size and shape limits.** Request line and headers together at most 4096 bytes (431
+  past that), a path under 128 bytes, a query under 256. A target must start with `/` and
+  carry no control byte, NUL or backslash, and no `..` segment *after* percent-decoding,
+  so `%2e%2e` cannot pass. Headers are checked for stray control bytes and then ignored.
+- **Connection limits.** At most 4 connections at once (one phone and a few tabs); a
+  fifth is closed at once and counted. Each connection gets 5 s to deliver its request
+  and 5 s to receive the response, and trickled bytes do not extend either. A response
+  body is at most 48 KB. The handler that builds a response is not trusted: a status the
+  HTTP layer cannot write, a missing or control-byte content type, or a length past the
+  buffer sends a fixed 500 and logs an error. When `accept` runs out of descriptors the
+  listener is left alone for 100 ms instead of spinning.
+- **Routes and what a URL may carry.** `/api/status`, `/verdicts`, `/faults` and `/series`
+  each become one request line for the source, and its reply becomes
+  `{"ok":true,"records":[...]}` with every field typed as the source typed it; a
+  refusal is `{"ok":false,"code":...,"reason":...}`, with `usage` as 400, an unknown pid
+  or verb as 404, and `unavailable` as 503. The URL is untrusted and a line is built from
+  it, so query keys are a fixed list (`pid`, `from`, `to`, each once), every value must
+  be 1 to 24 bytes of `[A-Za-z0-9:+.,_/-]` after decoding, and anything else is a 400
+  that never reaches the source. The other routes take no query at all.
+- **A plain page.** HTML, CSS and JavaScript written by us, embedded in the binary, with
+  no CDN and no library: the box is offline. Every chart is drawn through one function,
+  `drawSeries(el, ts, ys)`, so a charting library such as uPlot can replace it later
+  without touching the rest of the page.
+- **A seam for the data.** `statusd` asks a source for the text D-043's verbs reply with,
+  and builds every page, JSON reply and CSV from it. The first source is synthetic, with
+  `src=synth` on every row it makes, so the page shows its SYNTHETIC DATA banner
+  (CLAUDE.md §2.7). The real source, a client of `/run/carwatch/ctl.sock`, replaces it in
+  one place.
+- **A tagged reply grammar.** D-043's "lines of `key=value` fields" cannot say which
+  record a field belongs to when a reply is a list (processes, verdicts, samples). So
+  each line is one **record**: a tag, then space-separated `key=value` fields, ending
+  with `ok` or `err <code> <reason>`. Tags, keys and codes are `[a-z0-9_]`. A value
+  carries its type: in double quotes it is a string (printable ASCII, no `"` and no `\`,
+  so nothing is unescaped; it may hold spaces and `=`), bare it is a JSON number or
+  `null`, and any other bare value is refused. So `pid="46"` and `pid=46` differ, and a
+  forgotten quote is an error, never a silent change of type: the converter to JSON
+  needs no table of numeric keys. A line holds at most 512 bytes and 16 fields, and a
+  key may not repeat within a line. Requests use the same grammar
+  (`series pid="0C" from="-5m" to="now"`), so one parser reads both directions.
+- **Standalone first.** `statusd` is built by the Makefile and run by hand until the
+  supervisor can start children (`supfork`); the supervisor then spawns it. `make
+  run-status` runs it on `127.0.0.1:8080`; on the box, `--bind` takes the access
+  point's address, and it never listens on every interface by default.
+- **Supervisable.** Exit 0 on SIGTERM or SIGINT, 1 when it cannot run (a port in use, a
+  failed listener), 2 for bad arguments, as `obdctl` does. Its only descriptor besides
+  stdio is the listener, close-on-exec. It logs a heartbeat at once and then every
+  `--heartbeat-s` seconds (default 3600, the soak's hourly rate, D-023). Every log line
+  says `src=synth` while the data is made up.
+
+**What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
+`lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`), the
+synthetic source (`synth_source.c`), the connection loop (`server.c`), the routes
+(`route.c`) and the program itself (`statusd_main.c`). The page's frame is coded too
+(`page.c`: four tabs and the status bar); its panels hold placeholder text until they are
+built. The report download is not coded: that step was set aside.
+
+**Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
+are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
+grader can verify it by reading the tree in a minute; a vendored web library carries a
+client, TLS and a thread pool we would have to defend line by line, and Mongoose and
+CivetWeb contain HTTP *client* code that the rule "no HTTP client, ever" forbids. The
+parser is the one part that reads bytes a stranger on the Wi-Fi chose, so it is small,
+pure and tested against every refusal. GET-only keeps the rule to one sentence. A
+synthetic source lets the page be built and reviewed before the first drive, and
+`src=synth` keeps it from ever passing as data.
+
+**Cost.** The server uses Linux calls (`accept4`, `SOCK_NONBLOCK`, `MSG_NOSIGNAL`) and
+its tests read `/proc`, so `statusd` builds and is tested on the Pi and in CI but is not
+known to build with clang on macOS, which the Makefile mentions; nobody has tried. We
+own the parser's bugs. HEAD, keep-alive, ranges and TLS are unavailable, and
+adding HEAD later means a flag on every route to skip the body. The limits are Claude's
+choices, not measurements. The page has no tooltips, zoom or pan until a charting
+library is adopted, which needs its own decision (board item `uplot`, not yet added).
+
+**Order of commits.** §7.7 asks for a decision to share a commit with its code. Lance
+asked for this entry before the server code, so it is written in a docs commit after the
+HTTP layer's commits.
+
+**Alternatives rejected.** libmicrohttpd (an extra link-time dependency and threads we do
+not need); Mongoose and CivetWeb (client code, a license to read, a large surface); a
+Python server in `ui/` (D-028: an interpreter in the soak's memory plot). uPlot now: about
+50 KB of third-party code in the tree for charts the first cut does not need.
 
 ---
 
