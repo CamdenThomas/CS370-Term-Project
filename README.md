@@ -36,16 +36,16 @@ came from.
 ## Hardware
 
 See `docs/hardware/BOM.md` for the parts list and `docs/hardware/wiring.md` for the
-connections. Summary: a Raspberry Pi 4 with its microSD card in a small box with one
-USB-C port and one light, plus a Bluetooth Classic OBD2 dongle (OBDLink LX) in the car's
-OBD2 port. Plug the dongle into the OBD2 port and the box into any USB-C charger in the
-car; nothing is cut or wired into the car. The box runs only while the car does: the
-charger dies at key-off and so does the box, and the storage layer (mechanism D) recovers
-the log at the next boot. There is no battery, supercapacitor, cooling or sensor of our
-own: the scope was cut to the engine's own sensors on 2026-10-28, with the TA's
+connections. Summary: a Raspberry Pi 4 with its microSD card, a clock module and one
+light, in a small box with one USB-C port, plus a Bluetooth Classic OBD2 dongle (OBDLink
+LX) in the car's OBD2 port. Plug the dongle into the OBD2 port and the box into any USB-C
+charger in the car; nothing is cut or wired into the car. The box runs only while the car
+does: the charger dies at key-off and so does the box, and the storage layer (mechanism D)
+recovers the log at the next boot. There is no battery, supercapacitor, cooling or sensor
+of our own: the scope was cut to the engine's own sensors on 2026-10-28, with the TA's
 agreement. The Pi pairs with the dongle and reads it over RFCOMM as `/dev/obd` (decision
-D-019). The Forester publishes 43 Mode 01 sensors over CAN at about 21 readings a second
-(`captures/forester/`).
+D-019). The Forester publishes 43 Mode 01 sensors over CAN, read at about 21 readings a
+second from a Mac (`captures/forester/`); the Pi's own rate is still to be measured.
 
 **The light** (decision D-027). Every live state pulses, so a light that is stuck can only
 mean the box is not running:

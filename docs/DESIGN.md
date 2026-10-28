@@ -8,12 +8,14 @@ light would. It is also tested on Camden's 2008 Forester (D-022), which made the
 live capture on 2026-10-28 (`captures/forester/20261028T220659.957/`). **Claim (D-021):**
 it learns the normal of the car it is installed in, flags behavior outside it and names
 the likely fault area, with measured catch and false-alarm rates on faults we induce.
+`D-###` names an entry of the retired decision log: `git show 8c09b3d:docs/DECISIONS.md`.
 
 **Scope, cut 2026-10-28 with the TA's agreement.** The product is a Raspberry Pi 4 on the
 owner's USB-C charger, an OBDLink LX dongle read over Bluetooth, and a phone page over
-the box's own Wi-Fi. There is no sensor of our own, no battery, no supercapacitor and no
-cooling: the engine's own sensors are the cooperating sensors, and every key-off is a
-power cut. §7 says what that costs.
+the box's own Wi-Fi, plus a clock module and a tri-color light on the Pi's header. There
+is no sensor of our own, no battery, no supercapacitor and no cooling: the engine's own
+sensors are the cooperating sensors, and every key-off is a power cut. §7 says what that
+costs.
 
 ## 1. Architecture
 
@@ -31,19 +33,22 @@ OBD2 port -- OBDLink LX (Bluetooth Classic SPP, D-019); the Forester speaks CAN 
     v
   analyzed      bins -> baselines -> residuals -> trends -> model -> FSM; a few verdicts per drive
     v
-  supervisor [E] fork/exec, heartbeats, restart with backoff --GPIO--> tri-color light (D-027)
+  supervisor [E] fork/exec, hourly heartbeats, restart with backoff --GPIO--> light, 1-4 Hz
     ^  Unix socket /run/carwatch/ctl.sock, on demand (D-043)
   obdctl (CLI)   statusd: GET-only HTTP over a poll() loop; page, JSON, CSV -> phone (D-013, D-045)
 power: the owner's USB-C charger -> Pi 4. It dies at key-off, so every key-off is a power cut.
 ```
 
 Every rate above is from the first Forester capture (54 s, 1113 samples, one ECU
-answering, no `NO DATA`, no errors), made by the Python logger (D-033); `obdd` must match
-it. One reply is one sample, one record and one analysis step. Queries go to the
-supervisor, which asks the process holding the answer (D-043); `analyzed` never reads a
-ring (D-031). `statusd` reads a *source* behind one function; today that source is
-synthetic and every row it serves says `src=synth` (D-045), and the real one is a client
-of the control socket.
+answering, no `NO DATA`, no errors), made by the Python logger (D-033) **on a Mac**, whose
+Bluetooth stack is not the Pi's: on the Pi, BlueZ shares one radio with the Wi-Fi access
+point (`btcoex`), so 20.7 replies/s is the target `obdd` must reach there, not yet a Pi
+measurement. Every daemon is single-threaded; each logs a heartbeat at start, hourly and
+at every state change. One reply is one sample, one record and one analysis step. Queries
+go to the supervisor, which asks the process holding the answer (D-043); `analyzed` never
+reads a ring (D-031). `statusd` reads a *source* behind one function; today that source
+is synthetic and every row it serves says `src=synth` (D-045), and the real one is a
+client of the control socket.
 
 ## 2. Mechanism mapping
 
@@ -57,13 +62,15 @@ stresses a ring, and there is no sensor of our own to drive by interrupt.
 
 **Two distinct sensors that cooperate (handout §3.1).** The coolant thermistor, the
 intake-air thermistor, the ambient-air sensor, the manifold pressure sensor, the mass
-air-flow sensor and the oxygen sensors are separate transducers; the ECU only carries their
-readings, and the dongle relays them. They want different rates (rpm and load every 0.4 s,
-the rest every 2.6 s) and are reconciled in one pipeline: every sample is binned by the
-rpm, load and coolant temperature current when it arrived, and every diagnostic in §3
-fuses at least two of them. The TA agreed on 2026-10-28 that this satisfies §3.1 without
-a sensor of our own. "Both sensors alive" (M2) is the committed live capture; "through the
-pipeline" (M3) is the same sensors as committed records labeled `live`.
+air-flow sensor and the oxygen sensors are separate transducers; the ECU only carries
+their readings, and the dongle relays them. They cooperate inside one pipeline: every
+sample is binned by the rpm, load and coolant temperature current when it arrived, and
+every diagnostic in §3 fuses at least two of them, so no reading means anything alone.
+They are also polled unequally by our choice, not theirs: rpm and load every request
+cycle, since the bin axes must be fresh, the rest in round robin (2.6 Hz against 0.4 Hz).
+The TA agreed on 2026-10-28 that this satisfies §3.1 without a sensor of our own. "Both
+sensors alive" (M2) is the committed live capture; "through the pipeline" (M3) is the same
+sensors as committed records labeled `live`.
 
 ## 3. Analysis: how normal is learned and a fault area named
 
@@ -86,9 +93,12 @@ surveyed.
 | Unknown | all | residual high, no area matches | — |
 
 No row can be called by one threshold on one value: each compares sensors that normally
-move together, inside one bin. The first capture already shows the partnerships: at a warm
-idle, coolant sat at 96–98 °C with intake air at 40 °C and ambient at 19 °C, and long-term
-trim at −5 % against a 22 kPa manifold.
+move together, inside one bin. Drives are ordered by `boot_id`, a cold soak is recognized
+by coolant, intake air and ambient agreeing at key-on, and cross-drive trends wait until
+wall time is trusted (§6). The first capture already shows the partnerships: parked and
+warm, revved between 640 and 2970 rpm, coolant sat at 96–98 °C with intake air at 40 °C
+and ambient at 19 °C, and long-term trim averaged −5 % against a mean manifold pressure of
+22 kPa.
 
 ## 4. Failure-mode table
 
@@ -100,16 +110,17 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | adapter | garbage or timeouts | parse failure; timeout | 3 in a row: `ATZ`, then reopen | `reply_bad`, `adapter_reset` |
 | adapter | engine off, key in ACC | `0100` gets `NO DATA` | poll `0100` every few s, record nothing | `ecu_silent` |
 | ECU | a sensor unplugged or failed | 5 `NO DATA` in a row; or pinned or flat while its partners move; MIL on (PID 01) | mark absent or suspect, retry each minute. ECUs often substitute a value and light the CEL: not caught before the light | `pid_absent`, `pid_flat`, `mil_on`, `pid_present` |
+| `obdd` | hangs with the link up: heartbeat alive, no sample pushed | no sample in 10 s with the ECU answering | the supervisor restarts it | `capture_stalled` |
 | any child | crash, `kill -9` | `waitpid` | restart with backoff; others run on | `child_exit`, `child_restart` |
 | ring | consumer stalls | sequence gap; late heartbeat | refuse and count; restart `storaged`; red | `ring_full`, `heartbeat_late` |
 | storaged | power cut mid-write (every key-off) | bad CRC or no `COMMIT` at boot | truncate the tail and the open batch (D-025) | `recovered` |
 | storaged | disk full; `fsync` or write `EIO` | `ENOSPC`, return values | drop the oldest segment if allowed; hold the durable offset; degrade, red | `enospc`, `fsync_failed` |
 | analyzed | torn checkpoint; bad model file | slot CRC; header CRC | other slot + redo; residuals only | `checkpoint_bad`, `model_unavailable` |
-| `statusd` | a bad or oversized request; out of memory | the parser's limits; RSS | 4xx, 431 or 503; capture unaffected | `request_refused`, `report_failed` |
-| supervisor | dies | systemd `Restart=always` | light freezes steady = "not running" | journal |
+| `statusd` | a bad or oversized request; the CSV report cannot be built (memory) | the parser's limits; the builder's return value | 4xx, 431 or 503; capture unaffected | `request_refused`, `report_failed` |
+| supervisor | dies | systemd `Restart=always` | light freezes steady = "not running" | journal (persistent, on the log partition) |
 | clock | wall time untrusted at boot (no clock module, or its backup lost) | time before the build date | run on `mono_ns`; records carry `WALL_UNTRUSTED` | `rtc_invalid` |
 | power | cable pulled, crank dip, or charger live at key-off | unclean end at the next boot; `vcgencmd` undervoltage; `0100` silent with power on | crash recovery (D); log; a silent ECU with power on is recorded, not a fault | `recovered`, `undervoltage`, `ecu_silent` |
-| OS | power cut corrupts the root filesystem | boot fails | the root filesystem is read-only; only the log partition is written (board `rofs`) | journal |
+| OS | power cut corrupts the root filesystem | boot fails | the root filesystem is read-only; only the log partition is written (board `rofs`) | journal, on the log partition |
 | radio | Bluetooth and Wi-Fi share one chip | reply p99 in the heartbeat | measure (`btcoex`) | heartbeat |
 
 ## 5. Storage and data
@@ -117,17 +128,21 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 - **Format (D-034, `include/store/record.h`):** a 40-byte header (`magic`, `kind`, `seq`,
   `mono_ns`, `wall_ns`, `src`, flags, `boot_id`), a typed body, a CRC32 over both. Kinds:
   sample, begin, commit, boot, shutdown, event. A sample is 56 bytes and keeps the reply's
-  raw bytes beside the decoded value. 16 MB segments, never edited. A `src` of 0 is
-  invalid and refused at the ring (D-040).
+  raw bytes beside the decoded value. 16 MB segments, never rewritten: only the torn tail
+  of the newest is truncated at boot. A `src` of 0 is invalid and refused at the ring
+  (D-040).
 - **Rates, measured:** 20.7 samples/s is 1.2 KB/s, about 4 MB per running hour; a 32 GB
   card holds years of two-hour days.
 - **Retention (D-041):** every segment is kept until the log filesystem is 80 % full, then
   whole segments go oldest first, never one the newest checkpoint still needs. Text logs
-  go to the journal, size-capped.
-- **fsync (D-035, `include/store/wal.h`):** commit at 1 s or 64 samples. A cut loses at
-  most a second of signals that move over minutes; longer batches would lose warm-up at
-  each cold-start reset; per-record `fsync` is 20× the flash wear. Measured in `expbatch`.
-- **Crash story (coded, `src/store/wal.c`, tested across `kill -9`):** at boot `storaged`
+  go to the journal, persistent on the same partition, size-capped.
+- **fsync (D-035, `include/store/wal.h`):** commit every second; the 64-sample cap only
+  bounds a replay burst, since live data brings 21 a second. A cut loses at most a second
+  of signals that move over minutes; longer batches would lose warm-up at each cold-start
+  reset; per-record `fsync` is about 20× the `fsync` count, and `expbatch` measures what
+  that costs in wear.
+- **Crash story (coded, `src/store/wal.c`, tested across `kill -9` so far; power-cut
+  recovery is measured in §8):** at boot `storaged`
   scans the newest segment, verifies CRCs, keeps everything up to the last `COMMIT`,
   truncates the rest (undo is truncation: nothing is overwritten), and writes a boot batch
   saying whether the last session ended clean. Since power dies at every key-off, almost
@@ -146,7 +161,8 @@ unattended at every start and loses power at every stop. There is no stored ener
 clean shutdown; mechanism D is designed for exactly that, and the root filesystem is
 mounted read-only so a cut cannot corrupt the operating system (`rofs`). A clock module on
 I2C keeps wall time while the box is off (`rtcspec`); without one, records carry
-`WALL_UNTRUSTED` and time is monotonic only.
+`WALL_UNTRUSTED`, time is monotonic within a boot and ordered across boots by `boot_id`,
+and `analyzed` keeps learning bins but holds cross-drive trends.
 
 | State | Entered when | Supervisor does | Light (D-027) |
 | --- | --- | --- | --- |
@@ -194,7 +210,7 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | `src/ipc/` ring and shared memory; `src/store/` record format, CRC32, write-ahead log and `storaged`; `src/common/` logging; build and `board_sync` | Camden | M0: 0e66851, 269e2c5; M3: 3860d8e, 9b145d4, aaac098, 972015a |
 | `tools/` OBD2 logging and analysis tools; `scripts/capture.sh` and `captures/` | Camden | M2: PR #155, #183 |
 | `src/interface/` HTTP parser, JSON, control-socket reply grammar, routes, `poll()` server, page and `statusd` | Lance | M3: 61be86f, 591718b, e316a32, 38c25ed (PR #184) |
-| `src/obd/`, `src/analysis/`, `src/supervisor/`, `obdctl`, `tools/train/` | unclaimed | stubs only so far |
+| `src/obd/`, `src/analysis/`, `src/supervisor/`, `obdctl` (`src/interface/main.c`), `tools/train/` | unclaimed | stubs only so far; claimed by the first substantive commit (D-026) |
 
 ## 10. AI-use plan
 

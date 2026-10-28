@@ -55,13 +55,14 @@ why, here.
 | Garbage or timeouts | `obdsim` serving bad replies (`synth`) | `reply_bad`, `adapter_reset` | | | |
 | Engine off, key in ACC | key to ACC | `ecu_silent` | | | |
 | A sensor unplugged | unplug one engine sensor, engine running (lights the CEL) | `pid_absent` or `pid_flat`, `mil_on`, `pid_present` | | | |
+| `obdd` hangs with the link up | `SIGSTOP` `obdd` for 30 s | `capture_stalled`, `child_restart` | | | |
 | A child crashes | `kill -9` each child, 20 times | `child_exit`, `child_restart` | | | |
 | Ring consumer stalls | `SIGSTOP` `storaged` for 5 min | `ring_full`, `heartbeat_late` | | | |
 | Power cut mid-write | pull the USB-C cable, engine running, 50 times | `recovered` | | | |
 | Disk full; `fsync` error | log directory on a small loop-mounted filesystem, filled | `enospc`, `fsync_failed` | | | |
 | Torn checkpoint; bad model | truncate one checkpoint slot; corrupt the model header | `checkpoint_bad`, `model_unavailable` | | | |
 | A bad or oversized request to `statusd` | a 5 KB header, a `..` path, a POST | 431, 400, 405; `request_refused` | | | |
-| Report fails | make the report directory read-only | `report_failed` | | | |
+| Report fails | request the CSV with `statusd` under a tight `ulimit -v` | `report_failed` | | | |
 | Supervisor dies | `kill -9` the supervisor | systemd restart, in the journal | | | |
 | Clock invalid | boot without the clock module | `rtc_invalid` | | | |
 | Key-off and cable pulled | every key cycle of the soak; pull the USB-C | `recovered` at the next boot | | | |
