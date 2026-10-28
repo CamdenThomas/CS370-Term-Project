@@ -62,7 +62,6 @@ No document has an owner (D-026); "first author" is history, not an assignment.
 | [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? |
 | [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does each testbed car actually publish? |
 | [`hardware/first-drive.md`](hardware/first-drive.md) | How do we survey a car and log its first drive (D-033)? |
-| [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? |
 
 ## Outside `docs/`
 
