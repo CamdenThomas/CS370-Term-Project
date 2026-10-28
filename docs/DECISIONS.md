@@ -979,13 +979,20 @@ the same timestamp, which ring `seq` cannot have.
   key may not repeat within a line. Requests use the same grammar
   (`series pid="0C" from="-5m" to="now"`), so one parser reads both directions.
 - **Standalone first.** `statusd` is built by the Makefile and run by hand until the
-  supervisor can start children (`supfork`); the supervisor then spawns it.
+  supervisor can start children (`supfork`); the supervisor then spawns it. `make
+  run-status` runs it on `127.0.0.1:8080`; on the box, `--bind` takes the access
+  point's address, and it never listens on every interface by default.
+- **Supervisable.** Exit 0 on SIGTERM or SIGINT, 1 when it cannot run (a port in use, a
+  failed listener), 2 for bad arguments, as `obdctl` does. Its only descriptor besides
+  stdio is the listener, close-on-exec. It logs a heartbeat at once and then every
+  `--heartbeat-s` seconds (default 3600, the soak's hourly rate, D-023). Every log line
+  says `src=synth` while the data is made up.
 
 **What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
 `lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`), the
-synthetic source (`synth_source.c`), the connection loop (`server.c`) and the routes
-(`route.c`). `statusd` itself and the page follow on the same branch; until the page,
-`/` serves a marked placeholder.
+synthetic source (`synth_source.c`), the connection loop (`server.c`), the routes
+(`route.c`) and the program itself (`statusd_main.c`). The CSV report and the page follow
+on the same branch; until the page, `/` serves a marked placeholder.
 
 **Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
 are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
@@ -997,7 +1004,10 @@ pure and tested against every refusal. GET-only keeps the rule to one sentence. 
 synthetic source lets the page be built and reviewed before the first drive, and
 `src=synth` keeps it from ever passing as data.
 
-**Cost.** We own the parser's bugs. HEAD, keep-alive, ranges and TLS are unavailable, and
+**Cost.** The server uses Linux calls (`accept4`, `SOCK_NONBLOCK`, `MSG_NOSIGNAL`) and
+its tests read `/proc`, so `statusd` builds and is tested on the Pi and in CI but is not
+known to build with clang on macOS, which the Makefile mentions; nobody has tried. We
+own the parser's bugs. HEAD, keep-alive, ranges and TLS are unavailable, and
 adding HEAD later means a flag on every route to skip the body. The limits are Claude's
 choices, not measurements. The page has no tooltips, zoom or pan until a charting
 library is adopted, which needs its own decision (board item `uplot`, not yet added).
