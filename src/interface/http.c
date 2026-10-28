@@ -152,6 +152,8 @@ ssize_t http_write_head(char *out, size_t cap, int status, const char *ctype,
     const char *text = status_text(status);
 
     if (text == NULL || ctype == NULL) return -1;
+    /* A 405 must list what is allowed. Only GET is: HEAD is refused on purpose. */
+    const char *allow = status == HTTP_STATUS_METHOD_NOT_ALLOWED ? "Allow: GET\r\n" : "";
     int n = snprintf(out, cap,
                      "HTTP/1.1 %d %s\r\n"
                      "Content-Type: %s\r\n"
@@ -159,8 +161,9 @@ ssize_t http_write_head(char *out, size_t cap, int status, const char *ctype,
                      "Connection: close\r\n"
                      "Cache-Control: no-store\r\n"
                      "X-Content-Type-Options: nosniff\r\n"
+                     "%s"
                      "\r\n",
-                     status, text, ctype, body_len);
+                     status, text, ctype, body_len, allow);
     if (n < 0 || (size_t)n >= cap) return -1;
     return n;
 }

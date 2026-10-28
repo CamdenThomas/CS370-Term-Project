@@ -1,9 +1,10 @@
 /* statusd's HTTP layer (D-043): bytes in, bytes out, no sockets.
  *
- * Only GET is served. The parser takes whatever has been read so far and says whether it is
- * a whole request, part of one, or one to refuse; the writer makes the head of a response
- * and leaves the body to the caller, so the embedded page is never copied. Every buffer is
- * fixed-size: a request cannot make this layer allocate.
+ * Only GET is served. HEAD is refused on purpose (405, with "Allow: GET"): nothing we
+ * serve is asked for with it. The parser takes whatever has been read so far and says
+ * whether it is a whole request, part of one, or one to refuse; the writer makes the head
+ * of a response and leaves the body to the caller, so the embedded page is never copied.
+ * Every buffer is fixed-size: a request cannot make this layer allocate.
  */
 #ifndef CARWATCH_HTTP_H
 #define CARWATCH_HTTP_H

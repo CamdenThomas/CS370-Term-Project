@@ -109,6 +109,27 @@ static void test_size_caps(void)
     CHECK(http_parse_request(q, (size_t)n, &r) == HTTP_BAD, "query over HTTP_QUERY_MAX");
 }
 
+/* HEAD is refused on purpose: nothing we serve is asked for with it, and "GET only" is a
+ * rule that fits in one sentence. A 405 must say what is allowed (RFC 9110 15.5.6). */
+static void test_head_is_rejected(void)
+{
+    http_request_t r;
+    char out[256];
+
+    CHECK(parse("HEAD / HTTP/1.1\r\n\r\n", &r) == HTTP_BAD_METHOD, "HEAD /");
+    CHECK(parse("HEAD /api/status HTTP/1.1\r\nHost: box\r\n\r\n", &r) == HTTP_BAD_METHOD,
+          "HEAD on an API route");
+    CHECK(parse("head / HTTP/1.1\r\n\r\n", &r) == HTTP_BAD_METHOD, "lowercase head");
+    CHECK(parse("GETS / HTTP/1.1\r\n\r\n", &r) == HTTP_BAD_METHOD, "GET plus a letter");
+    CHECK(parse("GE / HTTP/1.1\r\n\r\n", &r) == HTTP_BAD_METHOD, "GET minus a letter");
+
+    ssize_t n = http_write_head(out, sizeof out, (int)HTTP_BAD_METHOD, "text/plain", 0);
+    CHECK(n > 0 && strstr(out, "\r\nAllow: GET\r\n") != NULL, "a 405 carries Allow: GET");
+
+    n = http_write_head(out, sizeof out, HTTP_STATUS_OK, "text/plain", 0);
+    CHECK(n > 0 && strstr(out, "Allow:") == NULL, "only a 405 carries Allow");
+}
+
 /* The enum values are the statuses, so a refusal can go straight into a response head. */
 static void test_refusals_are_statuses(void)
 {
@@ -196,6 +217,7 @@ int main(void)
     test_every_split_is_incomplete_until_whole();
     test_refusals();
     test_size_caps();
+    test_head_is_rejected();
     test_refusals_are_statuses();
     test_query_get();
     test_write_head();
