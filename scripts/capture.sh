@@ -1,29 +1,30 @@
 #!/bin/bash
-# carwatch capture: survey the car's sensors, record them with a page that redraws as the
-# data arrives, and commit everything to the repository under captures/<car>/ (D-046).
+# carwatch capture: survey the car's sensors, record them to disk, show what was stored,
+# and commit everything to the repository under captures/<car>/ (D-046).
 #
 #   scripts/capture.sh /dev/cu.<adapter> [seconds, default 60]   # a real car: committed
+#   scripts/capture.sh /dev/rfcomm0 [seconds]                    # the same, on the Pi
 #   scripts/capture.sh sim [seconds]                             # rehearsal: never committed
 #   CAR=crv scripts/capture.sh ...                               # name the car (default forester)
 #
 # Run it from a branch, not main; on main it switches to camden/m2/captures first.
 # A capture is committed only when every record says src=live (CLAUDE.md §2.7).
 set -u -o pipefail
-PORT=${1:?usage: scripts/capture.sh /dev/cu.<adapter>|sim [seconds]}
+PORT=${1:?usage: scripts/capture.sh /dev/cu.<adapter>|/dev/rfcomm0|sim [seconds]}
 SECS=${2:-60}
 CAR=${CAR:-forester}
 cd "$(dirname "$0")/.." || exit 1
 export PYTHONPATH=tools
 PY=.venv/bin/python
 [ -x "$PY" ] || { echo "capture: no .venv; run 'make toolcheck' once first" >&2; exit 1; }
-mkdir -p data/.live
-START=data/.live/start DONE=data/.live/done
-rm -f "$DONE"; touch "$START"
+mkdir -p data
+START=data/.capture-start
+touch "$START"
+AWAKE=""; command -v caffeinate >/dev/null && AWAKE="caffeinate -i"   # macOS only
 
 step() { printf '\n\033[1;36m== %s\033[0m\n\033[0;33m   say: %s\033[0m\n\n' "$1" "$2"; sleep 2; }
 newest() { find data -maxdepth 1 -name "$1" -newer "$START" | sort | tail -1; }
 
-SIM=""
 if [ "$PORT" = sim ]; then
     $PY tools/obdsim.py --link data/obd-sim --latency 0.04 >/dev/null 2>&1 &
     SIM=$!
@@ -32,42 +33,23 @@ if [ "$PORT" = sim ]; then
     PORT=data/obd-sim
 fi
 
-# The page: obdview's drive page, rebuilt every 3 s while obdlog writes, with a refresh
-# tag so the browser reloads it. Built aside and renamed, so a reload never sees half.
-live_page() {
-    local log="" name opened=""
-    while [ ! -e "$DONE" ]; do
-        [ -n "$log" ] || log=$(newest 'drive-*.jsonl')
-        if [ -n "$log" ]; then
-            name=view-$(basename "$log" .jsonl).html
-            if $PY tools/obdview.py --out-dir data/.live "$log" >/dev/null 2>&1; then
-                sed -i '' 's#<head>#<head><meta http-equiv="refresh" content="3">#' \
-                    "data/.live/$name"
-                mv "data/.live/$name" "data/$name"
-                [ -n "$opened" ] || { open "data/$name"; opened=1; }
-            fi
-        fi
-        sleep 3
-    done
-}
-
 step "1/4  Is the car talking? Which sensors does it publish?" \
-     "The adapter in the diagnostic port talks to this laptop over Bluetooth. First we ask the engine computer which sensors it has."
+     "The adapter in the diagnostic port talks to this computer over Bluetooth. First we ask the engine computer which sensors it has."
 $PY tools/pidscan.py --port "$PORT" | grep -v '^VIN' || exit 1   # keep the VIN off the video
 
 step "2/4  Recording every sensor for ${SECS} s" \
-     "Now we record all of them, about 20 readings a second, each written to disk as it arrives and labeled with its source. The page redraws every 3 seconds. (Rev the engine now.)"
-live_page &
-PAGE=$!
-caffeinate -i $PY tools/obdlog.py --port "$PORT" --max-seconds "$SECS"
-touch "$DONE"; wait $PAGE
+     "Now we record all of them, about 20 readings a second. Each reading is written to disk the moment it arrives, labeled live. (Rev the engine now.)"
+$AWAKE $PY tools/obdlog.py --port "$PORT" --max-seconds "$SECS"
 LOG=$(newest 'drive-*.jsonl')
 [ -n "$LOG" ] || { echo "capture: obdlog wrote no log" >&2; exit 1; }
 NAME=$(basename "$LOG" .jsonl)
-$PY tools/obdview.py --out-dir data "$LOG" >/dev/null   # the final page, no refresh: it stops
 
-step "3/4  What we recorded" \
-     "For each sensor: how many readings, how often, and its range. The page shows every sensor over time; drag across a chart to zoom in on the revs."
+step "3/4  What is on disk" \
+     "This is the file it wrote: one line per reading, each with its source, a timestamp, the raw reply from the car and the decoded value. Then a summary per sensor."
+ls -lh "$LOG"
+echo "$(wc -l <"$LOG") records; the last few:"
+tail -n 6 "$LOG" | cut -c1-150
+echo
 $PY tools/obdsum.py "$LOG" | tee "data/summary-$NAME.txt"
 $PY - "$LOG" <<'EOF' | tee -a "data/summary-$NAME.txt"
 import json, sys
@@ -88,13 +70,12 @@ case "$NAME" in
 esac
 
 step "4/4  Saved to the project" \
-     "Everything is now committed to our git repository: the raw recording, the sensor survey, the summary and this page."
+     "Everything is now committed to our git repository: the raw recording, the sensor survey and the summary."
 DIR=captures/$CAR/${NAME#drive-}
 DIR=${DIR%-live}
 mkdir -p "$DIR"
 cp "$LOG" "$DIR/drive.jsonl"
 cp "data/summary-$NAME.txt" "$DIR/summary.txt"
-cp "data/view-$NAME.html" "$DIR/view.html"
 SCAN=$(newest 'pidscan-*-live.md')
 [ -n "$SCAN" ] && cp "$SCAN" "$DIR/pidscan.md" && cp "${SCAN%.md}.json" "$DIR/pidscan.json"
 
@@ -105,8 +86,8 @@ git add -- "$DIR"
 git commit -q -F - <<EOF
 M2 obd: record a live $CAR capture, ${DIR##*/}
 
-WHAT:   Adds the raw obdlog session, the pidscan survey, the obdsum summary
-        and the obdview page, as scripts/capture.sh wrote them, in
+WHAT:   Adds the raw obdlog session, the pidscan survey and the obdsum
+        summary, as scripts/capture.sh wrote them, in
         $DIR/.
 WHY:    D-046: every real-car capture is kept in the repository.
         $STATS.

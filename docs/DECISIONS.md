@@ -1270,10 +1270,11 @@ files (D-033) use strings, not these numbers, so they are unaffected.
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Amends:** D-033 (§C.4): "raw logs stay out of git"
 
-**Decision.** `scripts/capture.sh` runs `pidscan`, then `obdlog` for a set time while a
-page built by `obdview` redraws every 3 s, then `obdsum`, and commits the whole session to
+**Decision.** `scripts/capture.sh` runs `pidscan`, then `obdlog` for a set time, then shows
+the last records on disk and `obdsum`'s summary, and commits the whole session to
 `captures/<car>/<time>/`: `drive.jsonl` (the raw log, unedited), `pidscan.md` and
-`.json`, `summary.txt` and `view.html`. It commits on the current branch, or on
+`.json`, and `summary.txt`. It draws no display: the owner's view is the phone page
+(D-013). It commits on the current branch, or on
 `camden/m2/captures` when run from `main`, stages only that directory, and pushes if the
 network is up. A session is committed only when its file name says `live`; `synth`
 rehearsals (`scripts/capture.sh sim`) stay in `data/`.
@@ -1287,7 +1288,7 @@ history.
 and the 12-hex VIN hash (D-033's cost, now on GitHub). The `pidscan` output and the
 logger's GPS lines are the only places location could appear; the script never passes
 `--gps`. The log grows about 3.5 KB a second on `obdsim`, so a 60 s capture is about
-0.4 MB with its page and an hour of driving would be about 20 MB; long drives may later
+0.2 MB and an hour of driving would be about 13 MB; long drives may later
 need Git LFS or a size limit. `data/` stays ignored for everything else.
 
 ---
