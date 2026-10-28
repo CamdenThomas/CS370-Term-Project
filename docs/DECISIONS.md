@@ -950,6 +950,14 @@ the same timestamp, which ring `seq` cannot have.
   HTTP layer cannot write, a missing or control-byte content type, or a length past the
   buffer sends a fixed 500 and logs an error. When `accept` runs out of descriptors the
   listener is left alone for 100 ms instead of spinning.
+- **Routes and what a URL may carry.** `/api/status`, `/verdicts`, `/faults` and `/series`
+  each become one request line for the source, and its reply becomes
+  `{"ok":true,"records":[...]}` with every field typed as the source typed it; a
+  refusal is `{"ok":false,"code":...,"reason":...}`, with `usage` as 400, an unknown pid
+  or verb as 404, and `unavailable` as 503. The URL is untrusted and a line is built from
+  it, so query keys are a fixed list (`pid`, `from`, `to`, each once), every value must
+  be 1 to 24 bytes of `[A-Za-z0-9:+.,_/-]` after decoding, and anything else is a 400
+  that never reaches the source. The other routes take no query at all.
 - **A plain page.** HTML, CSS and JavaScript written by us, embedded in the binary, with
   no CDN and no library: the box is offline. Every chart is drawn through one function,
   `drawSeries(el, ts, ys)`, so a charting library such as uPlot can replace it later
@@ -975,8 +983,9 @@ the same timestamp, which ring `seq` cannot have.
 
 **What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
 `lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`), the
-synthetic source (`synth_source.c`) and the connection loop (`server.c`). The routes,
-`statusd` itself and the page follow on the same branch.
+synthetic source (`synth_source.c`), the connection loop (`server.c`) and the routes
+(`route.c`). `statusd` itself and the page follow on the same branch; until the page,
+`/` serves a marked placeholder.
 
 **Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
 are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
