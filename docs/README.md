@@ -21,9 +21,9 @@ last entry.
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
 | Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §9 | — |
 | Hardware data path (Bluetooth OBD2 adapter) | [`hardware/wiring.md`](hardware/wiring.md) | README, DESIGN §1 |
-| The box: power and shutdown, light, clock | [`hardware/wiring.md`](hardware/wiring.md) | README, DESIGN §6 |
+| The box: power at key-on and key-off, light, clock | [`hardware/wiring.md`](hardware/wiring.md) | README, DESIGN §6 |
 | Testbed cars | [`hardware/pid-survey.md`](hardware/pid-survey.md) | README, PROBLEM |
-| The box's own sensor (DS18B20 probe) | [`hardware/wiring.md`](hardware/wiring.md) | README, PROBLEM, DESIGN |
+| What was cut on 2026-10-28 and why | [`../CLAUDE.md`](../CLAUDE.md) §3, [`DESIGN.md`](DESIGN.md) §7 | README, PROBLEM |
 | Processes, rings and sockets | [`DESIGN.md`](DESIGN.md) §1 | README query interface |
 | On-disk format, fsync, retention | [`DESIGN.md`](DESIGN.md) §5 | — |
 | The 48-hour soak's definition | [`../soak/README.md`](../soak/README.md) | DESIGN §7 |
@@ -62,7 +62,6 @@ No document has an owner (D-026); "first author" is history, not an assignment.
 | [`hardware/wiring.md`](hardware/wiring.md) | How is it connected, and what has been measured? |
 | [`hardware/pid-survey.md`](hardware/pid-survey.md) | Which signals does each testbed car actually publish? |
 | [`hardware/first-drive.md`](hardware/first-drive.md) | How do we survey a car and log its first drive (D-033)? |
-| [`hardware/schematic-conventions.md`](hardware/schematic-conventions.md) | How is the KiCad schematic in `electricalDrawing/` drawn? |
 
 ## Outside `docs/`
 

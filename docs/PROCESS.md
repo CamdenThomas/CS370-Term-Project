@@ -69,14 +69,6 @@ The unit is **one resolved question or one decision** — not one file, not one 
 **The check:** `git show <commit>` should answer exactly one question a human asked. If it
 answers two, split. If it answers half of one, you committed too early.
 
-### For schematics (§7.12)
-
-Commit granularity for `electricalDrawing/` follows the documentation rule, not the code
-rule: the unit is **one functional block or one resolved electrical question**. Wiring the
-whole Power block is one commit even if it moves fifty symbols. Renumbering references
-across the sheet is a separate, labeled commit — never folded into a wiring change, for
-exactly the reason formatting is never folded into logic.
-
 ## A commit message, worked (§7.4)
 
 The format itself is `.gitmessage` (enable it with
@@ -169,21 +161,6 @@ The board is not project-management theater. It is a timestamped record that the
 were asked before the work, that a human answered them, and that the answer shaped the
 code — which is precisely the process the transcripts are graded against, corroborated by
 an independent system we did not write. How the board works: `docs/BOARD/BOARD.md`.
-
-## Hardware pull requests (§7.12)
-
-KiCad files are S-expression **text**, so hardware goes through the same branches, commits
-and pull requests as the C — with two additions, both of which exist because a reviewer
-cannot read a diff of coordinate tuples: the regenerated schematic SVG in the PR (without
-it the PR is unreviewable, and §7.6 then blocks it — correctly), and pasted `make hwcheck`
-output (ERC violations are build failures, the same way `-Werror` findings are).
-
-**What Claude may not do here.** Claude cannot see the physical board. Symbol pin numbering,
-footprint choice, placement, thermal, EMI and mechanical fit are all things it reasons about
-blind, and hand-writing `.kicad_pcb` geometry is forbidden — the coordinate math fails
-silently at fab. It is useful for netlist review, datasheet cross-checks, design rules, BOM
-and export scripting, and reading ERC JSON. **A measured voltage always beats its
-opinion.**
 
 ## Prompt quality bar (§8, handout §10.4)
 

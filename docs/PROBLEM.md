@@ -45,18 +45,17 @@ and coolant temperature only points at the cooling system once ambient temperatu
 have been accounted for. The model therefore learns how the sensors normally move
 *together* at each operating point, and a fault shows up as a broken partnership that no
 single threshold could see. That same pattern also suggests *where* the fault is: cooling,
-air/fuel mixture, or a sensor that has stopped making sense. The box adds one sensor of its
-own, a DS18B20 temperature probe in the cabin. After the car has sat for hours, it should
-agree with the engine's coolant and intake-air temperatures at key-on, so when one of the
-three disagrees with the other two, that sensor is the suspect.
+air/fuel mixture, or a sensor that has stopped making sense. The same idea checks the
+sensors themselves: after the car has sat for hours, its coolant, intake-air and ambient-air
+sensors should all read the same temperature at key-on, so when one of the three disagrees
+with the other two, that sensor is the suspect.
 
 ## The mechanisms
 
 Our first choice is **mechanism D, custom append-only storage with crash consistency**,
-because the power disappears every time the key turns off. The device shuts itself down
-cleanly on a few seconds of stored energy when it can, but a cold start, a dip at engine
-start or a pulled cable can still cut it mid-write, so the storage layer must recover a
-torn tail at any boot. We pair it with
+because the power disappears every time the key turns off. The box has no stored energy,
+so every key-off cuts it mid-write, and the storage layer must recover a torn tail at every
+boot. We pair it with
 **mechanism E, a multi-process architecture with a supervisor**, because a recorder that
 dies silently has harmed its owner, who believes it is still on duty; running capture,
 storage and analysis as separate processes means a crash in the analysis cannot take the

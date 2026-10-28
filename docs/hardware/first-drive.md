@@ -40,8 +40,9 @@ only unknown, so expect the port name and the timing to need a look.
    ls /dev/cu.*
    ```
 
-   Record the name here. If no new `/dev/cu.*` appears after pairing, the Mac route has
-   failed: use the Pi (last section).
+   On Camden's Mac the LX appears as `/dev/cu.OBDLinkLX`. If no new `/dev/cu.*` appears
+   after pairing, the Mac route has failed: use the Pi (last section). Open the port
+   once per run: closing it drops the link, and a reopened port gets no bytes.
 4. Survey, engine idling:
 
    ```sh
@@ -110,4 +111,4 @@ usermod -aG dialout $USER`, then log in again). Record the MAC address in
 
 | Date | Port name | Survey file | Drive file | Samples/s | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| 2026-10-28 | `/dev/cu.OBDLinkLX` | `captures/forester/20261028T220659.957/pidscan.md` | `captures/forester/20261028T220659.957/drive.jsonl` | 20.7 | 54 s parked at a warm idle, via `scripts/capture.sh`; 43 PIDs, CAN 11/500, no gaps; request cycle p50 42 ms, p99 91 ms |

@@ -34,7 +34,7 @@ TEST_SRC   = $(wildcard tests/test_*.c)
 TEST_BIN   = $(TEST_SRC:tests/%.c=$(BIN)/%)
 
 .PHONY: all test asan memcheck soakcheck replay deploy clean boundary boardcheck \
-        hwcheck hwdocs hwclean toolcheck run-status
+        toolcheck run-status
 
 all: $(DAEMON_BIN)
 
@@ -122,35 +122,6 @@ deploy: all
 	rsync -a --exclude /build --exclude /.git --exclude /.venv --exclude /data \
 	      --exclude /soak/logs --exclude /partners ./ $(PI):~/carwatch/
 	ssh $(PI) 'cd ~/carwatch && make'
-
-# ---------------------------------------------------------------- hardware
-# KiCad 10. On Windows kicad-cli.exe is under
-# "C:/Program Files/KiCad/10.0/bin/" and is NOT on PATH by default:
-#   make hwcheck KICAD="/c/Program Files/KiCad/10.0/bin/kicad-cli.exe"
-KICAD ?= kicad-cli
-SCH    = electricalDrawing/electricalDrawing.kicad_sch
-
-# ERC as a build failure — the hardware equivalent of -Werror (CLAUDE.md 7.12).
-hwcheck:
-	@command -v $(KICAD) >/dev/null 2>&1 || { \
-		echo "kicad-cli not found. Set KICAD=/path/to/kicad-cli"; exit 1; }
-	$(KICAD) sch erc --exit-code-violations --format json \
-	         -o electricalDrawing/erc.json $(SCH)
-	@echo "erc                          PASS"
-
-# Regenerate everything derived from the schematic. Never hand-edit the outputs.
-hwdocs:
-	@mkdir -p docs/figures
-	$(KICAD) sch export svg --exclude-drawing-sheet -o docs/figures/ $(SCH)
-	$(KICAD) sch export bom \
-	         --fields "Reference,Value,Footprint,MPN,Datasheet,Qty" \
-	         --group-by Value -o docs/hardware/bom.csv $(SCH)
-	$(KICAD) sch export netlist -o electricalDrawing/electricalDrawing.net $(SCH)
-	@echo "Regenerated: schematic SVG, bom.csv, netlist."
-	@echo "Commit the SVG — PRs touching hw must show a picture."
-
-hwclean:
-	rm -f electricalDrawing/erc.json electricalDrawing/drc.json
 
 clean:
 	rm -rf $(BUILD)

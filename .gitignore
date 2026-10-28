@@ -11,22 +11,5 @@ __pycache__/
 *.pyc
 .idea/
 
-# --- KiCad -------------------------------------------------------------
-# Commit: .kicad_pro .kicad_sch .kicad_pcb .kicad_sym .kicad_mod
-#         sym-lib-table fp-lib-table *.kicad_dru
-# Ignore: per-user state, editor history, autosave, and derived artifacts.
-*.kicad_prl
-*-backups/
-_autosave-*
-*.bak
-*.kicad_sch-bak
-*.kicad_pcb-bak
-fp-info-cache
-.history/
-# Derived outputs — regenerate with `make hwdocs`, never hand-edit.
-electricalDrawing/gerbers/
-electricalDrawing/erc.json
-electricalDrawing/drc.json
-
 # Drive logs and survey output from tools/ (VIN-hashed, but still raw captures).
 data/
