@@ -190,10 +190,15 @@ static void test_write_head(void)
     n = http_write_head(out, sizeof out, HTTP_STATUS_NOT_FOUND, "text/plain", 0);
     CHECK(n > 0 && strncmp(out, "HTTP/1.1 404 Not Found\r\n", 24) == 0, "404 status line");
 
+    n = http_write_head(out, sizeof out, HTTP_STATUS_UNAVAILABLE, "application/json", 0);
+    CHECK(n > 0 && strncmp(out, "HTTP/1.1 503 Service Unavailable\r\n", 34) == 0,
+          "503 status line");
+    CHECK(strstr(out, "Allow:") == NULL, "and no Allow header");
+
     static const http_status_t known[] = {
         HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_NOT_FOUND,
         HTTP_STATUS_METHOD_NOT_ALLOWED, HTTP_STATUS_HEADERS_TOO_LARGE,
-        HTTP_STATUS_INTERNAL_ERROR
+        HTTP_STATUS_INTERNAL_ERROR, HTTP_STATUS_UNAVAILABLE
     };
     for (size_t i = 0; i < sizeof known / sizeof known[0]; i++)
         CHECK(http_write_head(out, sizeof out, (int)known[i], "text/plain", 0) > 0,

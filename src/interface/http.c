@@ -142,6 +142,7 @@ static const char *status_text(int status)
     case HTTP_STATUS_METHOD_NOT_ALLOWED: return "Method Not Allowed";
     case HTTP_STATUS_HEADERS_TOO_LARGE:  return "Request Header Fields Too Large";
     case HTTP_STATUS_INTERNAL_ERROR:     return "Internal Server Error";
+    case HTTP_STATUS_UNAVAILABLE:        return "Service Unavailable";
     default:                             return NULL;
     }
 }

@@ -23,7 +23,8 @@ typedef enum {
     HTTP_STATUS_NOT_FOUND           = 404,
     HTTP_STATUS_METHOD_NOT_ALLOWED  = 405,
     HTTP_STATUS_HEADERS_TOO_LARGE   = 431,
-    HTTP_STATUS_INTERNAL_ERROR      = 500
+    HTTP_STATUS_INTERNAL_ERROR      = 500,
+    HTTP_STATUS_UNAVAILABLE         = 503   /* a process behind us is down or not ready */
 } http_status_t;
 
 /* A refusal is its own HTTP status, so a caller answers with the value it was given. The
