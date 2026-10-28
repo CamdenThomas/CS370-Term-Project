@@ -7,10 +7,9 @@
 <!-- One paragraph, plain language. What is different after this merges? -->
 
 ## Why
-<!-- Tie it to a requirement, a decision ID from docs/DECISIONS.md, or a measurement.
+<!-- Tie it to a requirement, a design choice, or a measurement.
      "To improve things" is not a reason. -->
 
-**Decision IDs touched:**
 **Milestone:** M
 **Mechanism affected (D / E / none):**
 
@@ -67,7 +66,7 @@
 - [ ] No network call, no hosted model, no third-party pretrained weights
 - [ ] Any data that is not live is labeled `replay` or `synth` everywhere it appears
 - [ ] Every allocation checked; every syscall error path handled **and logged**
-- [ ] New decisions are in `docs/DECISIONS.md`, and I have signed the ones I agree with
+- [ ] Every choice made without a human is named under "What I am least sure about"
 - [ ] **If I do not understand something, I have asked instead of approving**
 
 <!-- Approving code you cannot defend alone at the keyboard on demo day is the only

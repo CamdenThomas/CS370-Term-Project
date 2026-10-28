@@ -6,7 +6,7 @@
  * The no-drop guarantee is the point. A gap in the record is a gap in the diagnosis,
  * so a drop must be impossible to hide: every slot carries a sequence number and the
  * consumer accounts for every one of them. If the ring is full the producer must
- * report the overrun rather than silently overwrite an unread sample (DECISIONS B.3).
+ * report the overrun rather than silently overwrite an unread sample.
  *
  * Layout is fixed so the ring can live in shared memory across the process boundary
  * that mechanism E requires.

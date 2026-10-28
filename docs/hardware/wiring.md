@@ -35,8 +35,7 @@ GPIO numbers for source-present, halt-done and the light are set in the schemati
 
 ## Power — the box's USB-C input (D-024)
 
-The box takes the owner's own USB-C charger. Its power block (requirements in
-`docs/DECISIONS.md` §A.6):
+The box takes the owner's own USB-C charger. Its power block:
 
 1. sinks 5 V only (5.1 kΩ on both CC pins), behind transient and reverse-polarity
    protection and a fuse;
@@ -75,7 +74,7 @@ well inside the pin's limit. A pull holds yellow on from power-up, while the GPI
 an input, so a booting box shows steady yellow.
 
 Every live state is a pulse or blink; a **steady** light, other than yellow while booting,
-or a dark one while the car runs, means the device is not running (DECISIONS §B.5).
+or a dark one while the car runs, means the device is not running (D-027).
 
 ## Real-time clock → Pi (D-030)
 

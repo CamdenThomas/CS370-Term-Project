@@ -50,8 +50,7 @@ bool ring_push(ring_t *r, const ring_slot_t *in)
 
     if (head - tail >= RING_CAPACITY) {
         /* Full. Refuse rather than overwrite: an unread sample is data the diagnosis
-         * needs, and a silent overwrite is exactly the hidden loss DECISIONS B.3
-         * forbids. */
+         * needs, and a silent overwrite would hide its loss. */
         atomic_fetch_add_explicit(&r->overruns, 1, memory_order_relaxed);
         return false;
     }

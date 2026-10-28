@@ -17,8 +17,8 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | 🟡 8/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 18/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 3/49 |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | ⬜ 0/29 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-11 | 8–10 | 🟡 7/50 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | 🟡 3/29 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 1/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date verified, D-008) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
@@ -174,15 +174,17 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `verdictpath` <!-- #162 -->
 - [ ] M2 docs: name obdctl's five verbs and the supervisor socket protocol `ipcspec`
       <!-- #163 -->
-- [ ] M2 build: `make` after `make asan` fails to link; the sanitizer build needs its own
+- [x] M2 build: `make` after `make asan` fails to link; the sanitizer build needs its own
       directory `asanbuild` <!-- #170 -->
-- [ ] M2 build: `make boundary` allows Unix sockets and bans every network family outside
+- [x] M2 build: `make boundary` allows Unix sockets and bans every network family outside
       `src/interface/` (D-038) `boundaryrule` <!-- #171 -->
-- [ ] M2 build: Linux CI runs `make`, `make test` and `make asan` on every PR `linuxci`
+- [x] M2 build: Linux CI runs `make`, `make test` and `make asan` on every PR `linuxci`
       <!-- #172 -->
-- [ ] M2 tools: fix the board_sync, adapter and logger bugs the 2026-10-26 audit found
+- [x] M2 tools: fix the board_sync, adapter and logger bugs the 2026-10-26 audit found
       `toolfix` <!-- #173 -->
 - [ ] M2 process: confirm Lance's identity in `.mailmap` `mailmap` <!-- #174 -->
+- [ ] M2 process: retire the decision log; choices live in CLAUDE.md, DESIGN.md and the
+      commit that made them `dropdecisions` <!-- #186 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -203,11 +205,11 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       `ambientd` <!-- #175 -->
 - [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
       <!-- #144 -->
-- [ ] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`
+- [x] M3 ipc: move the ring into shared memory, prove cross-process `ringshm`
       <!-- #38 -->
-- [ ] M3 store: write path: BEGIN, records, COMMIT, one fsync per batch `storewrite`
+- [x] M3 store: write path: BEGIN, records, COMMIT, one fsync per batch `storewrite`
       <!-- #39 -->
-- [ ] M3 store: recovery: CRC scan, torn-tail and uncommitted-batch truncation
+- [x] M3 store: recovery: CRC scan, torn-tail and uncommitted-batch truncation
       `storerecover` <!-- #40 -->
 - [ ] M3 supervisor: fork/exec, waitpid, fd hygiene across restart `supfork` <!-- #41 -->
 - [ ] M3 supervisor: backoff and restart-storm guard `supbackoff` <!-- #42 -->

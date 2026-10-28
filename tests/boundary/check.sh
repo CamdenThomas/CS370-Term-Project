@@ -62,6 +62,6 @@ fi
 
 root=${1:?usage: check.sh ROOT | --selftest CASES}
 if ! check "$root"; then
-    echo "BOUNDARY VIOLATION: see CLAUDE.md §2.1 and DECISIONS D-038"
+    echo "BOUNDARY VIOLATION: see CLAUDE.md §2.1"
     exit 1
 fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Operating-point binning, a first look at the baseline idea (CLAUDE.md 5, DECISIONS D).
+"""Operating-point binning, a first look at the baseline idea (CLAUDE.md 5).
 
     tools/obdbins.py data/drive-*.jsonl --pids 05,06,07,0B,10
 

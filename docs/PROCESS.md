@@ -87,7 +87,7 @@ M3 ipc: refuse push on full ring instead of overwriting
 
 WHAT:   ring_push now returns false and increments an overrun counter when
         head - tail == RING_CAPACITY, rather than wrapping over slot[tail].
-WHY:    DECISIONS.md B.3 — a silent overwrite is a gap in the record, and a
+WHY:    A silent overwrite is a gap in the record, and a
         gap in the record is a gap in the diagnosis.
 REVIEW: The memory ordering on the tail load. I used acquire so the producer
         cannot see a stale tail and wrongly declare the ring full; I am least
@@ -161,9 +161,9 @@ six, with **merge commits only**.
 decision, a measurement only one of us can take, a part that must be ordered — is an
 **issue**, not a paragraph buried in a doc or a session summary nobody re-reads.
 
-`docs/DECISIONS.md` keeps only what has been **decided** (plus the review queue).
-Everything still open lives on the board, where it has a milestone and a visible
-position in the queue, and is open to whoever is free (D-026).
+What has been **decided** lives in `CLAUDE.md` and `docs/DESIGN.md`, with its reasoning
+in the commit that made it. Everything still open lives on the board, where it has a
+milestone and a visible position in the queue, and is open to whoever is free (D-026).
 
 The board is not project-management theater. It is a timestamped record that the questions
 were asked before the work, that a human answered them, and that the answer shaped the

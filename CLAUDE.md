@@ -17,8 +17,7 @@ You (Claude) are required in our **workflow** and forbidden in our **product** (
 
 **Start:**
 
-1. Read `docs/milestones.md` (where we are), then the review queue at the top of
-   `docs/DECISIONS.md` (what is settled, what awaits review).
+1. Read `docs/milestones.md` (where we are).
 2. `python tools/board_sync.py --status`. Pick work from the open boxes in
    `docs/milestones.md`, nowhere else.
 3. State whose session this is (Camden's or Lance's), for transcripts and attribution.
@@ -31,15 +30,15 @@ You (Claude) are required in our **workflow** and forbidden in our **product** (
 1. Nothing uncommitted, no stray files.
 2. PR opened or updated as a draft, template filled, `make` / `make test` / `make asan`
    output pasted.
-3. Every decision made without a human present is in `docs/DECISIONS.md` as ⚠️ UNREVIEWED
-   and in its review queue, **in the same commit that implements it**.
+3. Every decision made without a human present is named in the PR body under "What I am
+   least sure about", and in the `WHY` of the commit that implements it.
 4. `python tools/board_sync.py`, the only thing that moves cards.
 5. Copy this session's `.jsonl` out (`partners/<name>/transcripts/README.md`).
 6. Print a summary: branch, one line per commit, PR link, decisions added, and what
    specifically needs human review.
 
-Never reopen a 🔒 LOCKED decision without saying so and getting a human yes. **Claude
-never marks a decision reviewed or LOCKED**; only Camden or Lance does, in their own commit.
+Settled choices live in this file and `docs/DESIGN.md`. Never change one without saying so
+and getting a human yes.
 
 ## 1. Commands
 
@@ -102,13 +101,13 @@ measured catch and false-alarm rates on faults we induce."* Not "predicts failur
 
 Committed and measured: **D** (append-only, crash-consistent storage) and **E**
 (multi-process with a supervisor). **B** and **F** are declined: no Pi-side sensor
-(D-029). **A**, **C** and raw CAN are stretch. Why: DECISIONS §B.1 (D-017) and §B.7.
+(D-029). **A**, **C** and raw CAN are stretch.
 
 ## 5. The intelligence
 
 All of it ours: operating-point binning → per-bin baselines → Mahalanobis residuals →
 Theil–Sen trends → our classifier → state machine with hysteresis. Every diagnostic needs
-two cooperating sensors (the threshold test). Why: DECISIONS §D.
+two cooperating sensors (the threshold test).
 
 ## 6. Ownership
 
@@ -162,9 +161,9 @@ Format: `.gitmessage` (`M<n> <area>: <imperative summary>`, then `WHAT` / `WHY` 
 One PR, one reviewable claim, titled like its lead commit; if the title needs "and",
 split. Open it **as a draft at the first commit**. A PR touching the other partner's area
 is titled `[cross]` and needs *their* review. Body: `.github/PULL_REQUEST_TEMPLATE.md`,
-every section filled, `Closes #<n>`, the decision IDs touched, a non-empty "What I am least
-sure about", and **verbatim** `make` / `make test` / `make asan` output. Claude never marks
-a PR ready with a section unfilled.
+every section filled, `Closes #<n>`, a non-empty "What I am least sure about", and
+**verbatim** `make` / `make test` / `make asan` output. Claude never marks a PR ready with
+a section unfilled.
 
 ### 7.6 The merge gate
 
@@ -174,12 +173,13 @@ set every reviewer must answer is in the PR template and `docs/PROCESS.md`.
 
 ### 7.7 Decisions
 
-A decision and the code that enacts it share a commit. Session start and end are §0.
+A decision and the code that enacts it share a commit, whose `WHY` says who decided it.
+Session start and end are §0.
 
 ### 7.8 When to stop
 
 Do not commit when the change carries two inseparable responsibilities, needs a decision
-not in `docs/DECISIONS.md`, touches the other partner's area by more than a line, weakens
+no human has made, touches the other partner's area by more than a line, weakens
 a test, has `make` / `make test` / `make asan` red, or guesses at hardware without
 evidence (§8.4). **Add an open box to `docs/milestones.md` instead** (§7.11), run sync,
 and continue with whatever is unblocked.
