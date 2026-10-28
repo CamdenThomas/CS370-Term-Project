@@ -1,0 +1,7 @@
+// markdownlint-cli2 reads the rules from .markdownlint.jsonc and skips here what the
+// older markdownlint reads from .markdownlintignore: the instructor's handout, which
+// is not ours to reformat; the raw survey pages the tools write under captures/ and
+// data/, committed unedited (D-046); and generated or installed trees.
+{
+  "ignores": ["docs/handout/**", "captures/**", "data/**", ".venv/**", "node_modules/**", "build/**"]
+}
