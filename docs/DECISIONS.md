@@ -71,7 +71,7 @@ Decisions currently awaiting a human signature:
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
 | D-044 | Draft: drive logs keep every line that answers a request (`n_ecu`, `raw_all`, a `multi_ecu` event), headers stay off until a real car is measured; rpm and load get one request in four, and static PIDs are read once (§C.8, amends D-033) | Claude, Camden's session | 2026-10-27 | Either — it decides what the first drive records when two ECUs answer, and how fresh its operating point is |
-| D-045 | Every live drive capture from `scripts/capture.sh` is committed whole under `captures/<car>/`; amends D-033's "raw logs stay out of git" (§C.10) | Camden (in session) + Claude | 2026-10-28 | Both — the repository is public, so it publishes every capture |
+| D-046 | Every live drive capture from `scripts/capture.sh` is committed whole under `captures/<car>/`; amends D-033's "raw logs stay out of git" (§C.10) | Camden (in session) + Claude | 2026-10-28 | Both — the repository is public, so it publishes every capture |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet.** The entries that bind storage and analysis now are §C.1 to §C.7 and
@@ -1052,7 +1052,7 @@ labeled `replay`.
 
 **Cost.** The hash is pseudonymization, not anonymity: a VIN has little entropy, so
 anyone holding candidate VINs can test them. Raw logs stay out of git (`data/` is
-ignored); only short excerpts are committed as evidence. *Amended 2026-10-28 by D-045
+ignored); only short excerpts are committed as evidence. *Amended 2026-10-28 by D-046
 (§C.10): every live capture made with `scripts/capture.sh` is committed whole.*
 
 ### C.5 — The on-disk record format (draft) ⚠️ UNREVIEWED
@@ -1266,7 +1266,7 @@ files (D-033) use strings, not these numbers, so they are unaffected.
 
 ### C.10 — Every live drive capture is committed to the repository ⚠️ UNREVIEWED
 
-`D-045` · Decided M2, 2026-10-28 · **By:** Camden (in session) + Claude
+`D-046` · Decided M2, 2026-10-28 · **By:** Camden (in session) + Claude
 · **Reviewed:** Camden ⬜ / Lance ⬜
 · **Amends:** D-033 (§C.4): "raw logs stay out of git"
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # carwatch capture: survey the car's sensors, record them with a page that redraws as the
-# data arrives, and commit everything to the repository under captures/<car>/ (D-045).
+# data arrives, and commit everything to the repository under captures/<car>/ (D-046).
 #
 #   scripts/capture.sh /dev/cu.<adapter> [seconds, default 60]   # a real car: committed
 #   scripts/capture.sh sim [seconds]                             # rehearsal: never committed
@@ -108,7 +108,7 @@ M2 obd: record a live $CAR capture, ${DIR##*/}
 WHAT:   Adds the raw obdlog session, the pidscan survey, the obdsum summary
         and the obdview page, as scripts/capture.sh wrote them, in
         $DIR/.
-WHY:    D-045: every real-car capture is kept in the repository.
+WHY:    D-046: every real-car capture is kept in the repository.
         $STATS.
 REVIEW: Raw and unedited; the VIN appears only as its hash (D-033).
 VERIFY: scripts/capture.sh $1 $SECS; summary.txt is obdsum's output.
