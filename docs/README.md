@@ -52,7 +52,6 @@ No document has an owner (D-026); "first author" is history, not an assignment.
 | [`milestones.md`](milestones.md) | What is open, what is done, and what must be true to reach each milestone? | **source** for all work; GitHub is derived |
 | [`PLAN.md`](PLAN.md) | Why is the plan shaped this way, and what gets cut first? | reasoning |
 | [`PROCESS.md`](PROCESS.md) | Why are the git, PR and review rules shaped this way? | reasoning |
-| [`REVISION_PLAN.md`](REVISION_PLAN.md) | What did Camden decide on 2026-10-21, and what did Claude only recommend? | **historical**, frozen; cited by D-022 to D-031; not a work plan |
 | [`handout/CS370-TermProject.md`](handout/CS370-TermProject.md) | What does the rubric require? | reference: the rubric is law |
 
 ## Hardware
