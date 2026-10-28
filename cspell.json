@@ -12,6 +12,11 @@
     "carwatci"
   ],
   "words": [
+    "macbuild",
+    "SNDBUF",
+    "NONBLOCK",
+    "realsource",
+    "dropdecisions",
     "wideband",
     "nodata",
     "PDEATHSIG",
