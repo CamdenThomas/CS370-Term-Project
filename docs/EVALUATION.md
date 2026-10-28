@@ -55,18 +55,19 @@ why, here.
 | Garbage or timeouts | `obdsim` serving bad replies (`synth`) | `reply_bad`, `adapter_reset` | | | |
 | Engine off, key in ACC | key to ACC | `ecu_silent` | | | |
 | A sensor unplugged | unplug one engine sensor, engine running (lights the CEL) | `pid_absent` or `pid_flat`, `mil_on`, `pid_present` | | | |
-| Probe unplugged | pull the DS18B20 for 10 min | `sensor_absent`, `sensor_present` | | | |
 | A child crashes | `kill -9` each child, 20 times | `child_exit`, `child_restart` | | | |
 | Ring consumer stalls | `SIGSTOP` `storaged` for 5 min | `ring_full`, `heartbeat_late` | | | |
-| Power cut mid-write | cut the Pi's 5 V rail after the converter | `recovered` | | | |
+| Power cut mid-write | pull the USB-C cable, engine running, 50 times | `recovered` | | | |
 | Disk full; `fsync` error | log directory on a small loop-mounted filesystem, filled | `enospc`, `fsync_failed` | | | |
 | Torn checkpoint; bad model | truncate one checkpoint slot; corrupt the model header | `checkpoint_bad`, `model_unavailable` | | | |
+| A bad or oversized request to `statusd` | a 5 KB header, a `..` path, a POST | 431, 400, 405; `request_refused` | | | |
 | Report fails | make the report directory read-only | `report_failed` | | | |
 | Supervisor dies | `kill -9` the supervisor | systemd restart, in the journal | | | |
-| Clock invalid | remove the clock's backup, then boot | `rtc_invalid` | | | |
-| Key-off, cable pulled, crank, source back | key cycles; pull the USB-C; return it during shutdown | `source_lost`, `source_dip`, `shutdown` | | | |
-| Empty bank at a cold crank | cold start with the bank discharged | `recovered` | | | |
-| Undervoltage, heat | a weak charger; a closed car in the sun | `undervoltage`, `thermal` | | | |
+| Clock invalid | boot without the clock module | `rtc_invalid` | | | |
+| Key-off and cable pulled | every key cycle of the soak; pull the USB-C | `recovered` at the next boot | | | |
+| Charger live with the engine off | leave the key in ACC | `ecu_silent`, nothing recorded | | | |
+| Undervoltage | a weak charger | `undervoltage` | | | |
+| Power cut corrupts the root filesystem | the 50 cable pulls above, then boot | boots; the journal shows a read-only root | | | |
 | Bluetooth and Wi-Fi share a radio | phone on the access point during a drive | reply p99 in the heartbeat | | | |
 
 ## 6. Mechanism comparisons
@@ -75,8 +76,8 @@ why, here.
 
 ### 6.1 Crash consistency (mechanism D)
 
-N power-cut trials, each cutting the Pi's 5 V rail after the converter so the supercapacitor
-cannot cover it: recovery outcome each time, bytes lost per trial.
+N cable pulls mid-write with the engine running, plus every real key-off of the soak (each
+one is a power cut): recovery outcome each time, bytes lost per trial.
 
 ### 6.2 Supervision (mechanism E)
 
@@ -90,7 +91,7 @@ per second (D-035) and per ten seconds: `fsync` latency p50 / p99, bytes written
 `/sys/block/mmcblk0/stat`), and records lost per power cut. The conclusion says whether
 D-035's one second was the right choice.
 
-Mechanisms B and F were declined (D-029, D-037), so they have no comparison here.
+Mechanisms B and F were declined (no sensor of our own), so they have no comparison here.
 
 ## 7. Limitations
 
