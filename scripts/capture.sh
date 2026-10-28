@@ -92,7 +92,7 @@ cp "data/summary-$NAME.txt" "$DIR/summary.txt"
 
 [ "$(git rev-parse --abbrev-ref HEAD)" != main ] ||
     git switch camden/m2/captures 2>/dev/null || git switch -c camden/m2/captures
-STATS=$(sed -n 4p "$DIR/summary.txt")
+STATS=$(grep -m1 'samples/s' "$DIR/summary.txt")
 git add -- "$DIR"
 git commit -q -F - <<EOF
 M2 obd: record a live $CAR capture, ${DIR##*/}
