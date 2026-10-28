@@ -1,9 +1,8 @@
 /* On-disk record format — mechanism D (D-034, with D-037 and D-040; extends 🔒 C.1, C.2).
  *
- * The constraint: power can disappear at any instant. The box shuts down cleanly when
- * its supercapacitor allows (D-024), but a cold-start crank, a pulled cable or an empty
- * bank can still cut a write, so recovery must find the torn tail and truncate it
- * without losing anything before it.
+ * The constraint: power disappears at every key-off, and at any instant a cable is
+ * pulled or a crank dips the supply, so every session can end mid-write; recovery must
+ * find the torn tail and truncate it without losing anything before it.
  *
  * Therefore every record is (a) self-framing: a magic number to resynchronize on and a
  * length; and (b) CRC'd over everything before the CRC, so a partly written record is
