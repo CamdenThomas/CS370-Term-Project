@@ -294,7 +294,7 @@ static void test_lifecycle(void)
 
     CHECK(fetch(port, "/api/status") == 200 && strstr(resp, "\"src\":\"synth\"") != NULL,
           "the API answers with synthetic records");
-    CHECK(fetch(port, "/") == 200 && strstr(resp, "statusd") != NULL, "and the page");
+    CHECK(fetch(port, "/") == 200 && strstr(resp, "<title>carwatch</title>") != NULL, "and the page");
     get(port, "GARBAGE\r\n\r\n", resp, sizeof resp);
     CHECK(status_of(resp) == 400, "garbage is a 400");
     CHECK(fetch(port, "/api/faults") == 200, "and the server carries on");

@@ -2,7 +2,7 @@
  * maps a URL to one request line for the source, and turns the source's reply into JSON.
  * No sockets and no allocation; the 64 KB scratch buffer is the caller's.
  *
- *   /                      a placeholder page (see route.c: it is replaced by the real page)
+ *   /                      the status page (page.c)
  *   /api/status            status
  *   /api/verdicts          verdicts
  *   /api/faults            faults

@@ -2,6 +2,7 @@
 #include "interface/route.h"
 #include "interface/json.h"
 #include "interface/kv.h"
+#include "interface/page.h"
 #include "common/log.h"
 
 #include <stdbool.h>
@@ -10,20 +11,6 @@
 
 #define ROUTE_VALUE_MAX   24u    /* a query value, after decoding */
 #define ROUTE_LINE_MAX    160u   /* the request line built from a URL */
-
-/* PLACEHOLDER. "/" serves this stub until the real status page exists. It is replaced by
- * page.c in the "add the status page" commit, step 7 of the statusd series on branch
- * lance/m3/statusd (milestone M3, board item `statusd`). Delete this string, and the
- * "statusd" check in tests/test_route.c, in that commit. */
-static const char placeholder_page[] =
-    "<!doctype html>\n"
-    "<html lang=\"en\"><head><meta charset=\"utf-8\">"
-    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-    "<title>carwatch</title></head>\n"
-    "<body><h1>carwatch</h1>\n"
-    "<p>statusd is running. The status page is not built yet; the data is at "
-    "<a href=\"/api/status\">/api/status</a>. All of it is synthetic.</p>\n"
-    "</body></html>\n";
 
 static const struct { const char *path, *verb; } api[] = {
     { "/api/status",   "status" },
@@ -211,7 +198,7 @@ void route_handle(void *ctx, const http_request_t *req, server_response_t *resp)
 
     if (strcmp(req->path, "/") == 0) {
         if (req->query[0] != '\0') set_text(resp, HTTP_STATUS_BAD_REQUEST, "text/plain", "bad request\n");
-        else set_text(resp, HTTP_STATUS_OK, "text/html; charset=utf-8", placeholder_page);
+        else set_text(resp, HTTP_STATUS_OK, "text/html; charset=utf-8", page_html);
         return;
     }
     if (strncmp(req->path, "/api/", 5) != 0) {

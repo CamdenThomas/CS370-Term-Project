@@ -991,8 +991,9 @@ the same timestamp, which ring `seq` cannot have.
 **What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
 `lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`), the
 synthetic source (`synth_source.c`), the connection loop (`server.c`), the routes
-(`route.c`) and the program itself (`statusd_main.c`). The CSV report and the page follow
-on the same branch; until the page, `/` serves a marked placeholder.
+(`route.c`) and the program itself (`statusd_main.c`). The page's frame is coded too
+(`page.c`: four tabs and the status bar); its panels hold placeholder text until they are
+built. The report download is not coded: that step was set aside.
 
 **Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
 are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a

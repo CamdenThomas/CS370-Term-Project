@@ -118,7 +118,7 @@ static void test_paths(void)
     use_fake("ok\n");
 
     CHECK(call("/") == 200 && strcmp(resp.ctype, "text/html; charset=utf-8") == 0 &&
-          has("statusd"), "the placeholder page");
+          has("<title>carwatch</title>"), "the status page");
     CHECK(call("/?x=1") == 400, "the page takes no query");
     CHECK(call("/nope") == 404 && strcmp(resp.ctype, "text/plain") == 0 &&
           strcmp(text, "not found\n") == 0, "an unknown path is a text 404");
@@ -300,10 +300,49 @@ static void test_capacity(void)
     CHECK(call_cap("/", 10) == 500, "nor the page");
 }
 
+/* The page is a string, so what it must contain is checked as text: the structure the
+ * script drives, and the promises of D-045 (offline, labeled). The script's behavior is
+ * judged in a browser, not here. */
+static void test_page(void)
+{
+    static const char *const tabs[] = { "now", "trends", "faults", "system" };
+
+    use_fake("ok\n");
+    CHECK(call("/") == 200, "the page is served");
+
+    CHECK(has("<meta name='viewport' content='width=device-width, initial-scale=1'>"),
+          "it scales to a phone");
+    CHECK(has("id='bar'") && has("id='synth'"), "a status bar and the synthetic banner");
+    CHECK(has("<noscript>"), "it says what it needs when scripting is off");
+
+    for (size_t i = 0; i < sizeof tabs / sizeof tabs[0]; i++) {
+        char want[64];
+
+        snprintf(want, sizeof want, "<section id='%s'", tabs[i]);
+        CHECK(has(want), "a panel for each tab");
+        snprintf(want, sizeof want, "id='tab-%s' href='#%s'", tabs[i], tabs[i]);
+        CHECK(has(want), "and a link that shows it");
+    }
+    CHECK(count(text, "<section id=") == 4 && count(text, " href='#") == 4 + 1,
+          "four panels, four tab links and the bar's link to faults");
+    CHECK(count(text, "draggable='false'") == 4 + 1,
+          "the tab links and the bar cannot be dragged off like a link");
+    CHECK(has("<section id='now' class='panel'>") && !has("<section id='now' class='panel' hidden>"),
+          "the first panel shows without scripting");
+
+    CHECK(!has("http://") && !has("https://") && !has("//cdn"),
+          "it names no other host: the device is offline");
+    CHECK(!has("innerHTML"), "values reach the page as text, never as markup");
+
+    CHECK(has("DEMO_CYCLE") && has("TODO(ctlsource)"),
+          "the cycling colors are marked as a demo, with what replaces them");
+}
+
 int main(void)
 {
     log_init("test_route", LOG_FATAL);
     test_paths();
+    test_page();
     test_end_to_end();
     test_conversion();
     test_error_mapping();
