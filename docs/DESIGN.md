@@ -217,8 +217,10 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | --- | --- | --- |
 | `src/ipc/` ring and shared memory; `src/store/` record format, CRC32, write-ahead log and `storaged`; `src/common/` logging; build and `board_sync` | Camden | M0: 0e66851, 269e2c5; M3: 3860d8e, 9b145d4, aaac098, 972015a |
 | `tools/` OBD2 logging and analysis tools; `scripts/capture.sh` and `captures/` | Camden | M2: PR #155, #183 |
-| `src/interface/` HTTP parser, JSON, control-socket reply grammar, routes, `poll()` server, page and `statusd` | Lance | M3: 61be86f, 591718b, e316a32, 38c25ed (PR #184) |
-| `src/obd/`, `src/analysis/`, `src/supervisor/`, `obdctl` (`src/interface/main.c`), `tools/train/` | unclaimed | stubs only so far; claimed by the first substantive commit (D-026) |
+| `src/interface/` HTTP parser, JSON, control-socket reply grammar, routes, `poll()` server, page and `statusd`; `obdctl` (`src/interface/main.c`) | Lance | M3: 61be86f, 591718b, e316a32, 38c25ed (PR #184); `obdctl` intended, a stub today |
+| `src/obd/` (`obdd`, the capture daemon) | Camden, intended | a stub today; the first substantive commit is the claim (D-026) |
+| `src/supervisor/` (mechanism E: fork/exec, heartbeats, backoff, the light) | Lance, intended | a stub today; the first substantive commit is the claim (D-026) |
+| `src/analysis/` (`analyzed`: bins, baselines, residuals, trends, the area rule, the state machine) | Camden, intended | a stub today; the first substantive commit is the claim (D-026) |
 
 ## 10. AI-use plan
 
