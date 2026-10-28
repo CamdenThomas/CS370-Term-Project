@@ -1,0 +1,314 @@
+{
+  "src": "live",
+  "t_wall": "2026-10-28T21:36:39.595484+00:00",
+  "adapter": "ELM327 v1.4b",
+  "protocol": "AUTO, ISO 15765-4 (CAN 11/500)",
+  "voltage": "14.0V",
+  "vin_hash": "16d15766b381",
+  "model_year": 2008,
+  "supported": [
+    "01",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "0B",
+    "0C",
+    "0D",
+    "0E",
+    "0F",
+    "10",
+    "11",
+    "13",
+    "15",
+    "1C",
+    "1F",
+    "21",
+    "24",
+    "2C",
+    "2D",
+    "2E",
+    "2F",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "3C",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "49",
+    "4A",
+    "4C",
+    "4D",
+    "4E",
+    "51",
+    "5A"
+  ],
+  "samples": {
+    "01": {
+      "raw": "00 07 E5 00",
+      "val": null,
+      "unit": "",
+      "name": "PID 01"
+    },
+    "03": {
+      "raw": "02 00",
+      "val": null,
+      "unit": "",
+      "name": "PID 03"
+    },
+    "04": {
+      "raw": "46",
+      "val": 27.45098039215686,
+      "unit": "%",
+      "name": "Calculated engine load"
+    },
+    "05": {
+      "raw": "6F",
+      "val": 71.0,
+      "unit": "degC",
+      "name": "Coolant temperature"
+    },
+    "06": {
+      "raw": "7E",
+      "val": -1.5625,
+      "unit": "%",
+      "name": "Short term fuel trim, bank 1"
+    },
+    "07": {
+      "raw": "81",
+      "val": 0.78125,
+      "unit": "%",
+      "name": "Long term fuel trim, bank 1"
+    },
+    "0B": {
+      "raw": "1A",
+      "val": 26.0,
+      "unit": "kPa",
+      "name": "Intake manifold pressure"
+    },
+    "0C": {
+      "raw": "0A 23",
+      "val": 648.75,
+      "unit": "rpm",
+      "name": "Engine speed"
+    },
+    "0D": {
+      "raw": "00",
+      "val": 0.0,
+      "unit": "km/h",
+      "name": "Vehicle speed"
+    },
+    "0E": {
+      "raw": "94",
+      "val": 10.0,
+      "unit": "deg",
+      "name": "Timing advance"
+    },
+    "0F": {
+      "raw": "44",
+      "val": 28.0,
+      "unit": "degC",
+      "name": "Intake air temperature"
+    },
+    "10": {
+      "raw": "00 F7",
+      "val": 2.47,
+      "unit": "g/s",
+      "name": "Mass air flow"
+    },
+    "11": {
+      "raw": "26",
+      "val": 14.901960784313726,
+      "unit": "%",
+      "name": "Throttle position"
+    },
+    "13": {
+      "raw": "03",
+      "val": null,
+      "unit": "",
+      "name": "PID 13"
+    },
+    "15": {
+      "raw": "A8 80",
+      "val": 0.84,
+      "unit": "V",
+      "name": "O2 sensor 2 voltage"
+    },
+    "1C": {
+      "raw": "03",
+      "val": null,
+      "unit": "",
+      "name": "PID 1C"
+    },
+    "1F": {
+      "raw": "01 C5",
+      "val": 453.0,
+      "unit": "s",
+      "name": "Run time since start"
+    },
+    "21": {
+      "raw": "00 00",
+      "val": 0.0,
+      "unit": "km",
+      "name": "Distance with MIL on"
+    },
+    "24": {
+      "raw": "7F E7 59 77",
+      "val": 0.999237060546875,
+      "unit": "ratio",
+      "name": "O2 sensor 1 lambda"
+    },
+    "2C": {
+      "raw": "00",
+      "val": 0.0,
+      "unit": "%",
+      "name": "Commanded EGR"
+    },
+    "2D": {
+      "raw": "80",
+      "val": null,
+      "unit": "",
+      "name": "PID 2D"
+    },
+    "2E": {
+      "raw": "00",
+      "val": null,
+      "unit": "",
+      "name": "PID 2E"
+    },
+    "2F": {
+      "raw": "57",
+      "val": 34.11764705882353,
+      "unit": "%",
+      "name": "Fuel level"
+    },
+    "30": {
+      "raw": "71",
+      "val": 113.0,
+      "unit": "count",
+      "name": "Warm-ups since codes cleared"
+    },
+    "31": {
+      "raw": "20 75",
+      "val": 8309.0,
+      "unit": "km",
+      "name": "Distance since codes cleared"
+    },
+    "32": {
+      "raw": "10 04",
+      "val": null,
+      "unit": "",
+      "name": "PID 32"
+    },
+    "33": {
+      "raw": "54",
+      "val": 84.0,
+      "unit": "kPa",
+      "name": "Barometric pressure"
+    },
+    "34": {
+      "raw": "80 7B 80 02",
+      "val": null,
+      "unit": "",
+      "name": "PID 34"
+    },
+    "3C": {
+      "raw": "09 61",
+      "val": 200.1,
+      "unit": "degC",
+      "name": "Catalyst temperature B1S1"
+    },
+    "41": {
+      "raw": "00 67 E5 A5",
+      "val": null,
+      "unit": "",
+      "name": "PID 41"
+    },
+    "42": {
+      "raw": "36 B4",
+      "val": 14.004,
+      "unit": "V",
+      "name": "Control module voltage"
+    },
+    "43": {
+      "raw": "00 28",
+      "val": 15.686274509803921,
+      "unit": "%",
+      "name": "Absolute load"
+    },
+    "44": {
+      "raw": "80 21",
+      "val": 1.001007080078125,
+      "unit": "ratio",
+      "name": "Commanded equivalence ratio"
+    },
+    "45": {
+      "raw": "09",
+      "val": 3.5294117647058822,
+      "unit": "%",
+      "name": "Relative throttle position"
+    },
+    "46": {
+      "raw": "35",
+      "val": 13.0,
+      "unit": "degC",
+      "name": "Ambient air temperature"
+    },
+    "47": {
+      "raw": "51",
+      "val": 31.764705882352942,
+      "unit": "%",
+      "name": "Absolute throttle position B"
+    },
+    "49": {
+      "raw": "21",
+      "val": 12.941176470588236,
+      "unit": "%",
+      "name": "Accelerator pedal position D"
+    },
+    "4A": {
+      "raw": "20",
+      "val": 12.549019607843137,
+      "unit": "%",
+      "name": "Accelerator pedal position E"
+    },
+    "4C": {
+      "raw": "00",
+      "val": 0.0,
+      "unit": "%",
+      "name": "Commanded throttle actuator"
+    },
+    "4D": {
+      "raw": "00 00",
+      "val": null,
+      "unit": "",
+      "name": "PID 4D"
+    },
+    "4E": {
+      "raw": "1D FB",
+      "val": null,
+      "unit": "",
+      "name": "PID 4E"
+    },
+    "51": {
+      "raw": "01",
+      "val": null,
+      "unit": "",
+      "name": "PID 51"
+    },
+    "5A": {
+      "raw": "00",
+      "val": null,
+      "unit": "",
+      "name": "PID 5A"
+    }
+  }
+}
