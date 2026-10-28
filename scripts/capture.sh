@@ -34,8 +34,20 @@ if [ "$PORT" = sim ]; then
 fi
 
 step "1/4  Is the car talking? Which sensors does it publish?" \
-     "The adapter in the diagnostic port talks to this computer over Bluetooth. First we ask the engine computer which sensors it has."
-$PY tools/pidscan.py --port "$PORT" | grep -v '^VIN' || exit 1   # keep the VIN off the video
+     "The adapter in the diagnostic port talks to this computer over Bluetooth. First, which sensors the engine computer publishes."
+# On macOS, closing a Bluetooth serial port drops the link, and reopening the port does
+# not bring it back: obdlog then gets no bytes at all (2026-10-28, OBDLink LX). So a real
+# car's adapter is opened once, by obdlog, and step 1 shows the newest live survey.
+SCAN=""
+[ "$PORT" = data/obd-sim ] ||
+    SCAN=$(find data -maxdepth 1 -name 'pidscan-*-live.md' | sort | tail -1)
+if [ -n "$SCAN" ]; then
+    echo "(survey taken ${SCAN#data/pidscan-}; the adapter is opened only once per run)"
+    cat "$SCAN"
+else
+    $PY tools/pidscan.py --port "$PORT" | grep -v '^VIN' || exit 1   # keep the VIN off the video
+    SCAN=$(newest 'pidscan-*-live.md')
+fi
 
 step "2/4  Recording every sensor for ${SECS} s" \
      "Now we record all of them, about 20 readings a second. Each reading is written to disk the moment it arrives, labeled live. (Rev the engine now.)"
@@ -76,7 +88,6 @@ DIR=${DIR%-live}
 mkdir -p "$DIR"
 cp "$LOG" "$DIR/drive.jsonl"
 cp "data/summary-$NAME.txt" "$DIR/summary.txt"
-SCAN=$(newest 'pidscan-*-live.md')
 [ -n "$SCAN" ] && cp "$SCAN" "$DIR/pidscan.md" && cp "${SCAN%.md}.json" "$DIR/pidscan.json"
 
 [ "$(git rev-parse --abbrev-ref HEAD)" != main ] ||
