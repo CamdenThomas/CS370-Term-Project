@@ -71,6 +71,7 @@ Decisions currently awaiting a human signature:
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
 | D-044 | Draft: drive logs keep every line that answers a request (`n_ecu`, `raw_all`, a `multi_ecu` event), headers stay off until a real car is measured; rpm and load get one request in four, and static PIDs are read once (§C.8, amends D-033) | Claude, Camden's session | 2026-10-27 | Either — it decides what the first drive records when two ECUs answer, and how fresh its operating point is |
+| D-046 | Every live drive capture from `scripts/capture.sh` is committed whole under `captures/<car>/`; amends D-033's "raw logs stay out of git" (§C.10) | Camden (in session) + Claude | 2026-10-28 | Both — the repository is public, so it publishes every capture |
 | D-045 | Draft: `statusd` is a GET-only HTTP server we write with no web library, a vanilla page, and a synthetic data source behind D-043's reply format until the real one exists (§B.13, extends D-043) | Claude, Lance's session | 2026-10-28 | Both — it is the only network code in the product, and the HEAD, size and library choices are yours to confirm |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
@@ -1151,7 +1152,8 @@ labeled `replay`.
 
 **Cost.** The hash is pseudonymization, not anonymity: a VIN has little entropy, so
 anyone holding candidate VINs can test them. Raw logs stay out of git (`data/` is
-ignored); only short excerpts are committed as evidence.
+ignored); only short excerpts are committed as evidence. *Amended 2026-10-28 by D-046
+(§C.10): every live capture made with `scripts/capture.sh` is committed whole.*
 
 ### C.5 — The on-disk record format (draft) ⚠️ UNREVIEWED
 
@@ -1361,6 +1363,33 @@ that. Moving the values now costs nothing, because no record has been written ye
 
 **Cost.** Every producer must set `src` explicitly, which is the point. The obdlog JSONL
 files (D-033) use strings, not these numbers, so they are unaffected.
+
+### C.10 — Every live drive capture is committed to the repository ⚠️ UNREVIEWED
+
+`D-046` · Decided M2, 2026-10-28 · **By:** Camden (in session) + Claude
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Amends:** D-033 (§C.4): "raw logs stay out of git"
+
+**Decision.** `scripts/capture.sh` runs `pidscan`, then `obdlog` for a set time, then shows
+the last records on disk and `obdsum`'s summary, and commits the whole session to
+`captures/<car>/<time>/`: `drive.jsonl` (the raw log, unedited), `pidscan.md` and
+`.json`, and `summary.txt`. It draws no display: the owner's view is the phone page
+(D-013). It commits on the current branch, or on
+`camden/m2/captures` when run from `main`, stages only that directory, and pushes if the
+network is up. A session is committed only when its file name says `live`; `synth`
+rehearsals (`scripts/capture.sh sim`) stay in `data/`.
+
+**Why.** Camden, 2026-10-28: at this stage every real-car capture is useful, and a capture
+left in an ignored folder on one laptop can be lost or never shared. Committing it at the
+moment it is made is the simplest way to keep all of it, with its provenance in the
+history.
+
+**Cost.** The repository is public, so each capture is published: readings, timestamps
+and the 12-hex VIN hash (D-033's cost, now on GitHub). The `pidscan` output and the
+logger's GPS lines are the only places location could appear; the script never passes
+`--gps`. The log grows about 3.5 KB a second on `obdsim`, so a 60 s capture is about
+0.2 MB and an hour of driving would be about 13 MB; long drives may later
+need Git LFS or a size limit. `data/` stays ignored for everything else.
 
 ---
 

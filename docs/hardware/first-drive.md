@@ -83,7 +83,9 @@ caffeinate -i env PYTHONPATH=tools .venv/bin/python tools/obdlog.py \
    cell is filled), each run the same way as `obdsum.py`.
 3. Paste the survey's markdown block, from `data/pidscan-*-live.md`, into
    `docs/hardware/pid-survey.md` under the Forester column.
-4. Keep the full logs out of git (`data/` is ignored). Commit a short excerpt as
+4. A capture made with `scripts/capture.sh` is committed whole by the script, under
+   `captures/<car>/` (D-046). For a drive logged with `obdlog` directly, the full log
+   stays out of git (`data/` is ignored): commit a short excerpt as
    evidence in its own commit, with the `obdsum` output. If the drive used `--gps`, leave
    the `gps` lines out of the excerpt: they show where the car is parked at home.
 5. Tick `pidforester`, `firstcap` and `baseline` yourself when they are true, then run

@@ -1,0 +1,49 @@
+== data/drive-20261028T220659.957-live.jsonl
+src=live  adapter=ELM327 v1.4b  protocol=AUTO, ISO 15765-4 (CAN 11/500)  vin_hash=16d15766b381
+53.8 s, 1113 samples, 20.7 samples/s, 0 gps fixes, ended: max_seconds
+
+PID  signal                                n     Hz      min     mean      max unit    gap s nodata errors
+01   PID 01                               22   0.41        -        -        -          2.60      0      0
+03   PID 03                               22   0.41        -        -        -          2.56      0      0
+04   Calculated engine load              139   2.58     5.88    20.87    54.90 %        0.47      0      0
+05   Coolant temperature                  22   0.41    96.00    96.77    98.00 degC     2.59      0      0
+06   Short term fuel trim, bank 1         22   0.41     0.00     5.08    10.94 %        2.57      0      0
+07   Long term fuel trim, bank 1          22   0.41    -9.38    -5.22     3.12 %        2.60      0      0
+0B   Intake manifold pressure             22   0.41    13.00    21.77    43.00 kPa      2.59      0      0
+0C   Engine speed                        139   2.58   639.50  1384.53  2970.50 rpm      0.47      0      0
+0D   Vehicle speed                        22   0.41     0.00     0.00     0.00 km/h     2.62      0      0
+0E   Timing advance                       22   0.41     8.00    19.95    33.50 deg      2.56      0      0
+0F   Intake air temperature               22   0.41    40.00    40.64    41.00 degC     2.60      0      0
+10   Mass air flow                        22   0.41     2.26     3.86    11.97 g/s      2.57      0      0
+11   Throttle position                    22   0.41    14.51    16.24    20.78 %        2.56      0      0
+15   O2 sensor 2 voltage                  22   0.41     0.03     0.69     0.94 V        2.57      0      0
+1F   Run time since start                 22   0.41   486.00   511.82   538.00 s        2.60      0      0
+21   Distance with MIL on                 22   0.41     0.00     0.00     0.00 km       2.55      0      0
+24   O2 sensor 1 lambda                   22   0.41     0.95     1.03     1.44 ratio    2.58      0      0
+2C   Commanded EGR                        22   0.41     0.00     0.00     0.00 %        2.62      0      0
+2D   PID 2D                               22   0.41        -        -        -          2.58      0      0
+2E   PID 2E                               22   0.41        -        -        -          2.60      0      0
+2F   Fuel level                           22   0.41    34.90    34.90    34.90 %        2.61      0      0
+30   Warm-ups since codes cleared         22   0.41   113.00   113.00   113.00 count    2.57      0      0
+31   Distance since codes cleared         22   0.41  8309.00  8309.00  8309.00 km       2.62      0      0
+32   PID 32                               22   0.41        -        -        -          2.63      0      0
+33   Barometric pressure                  22   0.41    84.00    84.00    84.00 kPa      2.58      0      0
+34   PID 34                               22   0.41        -        -        -          2.58      0      0
+3C   Catalyst temperature B1S1            22   0.41   157.10   170.70   186.30 degC     2.56      0      0
+41   PID 41                               22   0.41        -        -        -          2.60      0      0
+42   Control module voltage               22   0.41    13.59    13.68    13.77 V        2.60      0      0
+43   Absolute load                        22   0.41     3.92    11.80    19.22 %        2.56      0      0
+44   Commanded equivalence ratio          22   0.41     0.99     1.00     1.01 ratio    2.62      0      0
+45   Relative throttle position           22   0.41     2.75     4.33     7.84 %        2.62      0      0
+46   Ambient air temperature              22   0.41    19.00    19.00    19.00 degC     2.58      0      0
+47   Absolute throttle position B         22   0.41    31.37    32.66    35.29 %        2.62      0      0
+49   Accelerator pedal position D         22   0.41    12.94    15.99    20.78 %        2.65      0      0
+4A   Accelerator pedal position E         22   0.41    12.94    16.45    21.18 %        2.56      0      0
+4C   Commanded throttle actuator          22   0.41     0.00     1.91     5.88 %        2.63      0      0
+4D   PID 4D                               22   0.41        -        -        -          2.62      0      0
+4E   PID 4E                               22   0.41        -        -        -          2.57      0      0
+5A   PID 5A                               21   0.39        -        -        -          2.59      0      0
+
+events: none
+
+request cycle: p50 42 ms, p99 91 ms
