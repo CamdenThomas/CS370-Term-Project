@@ -952,11 +952,18 @@ the same timestamp, which ring `seq` cannot have.
   `src=synth` on every row it makes, so the page shows its SYNTHETIC DATA banner
   (CLAUDE.md §2.7). The real source, a client of `/run/carwatch/ctl.sock`, replaces it in
   one place.
+- **A tagged reply grammar.** D-043's "lines of `key=value` fields" cannot say which
+  record a field belongs to when a reply is a list (processes, verdicts, samples). So
+  each line is one **record**: a tag, then space-separated `key=value` fields, ending
+  with `ok` or `err <code> <reason>`. Tags, keys and codes are `[a-z0-9_]`; a value is
+  printable ASCII with no space and no `=` (lists use commas), so nothing is quoted. A
+  line holds at most 512 bytes and 16 fields, and a key may not repeat within a line.
 - **Standalone first.** `statusd` is built by the Makefile and run by hand until the
   supervisor can start children (`supfork`); the supervisor then spawns it.
 
 **What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
-`lance/m3/statusd`. The source, the server and the page follow on the same branch.
+`lance/m3/statusd`, and the reply-line parser (`kv.c`). The source, the server and the
+page follow on the same branch.
 
 **Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
 are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
