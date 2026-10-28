@@ -163,6 +163,7 @@
     "NETLINK",
     "netlist",
     "netlists",
+    "nosniff",
     "ntoa",
     "ntop",
     "numpy",
