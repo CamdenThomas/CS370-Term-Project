@@ -22,18 +22,19 @@ BUILD    = build
 BIN      = $(BUILD)/bin
 
 ALL_SRC    = $(wildcard src/*/*.c)
-# Library objects: everything except the per-daemon entry points.
-COMMON_SRC = $(filter-out %/main.c,$(ALL_SRC))
+# Library objects: everything except the per-daemon entry points, which are main.c and,
+# where one directory holds two programs, <name>_main.c.
+COMMON_SRC = $(filter-out %/main.c %_main.c,$(ALL_SRC))
 COMMON_OBJ = $(COMMON_SRC:%.c=$(BUILD)/%.o)
 
-DAEMONS    = obdd storaged analyzed supervisor obdctl
+DAEMONS    = obdd storaged analyzed supervisor obdctl statusd
 DAEMON_BIN = $(addprefix $(BIN)/,$(DAEMONS))
 
 TEST_SRC   = $(wildcard tests/test_*.c)
 TEST_BIN   = $(TEST_SRC:tests/%.c=$(BIN)/%)
 
 .PHONY: all test asan memcheck soakcheck replay deploy clean boundary boardcheck \
-        hwcheck hwdocs hwclean toolcheck
+        hwcheck hwdocs hwclean toolcheck run-status
 
 all: $(DAEMON_BIN)
 
@@ -42,6 +43,7 @@ $(BIN)/storaged:   $(BUILD)/src/store/main.o      $(COMMON_OBJ)
 $(BIN)/analyzed:   $(BUILD)/src/analysis/main.o   $(COMMON_OBJ)
 $(BIN)/supervisor: $(BUILD)/src/supervisor/main.o $(COMMON_OBJ)
 $(BIN)/obdctl:     $(BUILD)/src/interface/main.o  $(COMMON_OBJ)
+$(BIN)/statusd:    $(BUILD)/src/interface/statusd_main.o $(COMMON_OBJ)
 
 $(DAEMON_BIN):
 	@mkdir -p $(BIN)
@@ -107,6 +109,12 @@ soakcheck: all
 replay: all
 	@test -n "$(FIX)" || { echo "usage: make replay FIX=fixtures/<name>"; exit 1; }
 	./tools/replay.py --fixture $(FIX) --label replay
+
+# The phone page and API, on synthetic data, until it is wired to the real source (D-045).
+# On the Pi, bind the access point's address: make run-status STATUS_ARGS="--bind 192.168.4.1"
+STATUS_ARGS ?= --bind 127.0.0.1 --port 8080
+run-status: $(BIN)/statusd
+	$(BIN)/statusd $(STATUS_ARGS)
 
 deploy: all
 	@test -n "$(PI)" || { echo "usage: make deploy PI=pi@<host>"; exit 1; }
