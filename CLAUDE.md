@@ -61,9 +61,9 @@ is pasted.** Not "should pass." Output.
 1. **No hosted models in the product.** No LLM API calls, no cloud inference, no network
    calls of any kind except serving its own LAN interface. A grader must confirm this in
    sixty seconds by reading the tree. `src/` contains no HTTP client. Ever.
-2. **Our model, our weights.** Classifier trained by us, on our data, training code in
-   `tools/train/`, weights versioned in `models/`. No third-party pretrained weights.
-   Inference is C we wrote.
+2. **Our intelligence, our code.** Baselines, residuals, trends and the fault-area rule
+   are statistics we write in C over our own data (§5). No trained model of any kind, no
+   third-party weights, no hosted inference (decided 2026-10-28).
 3. **The device works with the network unplugged.** Full stop.
 4. **Systems core is C17**, `-Wall -Wextra -Werror`, no VLAs, `goto`-cleanup for
    multi-resource functions. Every allocation checked. Every syscall error path handled
@@ -107,8 +107,9 @@ Committed and measured: **D** (append-only, crash-consistent storage) and **E**
 ## 5. The intelligence
 
 All of it ours: operating-point binning → per-bin baselines → Mahalanobis residuals →
-Theil–Sen trends → our classifier → state machine with hysteresis. Every diagnostic needs
-two cooperating sensors (the threshold test).
+Theil–Sen trends → a fault-area rule (which sensor group carries the residual) → state
+machine with hysteresis, shown as trends and statistics on the phone page. No trained
+model (2026-10-28). Every diagnostic needs two cooperating sensors (the threshold test).
 
 ## 6. Ownership
 

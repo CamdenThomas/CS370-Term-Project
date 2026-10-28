@@ -97,14 +97,14 @@ src/                systems core, C17, -Wall -Wextra -Werror clean
   obd/              capture daemon: Mode 01 requests over the OBD2 adapter tty
   ipc/              SPSC ring + Unix-socket protocol between processes   [mechanism E]
   store/            append-only crash-consistent log                     [mechanism D]
-  analysis/         binning, baselines, residuals, trends, model, state machine
+  analysis/         binning, baselines, residuals, trends, fault-area rule, state machine
   supervisor/       spawn, restart with backoff, heartbeats, the light  [mechanism E]
   interface/        obdctl CLI + read-only phone status page and report (D-013, D-028)
   common/           logging and shared helpers
 include/            headers shared between subsystems (common, ipc, store)
 tests/              C unit tests; tests/tools/ holds the Python tool tests (make test)
 tools/              Python only here: board sync, PID survey, drive logger, simulator,
-                    plots, replay, training
+                    plots, replay
 scripts/            provision a clean Pi; install the service; capture.sh records a car
 soak/               48-hour soak runner and fault injection
 captures/           every live capture from a real car, committed whole, by car and time
@@ -112,14 +112,13 @@ docs/               everything written — start at docs/README.md
 partners/           each partner's PROMPTLOG, REFLECTION, raw transcripts
 ```
 
-`fixtures/` holds labeled captures for tests (one `synth` drive so far). Created when
-their first file lands, not before: `models/` (our weights), `build/` and `soak/logs/`
-(both git-ignored).
+`fixtures/` holds labeled captures for tests (one `synth` drive so far). `build/` and
+`soak/logs/` are created when their first file lands, and both are git-ignored.
 
 ## The boundary
 
-This product contains no LLM client, no cloud inference, and no third-party pretrained
-model. The classifier weights in `models/` were trained by us from data we collected;
-the training code is in `tools/train/`. The only network activity in the shipped tree
-is serving the read-only status page and its report on the box's own Wi-Fi access point,
-which has no upstream connection. See `CLAUDE.md` §2.
+This product contains no LLM client, no cloud inference, no third-party pretrained model
+and no trained model of any kind: the intelligence is statistics we wrote in C
+(`src/analysis/`), shown as trends on the phone page. The only network activity in the
+shipped tree is serving the read-only status page and its report on the box's own Wi-Fi
+access point, which has no upstream connection. See `CLAUDE.md` §2.

@@ -36,7 +36,7 @@ OBD2 port -- OBDLink LX (Bluetooth Classic SPP, D-019); the Forester speaks CAN 
     |           events from every daemon: one SEQPACKET Unix socket, a few per drive (D-042)
     | committed records only, read back from the log, about 1 s behind (D-031)
     v
-  analyzed      bins -> baselines -> residuals -> trends -> model -> FSM; a few verdicts per drive
+  analyzed      bins -> baselines -> residuals -> trends -> area rule -> FSM; a few verdicts per drive
     v
   supervisor [E] fork/exec, hourly heartbeats, restart with backoff --GPIO--> light, 1-4 Hz
     ^  Unix socket /run/carwatch/ctl.sock, on demand (D-043)
@@ -83,9 +83,10 @@ All our code (handout §3.3). Per committed sample, `analyzed` (1) bins by rpm �
 coolant temperature, so a cold idle is never compared with a warm cruise; (2) keeps per-bin
 running mean and covariance (Welford), in A/B checkpoints; (3) scores the Mahalanobis
 distance from the bin's baseline, which fires when a *partnership* breaks; (4) fits
-Theil–Sen slopes of residuals across drives; (5) names the area with our classifier
-(trained in `tools/train/`, inference in C; without weights, 1–4 still flag); (6) surfaces
-verdicts through a hysteresis-and-dwell state machine.
+Theil–Sen slopes of residuals across drives; (5) names the area by a rule we write: the
+sensor group in the table below that carries most of the residual, with no trained model
+(decided 2026-10-28); (6) surfaces verdicts through a hysteresis-and-dwell state machine,
+and the phone page shows the trends and statistics behind each one.
 
 The Forester publishes every sensor below (`hardware/pid-survey.md`); the CR-V is not yet
 surveyed.
@@ -120,7 +121,7 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 | ring | consumer stalls | sequence gap; late heartbeat | refuse and count; restart `storaged`; red | `ring_full`, `heartbeat_late` |
 | storaged | power cut mid-write (every key-off) | bad CRC or no `COMMIT` at boot | truncate the tail and the open batch (D-025) | `recovered` |
 | storaged | disk full; `fsync` or write `EIO` | `ENOSPC`, return values | drop the oldest segment if allowed; hold the durable offset; degrade, red | `enospc`, `fsync_failed` |
-| analyzed | torn checkpoint; bad model file | slot CRC; header CRC | other slot + redo; residuals only | `checkpoint_bad`, `model_unavailable` |
+| analyzed | torn checkpoint | slot CRC | load the other slot, redo the batches since | `checkpoint_bad` |
 | `statusd` | a bad or oversized request; the CSV report cannot be built (memory) | the parser's limits; the builder's return value | 4xx, 431 or 503; capture unaffected | `request_refused`, `report_failed` |
 | supervisor | dies | systemd `Restart=always` | light freezes steady = "not running" | journal (persistent, on the log partition) |
 | clock | wall time untrusted at boot (no clock module, or its backup lost) | time before the build date | run on `mono_ns`; records carry `WALL_UNTRUSTED` | `rtc_invalid` |
@@ -185,6 +186,7 @@ and `analyzed` keeps learning bins but holds cross-drive trends.
 | A sensor of our own beside the car's | none, since 2026-10-28 | the cold-soak cross-check uses the car's ambient sensor (46), which the car's own heat biases |
 | A clean shutdown at key-off | none: power dies with the charger | the last ≤ 1 s of every drive is lost; the OS must tolerate cuts (`rofs`); every key-off is a recovery test |
 | Failing engines | induced, reversible faults on two healthy cars (D-021) | a few fault areas; no real wear-out |
+| A trained fault classifier | a rule over the residual's sensor groups, and the trends the page shows | no learned weighting; a fault that fits no group is "unknown" |
 | Raw CAN at ECU rate | Bluetooth Mode 01 request/response (D-019): 20.7 replies/s, each slow PID every 2.6 s | no bus timing; a link that drops; most of the mechanism menu leaves the data path (D-017) |
 | 48 continuous hours | 48 h of normal use across key cycles (D-023) | sessions with gaps; the professor confirmed this reading |
 | Recording from key-on | a ~30 s Pi 4 boot (`bootbudget`) | the first half-minute of warm-up is lost |
@@ -215,8 +217,10 @@ A subsystem belongs to whoever lands its first substantive commit (D-026).
 | --- | --- | --- |
 | `src/ipc/` ring and shared memory; `src/store/` record format, CRC32, write-ahead log and `storaged`; `src/common/` logging; build and `board_sync` | Camden | M0: 0e66851, 269e2c5; M3: 3860d8e, 9b145d4, aaac098, 972015a |
 | `tools/` OBD2 logging and analysis tools; `scripts/capture.sh` and `captures/` | Camden | M2: PR #155, #183 |
-| `src/interface/` HTTP parser, JSON, control-socket reply grammar, routes, `poll()` server, page and `statusd` | Lance | M3: 61be86f, 591718b, e316a32, 38c25ed (PR #184) |
-| `src/obd/`, `src/analysis/`, `src/supervisor/`, `obdctl` (`src/interface/main.c`), `tools/train/` | unclaimed | stubs only so far; claimed by the first substantive commit (D-026) |
+| `src/interface/` HTTP parser, JSON, control-socket reply grammar, routes, `poll()` server, page and `statusd`; `obdctl` (`src/interface/main.c`) | Lance | M3: 61be86f, 591718b, e316a32, 38c25ed (PR #184); `obdctl` intended, a stub today |
+| `src/obd/` (`obdd`, the capture daemon) | Camden, intended | a stub today; the first substantive commit is the claim (D-026) |
+| `src/supervisor/` (mechanism E: fork/exec, heartbeats, backoff, the light) | Lance, intended | a stub today; the first substantive commit is the claim (D-026) |
+| `src/analysis/` (`analyzed`: bins, baselines, residuals, trends, the area rule, the state machine) | Camden, intended | a stub today; the first substantive commit is the claim (D-026) |
 
 ## 10. AI-use plan
 
@@ -235,6 +239,8 @@ otherwise.
 ## 11. Changelog (M5)
 
 What this M2 version got wrong, written at M5. Already known on 2026-10-28: the design of
-2026-10-21 had a DS18B20 cabin probe with its own daemon, a supercapacitor power block
-and a clean shutdown at key-off; all three were cut before any was built, and the code
-still carries a second ring namespace reserved for the probe (board `probering`).
+2026-10-21 had a DS18B20 cabin probe with its own daemon, a supercapacitor power block,
+a clean shutdown at key-off and a trained fault classifier; all four were cut before any
+was built, the classifier on 2026-10-28 in favor of a fault-area rule and the page's
+trends, and the code still carries a second ring namespace reserved for the probe (board
+`probering`).

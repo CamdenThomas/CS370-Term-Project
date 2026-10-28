@@ -60,7 +60,7 @@ why, here.
 | Ring consumer stalls | `SIGSTOP` `storaged` for 5 min | `ring_full`, `heartbeat_late` | | | |
 | Power cut mid-write | pull the USB-C cable, engine running, 50 times | `recovered` | | | |
 | Disk full; `fsync` error | log directory on a small loop-mounted filesystem, filled | `enospc`, `fsync_failed` | | | |
-| Torn checkpoint; bad model | truncate one checkpoint slot; corrupt the model header | `checkpoint_bad`, `model_unavailable` | | | |
+| Torn checkpoint | truncate one checkpoint slot | `checkpoint_bad` | | | |
 | A bad or oversized request to `statusd` | a 5 KB header, a `..` path, a POST | 431, 400, 405; `request_refused` | | | |
 | Report fails | request the CSV with `statusd` under a tight `ulimit -v` | `report_failed` | | | |
 | Supervisor dies | `kill -9` the supervisor | systemd restart, in the journal | | | |

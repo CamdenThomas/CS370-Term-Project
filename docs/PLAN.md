@@ -94,10 +94,10 @@ with the analysis half-written around a sensor that does not exist.
 The device shipped in Week 15 will be smaller than the one planned in Week 4. Decide the
 order now, while it is cheap, so the decision is not made at 2 a.m. in Week 13:
 
-1. **Fault-area naming** — the trained classifier, `train` and `infer`. The features are
-   the intelligence: residuals and trends still *flag* strange behavior without it, they
-   just stop naming the area. Narrow the claim to flag-only in writing, and say so at the
-   defense.
+1. **Fault-area naming** — the rule that attributes a residual to a sensor group.
+   Residuals and trends still *flag* strange behavior without it, they just stop naming
+   the area. Narrow the claim to flag-only in writing, and say so at the defense. (The
+   trained classifier that once sat here was cut on 2026-10-28.)
 2. **The report download** — `report`. The page keeps showing status and verdicts without
    it, and `obdctl` still produces every number in it (D-028).
 3. **The phone status page** — `phoneview`. `obdctl` alone still satisfies "honest
