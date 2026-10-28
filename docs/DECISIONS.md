@@ -71,6 +71,7 @@ Decisions currently awaiting a human signature:
 | D-042 | Draft event path: every daemon sends its events to `storaged` over one `SOCK_SEQPACKET` Unix socket, written in the next batch (§B.10) | Claude, Camden's session | 2026-10-27 | Both — it is how verdicts and faults become durable |
 | D-043 | Draft control socket: a line protocol on `/run/carwatch/ctl.sock`, the five `obdctl` verbs with their arguments, and `statusd` as the page process (§B.11) | Claude, Camden's session | 2026-10-27 | Both — it is the whole query interface, and the live-modification station will extend it |
 | D-044 | Draft: drive logs keep every line that answers a request (`n_ecu`, `raw_all`, a `multi_ecu` event), headers stay off until a real car is measured; rpm and load get one request in four, and static PIDs are read once (§C.8, amends D-033) | Claude, Camden's session | 2026-10-27 | Either — it decides what the first drive records when two ECUs answer, and how fresh its operating point is |
+| D-045 | Draft: `statusd` is a GET-only HTTP server we write with no web library, a vanilla page, and a synthetic data source behind D-043's reply format until the real one exists (§B.13, extends D-043) | Claude, Lance's session | 2026-10-28 | Both — it is the only network code in the product, and the HEAD, size and library choices are yours to confirm |
 
 > Decisions marked 🔒 were made with Camden in the conversation. **Lance has not reviewed
 > any of them yet.** The entries that bind storage and analysis now are §C.1 to §C.7 and
@@ -921,6 +922,65 @@ layout.
 per batch (the ring generation once per run, the newest ring `seq` per batch). A first
 draft skipped by `mono_ns` instead; the restart test lost a sample to two readings with
 the same timestamp, which ring `seq` cannot have.
+
+### B.13 — `statusd` is a GET-only server we write, with no web library and a synthetic source first (draft) ⚠️ UNREVIEWED
+
+`D-045` · Drafted M3, 2026-10-28 · **By:** Claude, in Lance's session
+· **Reviewed:** Camden ⬜ / Lance ⬜
+· **Extends:** D-043 (§B.11), which names `statusd` but not how it serves or what feeds it
+· **Follows:** D-013 and D-028 (§B.4, §B.6), which chose C for the server
+
+**Decision (draft).**
+
+- **A server we write.** `statusd` is a single-threaded `poll()` loop in `src/interface/`
+  over an HTTP layer of ours (`http.c`: pure functions, no sockets, no allocation). No
+  HTTP or web library: not libmicrohttpd, Mongoose or CivetWeb.
+- **GET only.** Every other method is refused with 405 and `Allow: GET`, and that includes
+  **HEAD**: nothing we serve is asked for with it. Requests are HTTP/1.0 or 1.1, one per
+  connection (`Connection: close`), and every response says `Cache-Control: no-store`, so
+  a phone never shows stale vitals.
+- **Size and shape limits.** Request line and headers together at most 4096 bytes (431
+  past that), a path under 128 bytes, a query under 256. A target must start with `/` and
+  carry no control byte, NUL or backslash, and no `..` segment *after* percent-decoding,
+  so `%2e%2e` cannot pass. Headers are checked for stray control bytes and then ignored.
+- **A plain page.** HTML, CSS and JavaScript written by us, embedded in the binary, with
+  no CDN and no library: the box is offline. Every chart is drawn through one function,
+  `drawSeries(el, ts, ys)`, so a charting library such as uPlot can replace it later
+  without touching the rest of the page.
+- **A seam for the data.** `statusd` asks a source for the text D-043's verbs reply with,
+  and builds every page, JSON reply and CSV from it. The first source is synthetic, with
+  `src=synth` on every row it makes, so the page shows its SYNTHETIC DATA banner
+  (CLAUDE.md §2.7). The real source, a client of `/run/carwatch/ctl.sock`, replaces it in
+  one place.
+- **Standalone first.** `statusd` is built by the Makefile and run by hand until the
+  supervisor can start children (`supfork`); the supervisor then spawns it.
+
+**What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
+`lance/m3/statusd`. The source, the server and the page follow on the same branch.
+
+**Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
+are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
+grader can verify it by reading the tree in a minute; a vendored web library carries a
+client, TLS and a thread pool we would have to defend line by line, and Mongoose and
+CivetWeb contain HTTP *client* code that the rule "no HTTP client, ever" forbids. The
+parser is the one part that reads bytes a stranger on the Wi-Fi chose, so it is small,
+pure and tested against every refusal. GET-only keeps the rule to one sentence. A
+synthetic source lets the page be built and reviewed before the first drive, and
+`src=synth` keeps it from ever passing as data.
+
+**Cost.** We own the parser's bugs. HEAD, keep-alive, ranges and TLS are unavailable, and
+adding HEAD later means a flag on every route to skip the body. The limits are Claude's
+choices, not measurements. The page has no tooltips, zoom or pan until a charting
+library is adopted, which needs its own decision (board item `uplot`, not yet added).
+
+**Order of commits.** §7.7 asks for a decision to share a commit with its code. Lance
+asked for this entry before the server code, so it is written in a docs commit after the
+HTTP layer's commits.
+
+**Alternatives rejected.** libmicrohttpd (an extra link-time dependency and threads we do
+not need); Mongoose and CivetWeb (client code, a license to read, a large surface); a
+Python server in `ui/` (D-028: an interpreter in the soak's memory plot). uPlot now: about
+50 KB of third-party code in the tree for charts the first cut does not need.
 
 ---
 
