@@ -5,7 +5,8 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 **source** wins and the other is stale: fix the stale one, never the source, to match.
 
 `D-###` labels throughout the repository name entries of the old decision log, removed on
-2026-10-28; `git show fb8054d:docs/DECISIONS.md` shows it as it last stood.
+2026-10-28; `git show 8c09b3d:docs/DECISIONS.md` shows it as it last stood, D-046 being its
+last entry.
 
 ## Find it fast
 
