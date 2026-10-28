@@ -5,7 +5,7 @@
 
 ## Scope: schematic yes, PCB probably no
 
-**Decision A.4 in `docs/DECISIONS.md`.** We capture the schematic; we do not fabricate a
+**Settled at M0.** We capture the schematic; we do not fabricate a
 board unless we take The Reach (handout §14).
 
 A custom PCB earns **zero points** — the rubric grades mechanisms, measurements and the

@@ -11,7 +11,6 @@ wrong.
 So: read **this** for why the plan is shaped this way and what to sacrifice when it slips.
 Read **the board** for what to do next. See `docs/BOARD/BOARD.md` for how the board works.
 
-- Decisions already made: `docs/DECISIONS.md`
 - Milestone exit criteria: `docs/milestones.md`
 - The rubric itself: `docs/handout/CS370-TermProject.md`
 
@@ -122,7 +121,7 @@ reconstructed after the fact.
 
 **How to cut, mechanically.** Do not delete the line — a deleted line leaves an open
 issue behind that sync no longer manages, and the decision to cut disappears with it.
-Instead: record the cut in `DECISIONS.md`, tick the box, add "(cut)" to its text, and
+Instead: tick the box, add "(cut)" to its text, say why in that commit, and
 sync. The board then shows a cut that was made deliberately rather than a task that
 quietly stopped being mentioned.
 

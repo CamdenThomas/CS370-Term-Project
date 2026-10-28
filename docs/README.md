@@ -4,30 +4,32 @@ The reference chain is **`CLAUDE.md` (rules) → this file (where) → the sourc
 (what)**. Every fact has one source. If two documents disagree, the one named here as the
 **source** wins and the other is stale: fix the stale one, never the source, to match.
 
+`D-###` labels throughout the repository name entries of the old decision log, removed on
+2026-10-28; `git show fb8054d:docs/DECISIONS.md` shows it as it last stood.
+
 ## Find it fast
 
 | Topic | Source | Also mentioned in (must agree) |
 | --- | --- | --- |
 | Rules for every session, git and PRs | [`../CLAUDE.md`](../CLAUDE.md) | — |
 | Why those rules, worked examples, repo settings | [`PROCESS.md`](PROCESS.md) | — |
-| What is decided, and what awaits a signature | [`DECISIONS.md`](DECISIONS.md) | everything that cites a `D-###` |
 | Open work, questions, owners | [`milestones.md`](milestones.md) checkboxes → GitHub | — |
 | How the board works: a line, sync, CI | [`BOARD/BOARD.md`](BOARD/BOARD.md) | — |
 | Milestone dates | the table in [`milestones.md`](milestones.md) | GitHub milestone due dates (synced) |
 | Milestone exit criteria and the M5 deliverables | [`milestones.md`](milestones.md) (bold lines) | — |
 | What to cut first, critical paths | [`PLAN.md`](PLAN.md) | — |
-| Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §9 | `DECISIONS.md` §F.2 |
-| Hardware data path (Bluetooth OBD2 adapter) | `DECISIONS.md` §A.1 (D-019) | README, DESIGN, `hardware/` |
-| The box: power and shutdown, light, clock | `DECISIONS.md` §A.6 (D-024), §B.5 (D-027), §A.8 (D-030) | README, DESIGN, `hardware/` |
-| Testbed cars | `DECISIONS.md` §A.2 (D-022) | README, PROBLEM, `hardware/pid-survey.md` |
-| The box's own sensor (DS18B20 probe) | `DECISIONS.md` §B.9 (D-037) | README, PROBLEM, DESIGN, `hardware/` |
-| Processes, rings and sockets | `DECISIONS.md` §B.2, §B.8 to §B.11 (D-031, D-042, D-043) | DESIGN §1, README query interface |
-| On-disk format, fsync, retention | `DECISIONS.md` §C.3 to §C.7 (D-025, D-034, D-035, D-041) | DESIGN §5 |
-| The 48-hour soak's definition | `DECISIONS.md` §E.3 (D-023) | DESIGN §7, `../soak/README.md` |
-| Evaluation targets | `DECISIONS.md` §E.4 (D-036) | DESIGN §8, `EVALUATION.md` |
+| Ownership rule (D-026) and the realized map | [`../CLAUDE.md`](../CLAUDE.md) §6, `DESIGN.md` §9 | — |
+| Hardware data path (Bluetooth OBD2 adapter) | [`hardware/wiring.md`](hardware/wiring.md) | README, DESIGN §1 |
+| The box: power and shutdown, light, clock | [`hardware/wiring.md`](hardware/wiring.md) | README, DESIGN §6 |
+| Testbed cars | [`hardware/pid-survey.md`](hardware/pid-survey.md) | README, PROBLEM |
+| The box's own sensor (DS18B20 probe) | [`hardware/wiring.md`](hardware/wiring.md) | README, PROBLEM, DESIGN |
+| Processes, rings and sockets | [`DESIGN.md`](DESIGN.md) §1 | README query interface |
+| On-disk format, fsync, retention | [`DESIGN.md`](DESIGN.md) §5 | — |
+| The 48-hour soak's definition | [`../soak/README.md`](../soak/README.md) | DESIGN §7 |
+| Evaluation targets | [`DESIGN.md`](DESIGN.md) §8 | `EVALUATION.md` |
 | Commit message format | [`../.gitmessage`](../.gitmessage) | `CLAUDE.md` §7.4 |
 | PR body | [`../.github/PULL_REQUEST_TEMPLATE.md`](../.github/PULL_REQUEST_TEMPLATE.md) | `CLAUDE.md` §7.5 |
-| Markdown and spelling rules | [`../.markdownlint.jsonc`](../.markdownlint.jsonc), [`../cspell.json`](../cspell.json) | `DECISIONS.md` §F.4 (D-018) |
+| Markdown and spelling rules | [`../.markdownlint.jsonc`](../.markdownlint.jsonc), [`../cspell.json`](../cspell.json) | — |
 | Transcript copy-out commands | `../partners/<name>/transcripts/README.md` | `CLAUDE.md` §0, §9 |
 
 ## Graded deliverables
@@ -45,7 +47,6 @@ No document has an owner (D-026); "first author" is history, not an assignment.
 
 | Document | Answers | Kind |
 | --- | --- | --- |
-| [`DECISIONS.md`](DECISIONS.md) | What is settled, why, and what still needs a human signature? | **source** for decisions |
 | [`BOARD/BOARD.md`](BOARD/BOARD.md) | How does the checklist become the GitHub board? | how-to |
 | [`milestones.md`](milestones.md) | What is open, what is done, and what must be true to reach each milestone? | **source** for all work; GitHub is derived |
 | [`PLAN.md`](PLAN.md) | Why is the plan shaped this way, and what gets cut first? | reasoning |

@@ -1,4 +1,4 @@
-// markdownlint rules for every .md in the repo (D-018, docs/DECISIONS.md §F.4).
+// markdownlint rules for every .md in the repo (D-018).
 // Read by the VS Code markdownlint extension and by markdownlint-cli2.
 {
   "default": true,

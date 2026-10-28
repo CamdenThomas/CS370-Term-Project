@@ -1,4 +1,4 @@
-/* The ring's contract is a no-drop guarantee (DECISIONS B.3), so the tests are about
+/* The ring's contract is a no-drop guarantee, so the tests are about
  * what must NOT happen: an unread slot must never be overwritten, and a refusal must
  * always be counted. */
 #include "ipc/ring.h"

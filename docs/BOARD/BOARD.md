@@ -22,7 +22,7 @@ move cards on the `carwatch` project board.
 | --- | --- |
 | `[ ]` / `[x]` | open / done. Tick it, sync, and the issue closes and its card moves to Done. |
 | the text | the issue title. `M<n>:` is added on GitHub if the text does not start with it. |
-| `` `pidforester` `` | optional short name other docs cite (PLAN.md, DECISIONS.md). |
+| `` `pidforester` `` | optional short name other docs cite (PLAN.md). |
 | `@camden`, `@lance` | optional assignee. Open lines carry none (D-026); ticked lines keep theirs as the record of who did the work. Sync only adds assignees: removing a marker does not unassign the issue. |
 | `<!-- #133 -->` | the issue number, hidden when rendered. **Sync writes it; never type one.** |
 
