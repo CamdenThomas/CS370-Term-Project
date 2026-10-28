@@ -117,8 +117,8 @@ partners/           each partner's PROMPTLOG, REFLECTION, raw transcripts
 
 ## The boundary
 
-This product contains no LLM client, no cloud inference, no third-party pretrained
-model and no trained model of any kind: the intelligence is statistics we wrote in C
-(`src/analysis/`), shown as trends on the phone page. The only network activity in the shipped tree
-is serving the read-only status page and its report on the box's own Wi-Fi access point,
-which has no upstream connection. See `CLAUDE.md` §2.
+This product contains no LLM client, no cloud inference, no third-party pretrained model
+and no trained model of any kind: the intelligence is statistics we wrote in C
+(`src/analysis/`), shown as trends on the phone page. The only network activity in the
+shipped tree is serving the read-only status page and its report on the box's own Wi-Fi
+access point, which has no upstream connection. See `CLAUDE.md` §2.
