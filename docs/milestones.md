@@ -17,9 +17,9 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | ✅ 9/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 20/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-28 | 8–10 | 🟡 27/52 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-28 | 8–10 | 🟡 29/53 |
 | M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | 🟡 8/33 |
-| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 3/30 |
+| M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 5/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date verified, D-008) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
 
@@ -185,10 +185,12 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M2 process: confirm Lance's identity in `.mailmap` `mailmap` <!-- #174 -->
 - [x] M2 process: retire the decision log; choices live in CLAUDE.md, DESIGN.md and the
       commit that made them `dropdecisions` <!-- #186 -->
-- [ ] M2 docs: bring every document, the board and the tree in line with the 2026-10-28
+- [x] M2 docs: bring every document, the board and the tree in line with the 2026-10-28
       scope cut `scopecut` <!-- #191 -->
-- [ ] M2 process: every Markdown file passes markdownlint-cli2 and the whole tree passes
+- [x] M2 process: every Markdown file passes markdownlint-cli2 and the whole tree passes
       cspell, with the tools' raw output exempt `lintall` <!-- #193 -->
+- [ ] M2 docs: replace the trained classifier with a fault-area rule and the page's trends
+      `nomodel` <!-- #196 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
 
@@ -268,9 +270,10 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M4 analysis: multivariate residual (Mahalanobis distance) `mahal` <!-- #52 -->
 - [ ] M4 analysis: robust trend estimation (Theil-Sen) `trend` <!-- #53 -->
 - [ ] M4 analysis: state machine with hysteresis and dwell `fsm` <!-- #54 -->
-- [ ] M4 tools: training pipeline and weights format with provenance header `train` <!--
-      #55 -->
-- [ ] M4 analysis: C inference over our own weights `infer` <!-- #56 -->
+- [x] M4 tools: training pipeline and weights format with provenance header (cut
+      2026-10-28: no trained model) `train` <!-- #55 -->
+- [x] M4 analysis: C inference over our own weights (cut 2026-10-28: no trained model)
+      `infer` <!-- #56 -->
 - [ ] M4 interface: remaining four obdctl verbs `obdrest` <!-- #57 -->
 - [ ] M4 interface: read-only phone status page, with trends, over the box's own Wi-Fi
       `phoneview` <!-- #91 -->
