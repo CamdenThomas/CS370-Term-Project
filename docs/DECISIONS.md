@@ -961,13 +961,14 @@ the same timestamp, which ring `seq` cannot have.
   `null`, and any other bare value is refused. So `pid="46"` and `pid=46` differ, and a
   forgotten quote is an error, never a silent change of type: the converter to JSON
   needs no table of numeric keys. A line holds at most 512 bytes and 16 fields, and a
-  key may not repeat within a line.
+  key may not repeat within a line. Requests use the same grammar
+  (`series pid="0C" from="-5m" to="now"`), so one parser reads both directions.
 - **Standalone first.** `statusd` is built by the Makefile and run by hand until the
   supervisor can start children (`supfork`); the supervisor then spawns it.
 
 **What is already coded.** The HTTP layer and its limits, in `61be86f` and `b70b7b9` on
-`lance/m3/statusd`, the reply-line parser (`kv.c`) and the JSON writer (`json.c`). The
-source, the server and the page follow on the same branch.
+`lance/m3/statusd`, the reply-line parser (`kv.c`), the JSON writer (`json.c`) and the
+synthetic source (`synth_source.c`). The server and the page follow on the same branch.
 
 **Why.** Lance chose C and no libraries, 2026-10-28, after a comparison. The graded claims
 are that the only network code is the page server (CLAUDE.md §2.1, D-038) and that a
