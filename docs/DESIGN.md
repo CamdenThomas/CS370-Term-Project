@@ -1,5 +1,7 @@
 # Design document — carwatch
 
+Camden Thomas and Lance Baron · CS 370, Colorado State University · M2, 2026-10-28
+
 **User and problem.** Lance drives a 2015 CR-V daily, and nothing reads his engine's
 sensors except a check-engine light that speaks only once something has failed. carwatch
 is a box that boots at every key-on, records every Mode 01 sensor through a Bluetooth
@@ -8,21 +10,24 @@ light would. It is also tested on Camden's 2008 Forester (D-022), which made the
 live capture on 2026-10-28 (`captures/forester/20261028T220659.957/`). **Claim (D-021):**
 it learns the normal of the car it is installed in, flags behavior outside it and names
 the likely fault area, with measured catch and false-alarm rates on faults we induce.
-`D-###` names an entry of the retired decision log: `git show 8c09b3d:docs/DECISIONS.md`.
 
-**Scope, cut 2026-10-28 with the TA's agreement.** The product is a Raspberry Pi 4 on the
-owner's USB-C charger, an OBDLink LX dongle read over Bluetooth, and a phone page over
-the box's own Wi-Fi, plus a clock module and a tri-color light on the Pi's header. There
-is no sensor of our own, no battery, no supercapacitor and no cooling: the engine's own
-sensors are the cooperating sensors, and every key-off is a power cut. §7 says what that
-costs.
+**Scope.** The product is a Raspberry Pi 4 on the owner's own USB-C charger, an OBDLink
+LX dongle read over Bluetooth, and a phone page over the box's own Wi-Fi, with a clock
+module and a tri-color light on the Pi's header. It is deliberately that small: the
+engine's own sensors, 43 of them on the Forester, are the cooperating sensors, and every
+key-off is a power cut that the storage layer is built to survive. Nothing is cut or wired
+into the car, and nothing of ours is added to it: no sensor, battery, supercapacitor or
+cooling. The TA agreed to this scope on 2026-10-28; §7 prices it.
+
+*`D-###` cites an entry of our decision log, kept in git history
+(`git show 8c09b3d:docs/DECISIONS.md`).*
 
 ## 1. Architecture
 
 ```text
 OBD2 port -- OBDLink LX (Bluetooth Classic SPP, D-019); the Forester speaks CAN 11-bit/500 k
    ~~ RFCOMM ~~> BlueZ -> /dev/rfcomm0 -> /dev/obd
-  obdd       Mode 01, one request outstanding; measured 20.7 replies/s,
+  obdd       Mode 01, one request outstanding; 20.7 replies/s measured (Mac, see below),
     |        request cycle p50 42 ms, p99 91 ms; rpm and load 2.6 Hz, each other PID 0.4 Hz
     | ring: SPSC in shared memory, 20.7 slots/s; refuse and count when full, never overwrite
     v
@@ -152,8 +157,9 @@ Log lines are `<process> <level> <event> key=value` with `src`; the table names 
 
 ## 6. The box: hardware and power
 
-A Pi 4 with a 32 GB A2 microSD card, in a small shell with one USB-C port and one light;
-the OBDLink LX in the car's OBD2 port; the owner's own USB-C charger and a short cable.
+A Pi 4 with a 32 GB A2 microSD card and a clock module, in a small shell with one USB-C
+port and one light; the OBDLink LX in the car's OBD2 port; the owner's own USB-C charger
+and a short cable.
 Nothing on the car is cut. Parts: `hardware/BOM.md`; connections: `hardware/wiring.md`.
 
 Power is the charger's: live when the car runs, dead at key-off. The box therefore boots
@@ -218,8 +224,10 @@ Claude Code is used for planning, explaining kernel and serial mechanics, test f
 tooling, adversarial review and drafting; never at runtime. A draft binds nothing until
 one of us has read it: every choice Claude made without a human is named in the pull
 request under "What I am least sure about" and in the `WHY` of the commit that made it
-(CLAUDE.md §0, §7.7). The §3 fault-area rows and the §8 targets were drafted with Claude
-and checked against the Forester capture; the transcripts are committed in `partners/`.
+(CLAUDE.md §0, §7.7). It is not used for measurements, which are taken by hand and
+pasted as evidence (CLAUDE.md §8.4), nor for the judgments each partner records in
+`PROMPTLOG.md`. The §3 fault-area rows and the §8 targets were drafted with Claude and
+checked against the Forester capture; the transcripts are committed in `partners/`.
 `src/` holds no network code except `statusd`, which serves the box's own access point
 with no upstream (D-013, D-045); `make boundary`, in `make test`, fails the build
 otherwise.
