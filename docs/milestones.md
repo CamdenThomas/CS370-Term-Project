@@ -17,8 +17,8 @@ no owner: any of them is for whoever is free (D-026). Ticked lines keep their `@
 | --- | --- | --- | --- | --- | --- |
 | M0 | Team formed; hardware ordered; repo + CLAUDE.md initialized | 4 | 2026-09-20 | 2–3 | ✅ 9/9 |
 | M1 | Problem memo; each partner's `.jsonl` transcripts copied out | 5 | 2026-09-27 | 3–4 | 🟡 20/23 |
-| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-28 | 8–10 | 🟡 29/53 |
-| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | 🟡 8/33 |
+| M2 | Design document; both sensors electrically alive; **baseline collection starts** | 6–7 | 2026-10-28 | 8–10 | 🟡 30/53 |
+| M3 | Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working | 8–10 | 2026-11-01 | 25–30 | 🟡 8/38 |
 | M4 | Feature freeze; 48-hour soak begins | 11–14 | 2026-11-29 | 30–40 | 🟡 5/30 |
 | M5 | Final submission: system, soak logs, eval report, process artifacts, transcripts | 15 | 2026-12-06 | 10–14 | ⬜ 0/9 |
 | M6 | Demo day: live demo, fault injection, individual defenses (date verified, D-008) | 15–16 | 2026-12-18 | — | ⬜ 0/4 |
@@ -189,7 +189,7 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       scope cut `scopecut` <!-- #191 -->
 - [x] M2 process: every Markdown file passes markdownlint-cli2 and the whole tree passes
       cspell, with the tools' raw output exempt `lintall` <!-- #193 -->
-- [ ] M2 docs: replace the trained classifier with a fault-area rule and the page's trends
+- [x] M2 docs: replace the trained classifier with a fault-area rule and the page's trends
       `nomodel` <!-- #196 -->
 
 ## M3 — Checkpoint demo: sensors through pipeline into storage; ≥1 menu mechanism working
@@ -207,6 +207,16 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
       2026-10-28) `canpoll` <!-- #37 -->
 - [ ] M3 obd: `obdd`: Mode 01 requester on `/dev/obd`, one request outstanding, at the
       logger's measured 20.7 replies/s `canreq` <!-- #88 -->
+- [ ] M3 obd: ELM327 reply parsing, Mode 01 decoding and the VIN hash in C, ported from
+      `obdlib.py` with its tests `obddecode` <!-- #200 -->
+- [ ] M3 obd: one ELM327 session over a tty in C: prompt, timeout, resync, link lost,
+      ported from `elm.py` `obdelm` <!-- #201 -->
+- [ ] M3 ipc: every daemon's events reach `storaged` over one `SOCK_SEQPACKET` socket
+      (D-042, signed by Camden 2026-11-08) `eventsock` <!-- #202 -->
+- [ ] M3 ipc: `ring_depth` can report more than the capacity to an observer; `test_ring`
+      failed 40 of 200 runs on arm64 Linux `ringdepth` <!-- #203 -->
+- [ ] M3 obd: drop `obdd --create-ring`, the bench stand-in, once the supervisor creates
+      the ring `benchring` <!-- #204 -->
 - [x] M3 ambient: `ambientd` reads the DS18B20 into its own ring, labeled live (D-037)
       (cut 2026-10-28) `ambientd` <!-- #175 -->
 - [ ] M3 analysis: read committed records from the log as storaged appends them `logread`
@@ -224,8 +234,9 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 interface: obdctl UDS transport + status verb `obdstatus` <!-- #44 -->
 - [x] M3 tools: fake OBD2 port — an ELM327 emulator on a pty, labeled synth `obdsim` <!--
       #90 -->
-- [ ] M3 tools: replay.py reads obdlog JSONL captures, emits records labeled replay
-      `replayjsonl` <!-- #160 -->
+- [ ] M3 obd: `obdd --replay` reads obdlog JSONL captures into the ring at their recorded
+      timing, labeled replay (synth stays synth); `replay.py` retired `replayjsonl`
+      <!-- #160 -->
 - [ ] M3 tools: run obdlog on the Pi at every key-on until obdd exists, for baseline
       `pilogger` <!-- #164 -->
 - [x] M3 supervisor: power-event handling and clean shutdown (cut 2026-10-28) `pwrmon`
@@ -244,8 +255,8 @@ the handout explicitly recommends leaving margin to run the soak **twice**.
 - [ ] M3 interface: `statusd` serves the real source, a client of the control socket, so
       the page shows the car and not synth `realsource` <!-- #187 -->
 - [ ] M3 interface: `statusd` and its tests pass on macOS too; accept4, SOCK_NONBLOCK,
-      /proc/self and SO_SNDBUF are Linux-only, so `make test` is red on a Mac `macbuild`
-      <!-- #188 -->
+      /proc/self and SO_SNDBUF are Linux-only, so `make test` is red on a Mac (cut
+      2026-11-08: C builds on the Pi and Linux CI only) `macbuild` <!-- #188 -->
 - [ ] M3 store: drop the probe ring and the second log namespace now that there is no
       sensor of our own `probering` <!-- #189 -->
 - [ ] M3 process: mount the Pi's root filesystem read-only, so a key-off cannot corrupt
