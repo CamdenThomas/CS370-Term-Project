@@ -5,13 +5,19 @@
  * second (D-025, D-035). A ring slot is released only after the batch holding it is
  * durable, so a kill -9 at any instant loses nothing (D-039).
  *
- *   storaged [--dir DIR] [--src live|replay|synth]
+ * Every other daemon's events arrive on one Unix socket, D-042's, and go into the same
+ * batches, ordered with the samples by seq.
  *
- * --src labels storaged's own records (boot, shutdown, events); every sample keeps the
- * label its producer gave it. Exit codes: 0 after a clean stop, 1 if it cannot start.
+ *   storaged [--dir DIR] [--src live|replay|synth] [--events PATH]
+ *
+ * --src labels storaged's own records (boot, shutdown, events); every sample and every
+ * received event keeps the label its sender gave it. Without the event socket storaged
+ * still records samples: it logs why and runs on. Exit codes: 0 after a clean stop, 1 if
+ * it cannot start.
  */
 #include "common/log.h"
 #include "ipc/ring.h"
+#include "ipc/uds.h"
 #include "store/record.h"
 #include "store/wal.h"
 
@@ -25,6 +31,9 @@
 
 #define HEARTBEAT_NS (3600ull * 1000000000ull)   /* hourly (handout §3.4) */
 #define IDLE_NS      20000000L                   /* poll the rings every 20 ms when idle */
+/* Events per batch. Room for these beside 64 samples is in WAL_BUF_BYTES' slack of 32
+ * records, so events can never crowd samples out of a batch. A few arrive per drive. */
+#define EVENTS_PER_BATCH 16u
 
 static volatile sig_atomic_t g_stop;
 
@@ -107,18 +116,49 @@ static uint64_t drain(wal_t *w, source_t *s)
     return added;
 }
 
+/* Moves waiting events into the open batch, each as an event record with its sender's
+ * src, while the batch has room (D-042). An event is read off the socket only when it can
+ * be added, so none is taken and then dropped for want of space. */
+static uint32_t take_events(wal_t *w, ev_receiver_t *rx, uint32_t *in_batch)
+{
+    uint32_t added = 0;
+    ev_t ev;
+    while (*in_batch < EVENTS_PER_BATCH && w->len + 3u * REC_MAX_SIZE <= sizeof w->buf &&
+           ev_receive(rx, &ev, 1) == 1) {
+        rec_event_t e;
+        memset(&e, 0, sizeof e);
+        e.code = ev.code;
+        e.len = ev.len;
+        memcpy(e.text, ev.text, ev.len);
+        if (wal_add(w, REC_EVENT, ev.src, wal_now_mono(), wal_now_wall(), &e,
+                    (uint16_t)(4u + e.len)) != 0) {
+            /* Only an invalid record gets here; the sender's journal still has it. */
+            LOG_E("event_not_added code=0x%04x src=%u len=%u", (unsigned)ev.code,
+                  (unsigned)ev.src, (unsigned)ev.len);
+            continue;
+        }
+        (*in_batch)++;
+        added++;
+    }
+    return added;
+}
+
 int main(int argc, char **argv)
 {
     const char *dir = "/var/lib/carwatch/log";
+    const char *events_path = EV_SOCK_DEFAULT;
     uint8_t src = SRC_LIVE;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--dir") == 0 && i + 1 < argc) {
             dir = argv[++i];
+        } else if (strcmp(argv[i], "--events") == 0 && i + 1 < argc) {
+            events_path = argv[++i];
         } else if (strcmp(argv[i], "--src") == 0 && i + 1 < argc &&
                    parse_src(argv[i + 1], &src) == 0) {
             i++;
         } else {
-            fprintf(stderr, "usage: storaged [--dir DIR] [--src live|replay|synth]\n");
+            fprintf(stderr, "usage: storaged [--dir DIR] [--src live|replay|synth] "
+                            "[--events PATH]\n");
             return 1;
         }
     }
@@ -135,6 +175,12 @@ int main(int argc, char **argv)
         LOG_E("sigaction_failed errno=%d (%s)", errno, strerror(errno));
         return 1;
     }
+
+    /* Events are worth less than samples: without the socket, record samples anyway. */
+    ev_receiver_t rx;
+    if (ev_receiver_open(&rx, events_path) != 0)
+        LOG_W("events_disabled path=%s: other daemons' events reach the journal only",
+              events_path);
 
     int rc = 1;
     wal_t *w = NULL;
@@ -168,12 +214,15 @@ int main(int argc, char **argv)
           (unsigned)w->prev_end, (int)srcs[0].skip, srcs[0].skip_seq, (int)srcs[1].skip,
           srcs[1].skip_seq);
 
-    uint64_t samples = 0;
+    uint64_t samples = 0, events = 0;
+    uint32_t ev_in_batch = 0;
     uint64_t next_beat = wal_now_mono();
     while (!g_stop) {
         uint64_t added = 0;
         for (unsigned ns = 0; ns < WAL_NAMESPACES; ns++)
             if (srcs[ns].ring != NULL) added += drain(w, &srcs[ns]);
+        uint32_t ev_added = take_events(w, &rx, &ev_in_batch);
+        events += ev_added;
 
         bool any_taken = srcs[0].taken > 0 || srcs[1].taken > 0;
         if (wal_due(w, wal_now_mono()) || (any_taken && !w->open_batch)) {
@@ -181,13 +230,17 @@ int main(int argc, char **argv)
             for (unsigned ns = 0; ns < WAL_NAMESPACES; ns++)
                 if (srcs[ns].added) noted |= note_ring_seq(w, ns, srcs[ns].last_seq);
             if (noted != 0 || wal_commit(w) != 0) {
-                /* The batch is gone from the log but not from the rings: start again. */
+                /* The batch is gone from the log but not from the rings: start again.
+                 * Its events are not in a ring: they survive in their senders' journals. */
+                if (ev_in_batch > 0) LOG_E("events_lost count=%u", ev_in_batch);
+                ev_in_batch = 0;
                 srcs[0].taken = srcs[1].taken = 0;
                 srcs[0].added = srcs[1].added = false;
                 struct timespec back = { 1, 0 };
                 (void)nanosleep(&back, NULL);
                 continue;
             }
+            ev_in_batch = 0;
             for (unsigned ns = 0; ns < WAL_NAMESPACES; ns++) {
                 if (srcs[ns].ring != NULL && srcs[ns].taken > 0 &&
                     !ring_release(srcs[ns].ring, srcs[ns].taken))
@@ -205,13 +258,15 @@ int main(int argc, char **argv)
             log_heartbeat(samples, over);
             next_beat = now + HEARTBEAT_NS;
         }
-        if (added == 0) {
+        if (added == 0 && ev_added == 0) {
             struct timespec idle = { 0, IDLE_NS };
             (void)nanosleep(&idle, NULL);
         }
     }
 
-    /* Clean stop: make the open batch durable, free its slots, and mark the end. */
+    /* Clean stop: take the last events, make the open batch durable, free its slots, and
+     * mark the end. */
+    events += take_events(w, &rx, &ev_in_batch);
     for (unsigned ns = 0; ns < WAL_NAMESPACES; ns++)
         if (srcs[ns].added && note_ring_seq(w, ns, srcs[ns].last_seq) != 0)
             LOG_E("ring_seq_note_failed ring=%s", srcs[ns].name);
@@ -220,10 +275,12 @@ int main(int argc, char **argv)
             if (srcs[ns].ring != NULL && srcs[ns].taken > 0)
                 (void)ring_release(srcs[ns].ring, srcs[ns].taken);
     rc = wal_close(w, REC_SHUT_SIGNAL) == 0 ? 0 : 1;
-    LOG_I("stop samples=%" PRIu64 " clean=%d", samples, rc == 0);
+    LOG_I("stop samples=%" PRIu64 " events=%" PRIu64 " events_refused=%" PRIu64 " clean=%d",
+          samples, events, rx.refused, rc == 0);
 
 out:
     if (rc != 0) LOG_E("exit status=1");
+    ev_receiver_close(&rx);
     free(w);
     for (unsigned ns = 0; ns < WAL_NAMESPACES; ns++) ring_detach(srcs[ns].ring);
     return rc;

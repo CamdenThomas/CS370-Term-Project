@@ -1,8 +1,12 @@
 /* storaged as a process, against the real rings: samples pushed while storaged is
  * kill -9'd mid-stream and restarted must all reach the log exactly once (D-025, D-039),
- * and a SIGTERM must end the log cleanly. Mechanism D and E's promise, end to end. */
+ * and a SIGTERM must end the log cleanly. Mechanism D and E's promise, end to end. An
+ * event sent while storaged is down must reach the log after it restarts, with its label
+ * (D-042). */
+#include "common/events.h"
 #include "common/log.h"
 #include "ipc/ring.h"
+#include "ipc/uds.h"
 #include "store/wal.h"
 
 #include <dirent.h>
@@ -26,6 +30,7 @@ static int failures;
 #define KILL_AT 300u
 
 static char g_bin[512];
+static char g_events[EV_PATH_MAX];
 
 static pid_t start_storaged(const char *dir)
 {
@@ -33,10 +38,30 @@ static pid_t start_storaged(const char *dir)
     if (pid == 0) {
         int null = open("/dev/null", O_WRONLY);
         if (null >= 0) { (void)dup2(null, STDOUT_FILENO); (void)close(null); }
-        execl(g_bin, "storaged", "--dir", dir, "--src", "synth", (char *)NULL);
+        execl(g_bin, "storaged", "--dir", dir, "--src", "synth", "--events", g_events,
+              (char *)NULL);
         _exit(127);
     }
     return pid;
+}
+
+/* The event records in a segment with this code: how many, and whether all were synth. */
+static unsigned count_events(const uint8_t *buf, size_t len, uint16_t code, bool *all_synth)
+{
+    unsigned n = 0;
+    *all_synth = true;
+    size_t off = 0;
+    rec_hdr_t h;
+    const uint8_t *body;
+    size_t size;
+    while (off < len && rec_decode(buf + off, len - off, &h, &body, &size) == REC_OK) {
+        if (h.kind == REC_EVENT && (uint16_t)(body[0] | body[1] << 8) == code) {
+            n++;
+            if (h.src != SRC_SYNTH) *all_synth = false;
+        }
+        off += size;
+    }
+    return n;
 }
 
 static void sleep_ms(long ms)
@@ -93,6 +118,12 @@ int main(int argc, char **argv)
     const char *base = getenv("TMPDIR");
     snprintf(dir, sizeof dir, "%s/carwatch-storaged.XXXXXX", base != NULL ? base : "/tmp");
     if (mkdtemp(dir) == NULL) { perror("mkdtemp"); return 2; }
+    if (snprintf(g_events, sizeof g_events, "%s/events.sock", dir) >= (int)sizeof g_events) {
+        fprintf(stderr, "  TMPDIR too long for a socket path\n");
+        return 2;
+    }
+    ev_sender_t ev;
+    ev_sender_init(&ev, g_events);
 
     ring_t *obd = ring_create(RING_NAME_OBD);
     ring_t *probe = ring_create(RING_NAME_PROBE);
@@ -109,12 +140,17 @@ int main(int argc, char **argv)
             CHECK(kill(pid, SIGKILL) == 0, "kill -9 storaged");
             int st;
             CHECK(waitpid(pid, &st, 0) == pid && WIFSIGNALED(st), "storaged died");
+            /* obdd's view: an event while storaged is down is queued, not lost. */
+            ev_send(&ev, EV_OBD_MULTI_ECU, SRC_SYNTH, "pid=05 n_ecu=2");
+            CHECK(ev.n == 1, "the event is queued while storaged is down");
             pid = start_storaged(dir);
             CHECK(pid > 0, "restart storaged");
         }
         if (i % 4 == 0) sleep_ms(1);
     }
 
+    for (int i = 0; i < 500 && ev_flush(&ev) > 0; i++) sleep_ms(10);
+    CHECK(ev.n == 0 && ev.dropped == 0, "the queued event reached the restarted storaged");
     CHECK(wait_drained(obd) == 0, "storaged drained the ring");
     CHECK(kill(pid, SIGTERM) == 0, "SIGTERM storaged");
     int st = 0;
@@ -137,9 +173,15 @@ int main(int argc, char **argv)
         if (sc.samples_committed != TOTAL)
             fprintf(stderr, "  samples in log: %u, pushed: %u\n", sc.samples_committed, TOTAL);
         CHECK(sc.samples_committed == TOTAL, "every sample once: none lost, none twice");
+        bool all_synth = false;
+        unsigned n_ev = count_events(buf, len, EV_OBD_MULTI_ECU, &all_synth);
+        if (n_ev != 1) fprintf(stderr, "  multi_ecu events in log: %u, sent: 1\n", n_ev);
+        CHECK(n_ev == 1, "the event sent while storaged was down is in the log once");
+        CHECK(all_synth, "the event keeps its sender's label");
         free(buf);
     }
 
+    ev_sender_close(&ev);
     CHECK(ring_overruns(obd) == 0 && ring_rejected(obd) == 0, "no refusals");
     ring_detach(obd);
     ring_detach(probe);
