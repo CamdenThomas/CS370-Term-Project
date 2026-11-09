@@ -33,9 +33,13 @@ class AgainstSim(unittest.TestCase):
     def test_query_all_returns_every_answering_line(self):
         self.srv.sim.two_ecu = frozenset({0x0C})
         self.ad.init()
-        answers = self.ad.query_all(1, 0x0C)
-        self.assertEqual(len(answers), 2)
-        self.assertEqual(self.ad.query(1, 0x0C), answers[0])
+        # The two requests below are answered at different moments of the simulated drive,
+        # and rpm moves between them; hold the car still so only the parsing is compared.
+        frozen = obdsim.vehicle_state(0.0)
+        with mock.patch.object(obdsim, "vehicle_state", lambda t: frozen):
+            answers = self.ad.query_all(1, 0x0C)
+            self.assertEqual(len(answers), 2)
+            self.assertEqual(self.ad.query(1, 0x0C), answers[0])
 
     def test_supported_pids_walks_the_chain(self):
         self.ad.init()
