@@ -22,8 +22,10 @@ product's runtime path.
 
 | Tool | Purpose | Board item |
 | --- | --- | --- |
-| `replay.py` | Feed an `obdlog` capture through the real pipeline at its recorded timing, labeled `replay` (a `synth` capture stays `synth`). A legitimate systems artifact (handout §5). Today it is an M0 stub that exits 1. | `replay`, `replayjsonl` |
 | `plot_soak.py` | RSS / CPU / event-count series from soak heartbeats → the figure docs/EVALUATION.md §3 requires. | `plots` |
+
+Replaying a capture through the real pipeline is not a tool here: it is `obdd --replay`, in
+C, run by `make replay FIX=<capture>.jsonl` (`scripts/replay.sh`).
 
 **Setup:** `make toolcheck` builds `.venv/` from `requirements-analysis.txt` (pyserial,
 matplotlib, numpy) and runs the tool tests in `tests/tools/` (D-032). Run a tool as
