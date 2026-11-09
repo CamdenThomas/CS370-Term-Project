@@ -85,8 +85,10 @@ boardcheck:
 	@.venv/bin/pip install -q -r tools/requirements-analysis.txt
 	@touch $@
 
+# CARWATCH_BIN: where this build put the daemons, so the end-to-end tool tests run the
+# sanitized ones under make asan.
 toolcheck: .venv/.installed
-	@PYTHONPATH=tools .venv/bin/python -m unittest discover -s tests/tools -q && \
+	@PYTHONPATH=tools CARWATCH_BIN=$(BIN) .venv/bin/python -m unittest discover -s tests/tools -q && \
 		echo "toolcheck                    PASS"
 
 # Sanitized objects live in their own tree. Objects do not depend on the flags that built
