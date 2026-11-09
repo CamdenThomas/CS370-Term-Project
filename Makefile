@@ -108,9 +108,12 @@ memcheck: $(TEST_BIN)
 soakcheck: all
 	./soak/run_soak.sh --mini
 
+# A capture through obdd --replay and storaged (handout §5). A live capture comes out
+# labeled replay, a synth one synth; SPEED divides the recorded spacing.
+SPEED ?= 1
 replay: all
-	@test -n "$(FIX)" || { echo "usage: make replay FIX=fixtures/<name>"; exit 1; }
-	./tools/replay.py --fixture $(FIX) --label replay
+	@test -n "$(FIX)" || { echo "usage: make replay FIX=<capture>.jsonl [SPEED=n]"; exit 1; }
+	CARWATCH_BIN=$(BIN) scripts/replay.sh $(FIX) $(SPEED)
 
 # The phone page and API, on synthetic data, until it is wired to the real source (D-045).
 # On the Pi, bind the access point's address: make run-status STATUS_ARGS="--bind 192.168.4.1"
