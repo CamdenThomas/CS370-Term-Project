@@ -9,6 +9,7 @@
 #ifndef CARWATCH_WAL_H
 #define CARWATCH_WAL_H
 
+#include "common/events.h"
 #include "store/record.h"
 
 #include <stdbool.h>
@@ -21,9 +22,9 @@
 #define WAL_BUF_BYTES       (WAL_BATCH_SAMPLES * 56u + 32u * REC_MAX_SIZE)
 #define WAL_NAMESPACES      2u    /* sample namespaces: 0 the car (Mode 01), 1 the box (D-037) */
 
-/* Event codes storaged writes itself (D-042: sender byte 0x05). */
-#define WAL_EV_RING_GEN     0x0501u   /* "ns=<0|1> gen=<hex>": which ring instance fed us */
-#define WAL_EV_RING_SEQ     0x0502u   /* "ns=<0|1> seq=<hex>": last ring slot in this batch */
+/* Event codes storaged writes itself; the table is include/common/events.h (D-042). */
+#define WAL_EV_RING_GEN     EV_STORE_RING_GEN
+#define WAL_EV_RING_SEQ     EV_STORE_RING_SEQ
 
 /* What a scan of one segment found. */
 typedef struct {
