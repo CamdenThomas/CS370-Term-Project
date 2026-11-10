@@ -29,6 +29,8 @@
 #define EV_OBD_MIL_ON       0x020Bu
 #define EV_OBD_MULTI_ECU    0x020Cu   /* a PID answered by more than one ECU; the first kept */
 #define EV_OBD_REPLAY       0x020Du   /* obdd --replay: which capture, at what speed */
+#define EV_OBD_SUPPORTED    0x020Eu   /* n= pids=01,03,...: what the ECUs list (43 on the
+                                         Forester: too long to share the session event) */
 
 /* storaged's own (wal.h names them for the write-ahead log). */
 #define EV_STORE_RING_GEN   0x0501u   /* "ns=<0|1> gen=<hex>": which ring instance fed us */
