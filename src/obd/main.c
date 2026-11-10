@@ -22,10 +22,17 @@
  * (CLAUDE.md §2.7).
  *
  *   obdd [--port PATH] [--events PATH] [--create-ring] [--max-seconds N]
+ *   obdd --replay CAPTURE [--speed X] [--events PATH] [--create-ring]
+ *
+ * --replay reads a tools/obdlog.py capture instead of the adapter and pushes its samples
+ * through the same ring at their recorded spacing, divided by --speed (Camden,
+ * 2026-11-08: the replay harness is C). A live capture replayed is labeled replay; a
+ * synth one stays synth (include/obd/replay.h). Values are decoded again from the raw
+ * bytes, by the same code as live replies. Events in the capture are not replayed.
  *
  * --create-ring makes the ring itself: a bench stand-in until the supervisor does (board
- * benchring). Exit codes: 0 after a clean stop (SIGTERM, SIGINT, --max-seconds), 1 if it
- * cannot start.
+ * benchring). Exit codes: 0 after a clean stop (SIGTERM, SIGINT, --max-seconds, the end
+ * of a replay), 1 if it cannot start or the capture is refused.
  */
 #include "common/events.h"
 #include "common/log.h"
@@ -33,6 +40,7 @@
 #include "ipc/uds.h"
 #include "obd/elm.h"
 #include "obd/pid.h"
+#include "obd/replay.h"
 #include "obd/sched.h"
 
 #include <errno.h>
@@ -377,8 +385,128 @@ static elm_status_t poll_loop(obdd_t *o, elm_t *e, sched_t *sched)
 static int usage(void)
 {
     fprintf(stderr, "usage: obdd [--port PATH] [--events PATH] [--create-ring] "
-                    "[--max-seconds N]\n");
+                    "[--max-seconds N]\n"
+                    "       obdd --replay CAPTURE [--speed X] [--events PATH] "
+                    "[--create-ring]\n");
     return 1;
+}
+
+/* The header's description of the recorded session, as live obdd would have sent it. */
+static void replay_header(obdd_t *o, const char *line, const char *path, double speed,
+                          const char *src_in)
+{
+    char adapter[ELM_BANNER_MAX] = "?", proto[64] = "?", volts[32] = "?", hash[32] = "none";
+    (void)replay_str(line, "adapter", adapter, sizeof adapter);
+    (void)replay_str(line, "protocol", proto, sizeof proto);
+    (void)replay_str(line, "voltage", volts, sizeof volts);
+    (void)replay_str(line, "vin_hash", hash, sizeof hash);
+    const char *base = strrchr(path, '/') != NULL ? strrchr(path, '/') + 1 : path;
+    char qf[128], qa[ELM_BANNER_MAX + 2], qp[sizeof proto + 2];
+    ev_send(&o->ev, EV_OBD_REPLAY, o->src, "file=%s speed=%g src_in=%s",
+            quoted(qf, sizeof qf, base), speed, src_in);
+    ev_send(&o->ev, EV_OBD_SESSION, o->src, "adapter=%s protocol=%s voltage=%s vin_hash=%s",
+            quoted(qa, sizeof qa, adapter), quoted(qp, sizeof qp, proto), volts, hash);
+}
+
+/* obdd --replay: a capture's samples into the ring at their recorded spacing / speed. */
+static int run_replay(obdd_t *o, const char *path, double speed)
+{
+    FILE *f = fopen(path, "re");
+    if (f == NULL) {
+        LOG_E("replay_open_failed path=%s errno=%d (%s)", path, errno, strerror(errno));
+        return 1;
+    }
+    static char line[REPLAY_LINE_MAX];   /* 4 KB, off the stack */
+    uint64_t lines = 0, skipped = 0, bad = 0;
+    bool have_header = false, first = true;
+    double t0 = 0.0;
+    int64_t start = 0;
+    int rc = 1;
+
+    while (!stopping(o) && fgets(line, sizeof line, f) != NULL) {
+        lines++;
+        size_t n = strlen(line);
+        if (n == sizeof line - 1 && line[n - 1] != '\n') {
+            int c;
+            while ((c = fgetc(f)) != EOF && c != '\n') {}   /* the rest of the long line */
+            LOG_W("replay_line_too_long line=%" PRIu64, lines);
+            bad++;
+            continue;
+        }
+        char type[16], src[16];
+        if (!replay_str(line, "type", type, sizeof type)) {
+            bad++;
+            continue;
+        }
+        if (!have_header) {
+            /* The first record must be a labeled header: data nobody labeled is refused,
+             * never guessed live (CLAUDE.md §2.7). */
+            if (strcmp(type, "header") != 0 || !replay_str(line, "src", src, sizeof src) ||
+                (o->src = replay_label(src)) == SRC_INVALID) {
+                LOG_E("replay_refused path=%s line=%" PRIu64 " reason=no_labeled_header",
+                      path, lines);
+                goto out;
+            }
+            have_header = true;
+            log_set_src((data_src_t)o->src);
+            replay_header(o, line, path, speed, src);
+            continue;
+        }
+        if (strcmp(type, "sample") != 0) {   /* events, gps, footer */
+            skipped++;
+            continue;
+        }
+        char pid_txt[8], raw[3 * OBD_MAX_DATA + 8];
+        double t;
+        obd_line_t l;
+        char *end;
+        if (!replay_str(line, "pid", pid_txt, sizeof pid_txt) ||
+            !replay_str(line, "raw", raw, sizeof raw) || !replay_num(line, "t_mono", &t) ||
+            !replay_raw(raw, &l)) {
+            bad++;
+            continue;
+        }
+        unsigned long pid = strtoul(pid_txt, &end, 16);
+        if (*end != '\0' || pid > 0xFF) {
+            bad++;
+            continue;
+        }
+        /* A sample whose own label disagrees with the header is not this capture's. */
+        if (replay_str(line, "src", src, sizeof src) && replay_label(src) != o->src) {
+            LOG_W("replay_label_mismatch line=%" PRIu64 " src=%s", lines, src);
+            bad++;
+            continue;
+        }
+
+        if (first) {
+            t0 = t;
+            start = mono_ns();
+            first = false;
+        }
+        int64_t due = start + (int64_t)((t - t0) / speed * 1e9);
+        for (int64_t now = mono_ns(); now < due && !stopping(o); now = mono_ns()) {
+            int64_t left = due - now < 50000000 ? due - now : 50000000;
+            struct timespec ts = { 0, (long)left };
+            (void)nanosleep(&ts, NULL);
+            (void)ev_flush(&o->ev);
+        }
+        push(o, (uint8_t)pid, &l, mono_ns());
+        heartbeat(o);
+    }
+    if (ferror(f)) {
+        LOG_E("replay_read_failed path=%s line=%" PRIu64, path, lines);
+        goto out;
+    }
+    if (!have_header) {
+        LOG_E("replay_refused path=%s reason=empty", path);
+        goto out;
+    }
+    rc = 0;
+    LOG_I("replay_done lines=%" PRIu64 " samples=%" PRIu64 " skipped=%" PRIu64
+          " unreadable=%" PRIu64, lines, o->samples, skipped, bad);
+out:
+    if (fclose(f) != 0) LOG_W("replay_close_failed errno=%d (%s)", errno, strerror(errno));
+    return rc;
 }
 
 int main(int argc, char **argv)
@@ -387,10 +515,18 @@ int main(int argc, char **argv)
     memset(&o, 0, sizeof o);
     o.port = "/dev/obd";
     const char *events = EV_SOCK_DEFAULT;
+    const char *replay = NULL;
+    double speed = 1.0;
     bool create = false;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--port") == 0 && i + 1 < argc) {
             o.port = argv[++i];
+        } else if (strcmp(argv[i], "--replay") == 0 && i + 1 < argc) {
+            replay = argv[++i];
+        } else if (strcmp(argv[i], "--speed") == 0 && i + 1 < argc) {
+            char *end;
+            speed = strtod(argv[++i], &end);
+            if (*end != '\0' || !(speed > 0.0 && speed <= 10000.0)) return usage();
         } else if (strcmp(argv[i], "--events") == 0 && i + 1 < argc) {
             events = argv[++i];
         } else if (strcmp(argv[i], "--create-ring") == 0) {
@@ -406,7 +542,8 @@ int main(int argc, char **argv)
     }
 
     log_init("obdd", LOG_INFO);
-    LOG_I("start port=%s events=%s", o.port, events);
+    if (replay != NULL) LOG_I("start replay=%s speed=%g events=%s", replay, speed, events);
+    else LOG_I("start port=%s events=%s", o.port, events);
 
     struct sigaction sa;
     memset(&sa, 0, sizeof sa);
@@ -427,10 +564,12 @@ int main(int argc, char **argv)
     ev_sender_init(&o.ev, events);
     o.next_beat_ms = mono_ms();
 
+    int rc = 0;
     elm_t e;
     static sched_t sched;            /* 300 bytes of PID lists, off the stack */
     bool lost = false;
-    while (!stopping(&o)) {
+    if (replay != NULL) rc = run_replay(&o, replay, speed);
+    while (replay == NULL && !stopping(&o)) {
         unsigned attempts = 0;
         if (connect_adapter(&o, &e, &attempts) != ELM_OK) break;   /* only when stopping */
         if (lost) ev_send(&o.ev, EV_OBD_RECONNECTED, o.src, "attempts=%u", attempts);
@@ -448,10 +587,15 @@ int main(int argc, char **argv)
         if (!stopping(&o) && st != ELM_LINK_LOST) wait_ms(&o, BACKOFF_MIN_MS);
     }
 
-    (void)ev_flush(&o.ev);
+    /* Give queued events a moment to reach storaged: a replay can end before storaged
+     * has started listening. What is still queued after 2 s is in the journal only. */
+    for (int i = 0; i < 40 && ev_flush(&o.ev) > 0; i++) {
+        struct timespec t = { 0, WAIT_STEP_MS * 1000000L };
+        (void)nanosleep(&t, NULL);
+    }
     ev_sender_close(&o.ev);
     LOG_I("stop samples=%" PRIu64 " ring_full=%" PRIu64 " events_sent=%" PRIu64
           " events_dropped=%" PRIu64, o.samples, o.ring_full, o.ev.sent, o.ev.dropped);
     ring_detach(o.ring);   /* never destroyed here: storaged may still be draining it */
-    return 0;
+    return rc;
 }
