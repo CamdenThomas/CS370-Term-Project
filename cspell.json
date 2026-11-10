@@ -326,6 +326,9 @@
     "Wshadow",
     "Wvla",
     "xlabel",
-    "ylabel"
+    "ylabel",
+    "journalctl",
+    "oneshot",
+    "PYTHONUNBUFFERED"
   ]
 }
