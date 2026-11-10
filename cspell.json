@@ -32,6 +32,12 @@
     "warnbg",
     "probering",
     "rofs",
+    "obddecode",
+    "obdelm",
+    "eventsock",
+    "ringdepth",
+    "benchring",
+    "elmrace",
     "ABCDEFGHJKLMNPRSTVWXY",
     "ambientd",
     "archdiag",
@@ -326,6 +332,9 @@
     "Wshadow",
     "Wvla",
     "xlabel",
-    "ylabel"
+    "ylabel",
+    "journalctl",
+    "oneshot",
+    "PYTHONUNBUFFERED"
   ]
 }

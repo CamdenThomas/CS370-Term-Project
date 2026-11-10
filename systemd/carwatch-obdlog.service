@@ -1,0 +1,23 @@
+# carwatch key-on logger (board item pilogger): tools/obdlog.py on /dev/obd from every
+# boot, until obdd replaces it. Records are labeled live (D-033); this is a data-collection
+# tool, not the product. scripts/provision_pi.sh fills the @...@ fields and installs it.
+#
+# Power dies at key-off, so the logger is never stopped cleanly: it calls fsync every second
+# (--fsync-sec 1), and a session cut mid-line loses at most its last second.
+[Unit]
+Description=carwatch: log every Mode 01 PID from /dev/obd (tools/obdlog.py)
+After=carwatch-rfcomm.service
+Wants=carwatch-rfcomm.service
+
+[Service]
+User=@USER@
+Group=dialout
+WorkingDirectory=@REPO@
+Environment=PYTHONPATH=tools
+Environment=PYTHONUNBUFFERED=1
+ExecStart=@REPO@/.venv/bin/python tools/obdlog.py --port /dev/obd --out @DATA@ --fsync-sec 1
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

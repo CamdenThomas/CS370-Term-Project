@@ -104,12 +104,26 @@ uint64_t ring_rejected(const ring_t *r)
     return atomic_load_explicit(&r->rejected, memory_order_relaxed);
 }
 
+#define DEPTH_TRIES 64
+
 size_t ring_depth(const ring_t *r)
 {
     /* tail first: head only grows, so a head read after the tail is never behind it.
      * Read the other way round, a third party (the supervisor, `obdctl status`) could see
-     * the consumer pass a stale head and get a depth near 2^64. */
-    uint64_t tail = atomic_load_explicit(&r->tail, memory_order_acquire);
-    uint64_t head = atomic_load_explicit(&r->head, memory_order_acquire);
-    return (size_t)(head - tail);
+     * the consumer pass a stale head and get a depth near 2^64.
+     *
+     * Tail first is not enough on its own: between the two reads the consumer can take
+     * slots and the producer refill them, so head can run past the tail we hold by more
+     * than the capacity. So read the tail again. If it has not moved, it held that value
+     * the whole time head was read, and the producer never lets head pass tail by more
+     * than the capacity: the pair is consistent. A consumer that moves on every try is
+     * a depth that is changing anyway; after DEPTH_TRIES, clamp. */
+    uint64_t tail = 0, head = 0;
+    for (int i = 0; i < DEPTH_TRIES; i++) {
+        tail = atomic_load_explicit(&r->tail, memory_order_acquire);
+        head = atomic_load_explicit(&r->head, memory_order_acquire);
+        if (atomic_load_explicit(&r->tail, memory_order_acquire) == tail) break;
+    }
+    uint64_t depth = head - tail;
+    return (size_t)(depth > RING_CAPACITY ? RING_CAPACITY : depth);
 }
